@@ -14,14 +14,15 @@ return function(object,data)
         text_color = data.text_color or object.term_object.getTextColor(),
         texture = data.texture,
         text=data.text,
-        visible=true,
-        reactive=true,
+        visible=(data.visible ~= nil) and data.visible or true,
+        reactive=(data.reactive ~= nil) and data.reactive or true,
         react_to_events={
             mouse_click=true,
-            monitor_touch=true
+            monitor_touch=true,
+            mouse_drag=true
         },
         tags={},
-        value=true
+        value=(data.value ~= nil) and data.value or true
     },{
         __index = {
             logic=require("GuiH.objects.button.logic"),

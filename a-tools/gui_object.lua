@@ -11,11 +11,22 @@ local function create_gui_object(term_object)
         gui=gui_objects,
         update=update
     }
-    local function updater(wait_for_click,visible)
-        update(gui,wait_for_click,visible)
+    local function updater(timeout,visible)
+        update(gui,timeout,visible)
     end
     gui.create = objects.main(gui)
     gui.update = updater
+    gui.text = function(data)
+        return {
+            text = data.text or "<TEXT OBJECT>",
+            centered = (data.centered ~= nil) and data.centered or true,
+            x = data or 1,
+            y = data or 1,
+            offset_x = data.offset_x or 0,
+            offset_y = data.offset_y or 0,
+            blit = data.blit or {("0"):rep(13),("f"):rep(13)}
+        }
+    end
     return gui
 end
 
