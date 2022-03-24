@@ -109,8 +109,8 @@ local function get_pixel(x,y,tex,fill_empty)
     local scale = texture.scale
     texture.scale = nil
     if not pixel and fill_empty then
-        local x_proximal = index_proximal_big(texture,x)
-        pixel = index_proximal_small(x_proximal,y)
+        local x_proximal = index_proximal_small(texture,x)
+        pixel = index_proximal_big(x_proximal or {},y)
     end
     texture.scale = scale
     return pixel
