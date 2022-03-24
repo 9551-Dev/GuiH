@@ -1,4 +1,4 @@
-return function(object)
+return {main=function(object)
     local objects = {}
     local object_list = fs.list("GuiH/GuiH/objects")
     for k,v in pairs(object_list) do
@@ -8,4 +8,4 @@ return function(object)
         end
     end
     return objects
-end
+end,types=fs.list("GuiH/GuiH/objects")}
