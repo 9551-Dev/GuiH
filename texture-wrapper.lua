@@ -115,11 +115,9 @@ local function get_pixel(x,y,tex,fill_empty)
     texture.scale = scale
     return pixel
 end
-
 return {
     load_texture=load_texture,
     code={
         get_pixel=get_pixel,
     }
 }
-
