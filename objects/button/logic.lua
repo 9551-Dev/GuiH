@@ -1,5 +1,13 @@
+local api = require("guiH.api")
 return function(object,event)
-    if type(object.value) == "boolean" then object.value = 0 end
-    object.value = object.value + 1
-    object.temp = event
+    if api.is_within_field(
+        event.x,
+        event.y,
+        object.positioning.x,
+        object.positioning.y,
+        object.positioning.width,
+        object.positioning.height
+    ) then
+        object.execute(object,event)
+    end
 end

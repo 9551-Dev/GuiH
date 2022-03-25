@@ -119,5 +119,7 @@ return {
     load_texture=load_texture,
     code={
         get_pixel=get_pixel,
+        to_blit=saveCols,
+        to_color=loadCols
     }
 }

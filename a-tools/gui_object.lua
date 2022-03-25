@@ -17,6 +17,7 @@ local function create_gui_object(term_object)
     gui.create = objects.main(gui)
     gui.update = updater
     gui.text = function(data)
+        data = data or {}
         return {
             text = data.text or "<TEXT OBJECT>",
             centered = (data.centered ~= nil) and data.centered or true,

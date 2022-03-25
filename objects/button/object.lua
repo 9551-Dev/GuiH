@@ -6,12 +6,13 @@ return function(object,data)
         positioning = {
             x=data.x or 1,
             y=data.y or 1,
-            width=(data.x or 1)+(data.width or 1),
-            height=(data.y or 1)+(data.height or 1),
+            width=data.width or 0,
+            height=data.height or 0
         },
         execute=data.execute or function() end,
         background_color = data.background_color or object.term_object.getBackgroundColor(),
         text_color = data.text_color or object.term_object.getTextColor(),
+        symbol=data.symbol or " ",
         texture = data.texture,
         text=data.text,
         visible=(data.visible ~= nil) and data.visible or true,
