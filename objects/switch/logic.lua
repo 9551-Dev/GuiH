@@ -9,6 +9,6 @@ return function(object,event)
         object.positioning.height
     ) then
         object.value = not object.value
-        object.execute(object,event)
+        object.on_change_state(object,event)
     end
 end 

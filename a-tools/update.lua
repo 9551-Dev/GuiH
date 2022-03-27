@@ -34,9 +34,7 @@ return function(self,timeout,visible,is_child,data_in)
     if visible and self.visible then
         for _k,_v in pairs(gui) do for k,v in pairs(_v) do
             if _k ~= "frame" then
-                if v.visible then v.graphic(v,self) 
-                    print(k)
-                end
+                if v.visible then v.graphic(v,self) end
             else
                 if v.visible then v.graphic(v,self) end
                 table.insert(frames,v)

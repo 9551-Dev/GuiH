@@ -9,7 +9,7 @@ return function(object,data)
             width=data.width or 0,
             height=data.height or 0
         },
-        execute=data.execute or function() end,
+        on_click=data.on_click or function() end,
         background_color = data.background_color or object.term_object.getBackgroundColor(),
         text_color = data.text_color or object.term_object.getTextColor(),
         symbol=data.symbol or " ",

@@ -1,0 +1,2 @@
+return function(object)
+end

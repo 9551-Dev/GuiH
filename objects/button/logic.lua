@@ -8,6 +8,6 @@ return function(object,event)
         object.positioning.width,
         object.positioning.height
     ) then
-        object.execute(object,event)
+        object.on_click(object,event)
     end
 end
