@@ -2,7 +2,7 @@ local graphic = require("guiH.texture-wrapper")
 
 return function(object)
     local term = object.canvas.term_object
-    local pointValue = object.positioning.width*object.value/100
+    local pointValue = object.positioning.width*math.floor(object.value)/100
     local left = object.positioning.width-pointValue
     if object.direction == "left-right"  then
         if not object.texture then
@@ -55,7 +55,7 @@ return function(object)
             end
         end
     end
-    local pointValue = math.floor(object.positioning.height*(object.value)/100)
+    local pointValue = math.floor(object.positioning.height*(math.floor(object.value))/100)
     local left = object.positioning.height-pointValue
     if object.direction == "top-down" then
         if not object.texture then
@@ -94,7 +94,7 @@ return function(object)
             end
         end
     end
-    local pointValue = math.floor(object.positioning.height*(100-object.value)/100)
+    local pointValue = math.floor(object.positioning.height*(100-math.floor(object.value))/100)
     local left = object.positioning.height-pointValue
     if object.direction == "down-top" then
         if not object.texture then
