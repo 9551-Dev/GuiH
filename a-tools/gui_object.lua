@@ -9,10 +9,11 @@ local function create_gui_object(term_object)
     local gui = {
         term_object=term_object,
         gui=gui_objects,
-        update=update
+        update=update,
+        visible=true
     }
-    local function updater(timeout,visible)
-        update(gui,timeout,visible)
+    local function updater(timeout,visible,is_child,data)
+        update(gui,timeout,visible,is_child,data)
     end
     gui.create = objects.main(gui)
     gui.update = updater

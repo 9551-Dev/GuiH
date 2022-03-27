@@ -33,6 +33,6 @@ return function(object,data)
             graphic=require("GuiH.objects.switch.graphic")
         }
     })
-    object.gui.button[btn.name] = btn
+    object.gui.switch[btn.name] = btn
     return btn
 end

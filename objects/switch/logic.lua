@@ -11,4 +11,4 @@ return function(object,event)
         object.value = not object.value
         object.execute(object,event)
     end
-end
+end 

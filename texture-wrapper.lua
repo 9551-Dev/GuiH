@@ -115,10 +115,36 @@ local function get_pixel(x,y,tex,fill_empty)
     texture.scale = scale
     return pixel
 end
+
+local function draw_box_tex(term,tex,x,y,width,height,bg,tg)
+    local bg_layers = {}
+    local fg_layers = {}
+    local text_layers = {}
+    for yis=1,height do
+        for xis=1,width do
+            local pixel = get_pixel(xis,yis,tex)
+            if pixel then
+                bg_layers[yis] = (bg_layers[yis] or "")..saveCols[pixel.background_color]
+                fg_layers[yis] = (fg_layers[yis] or "")..saveCols[pixel.text_color]
+                text_layers[yis] = (text_layers[yis] or "")..pixel.symbol
+            else
+                bg_layers[yis] = (bg_layers[yis] or "")..saveCols[bg]
+                fg_layers[yis] = (fg_layers[yis] or "")..saveCols[tg]
+                text_layers[yis] = (text_layers[yis] or "").." "
+            end
+        end
+    end
+    for k,v in pairs(bg_layers) do
+        term.setCursorPos(x,y+k-1)
+        term.blit(text_layers[k],fg_layers[k],bg_layers[k])
+    end
+end
+
 return {
     load_texture=load_texture,
     code={
         get_pixel=get_pixel,
+        draw_box_tex=draw_box_tex,
         to_blit=saveCols,
         to_color=loadCols
     }
