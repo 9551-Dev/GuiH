@@ -6,7 +6,7 @@ return function(object)
     if not object.texture then
         term.setBackgroundColor(object.background_color)
         term.setTextColor(object.text_color)
-        for i=y,object.positioning.height+y do
+        for i=y,object.positioning.height+y-1 do
             term.setCursorPos(x,i)
             term.write(object.symbol:rep(object.positioning.width))
         end
