@@ -74,31 +74,32 @@ local function index_proximal_big(list,num) --credit to wojbie
     end
 end
 local function load_texture(file_name)
-    if file_name:match(".nimg$") and fs.exists(file_name) then
-        local file = fs.open(file_name,"r")
-        local data = file.readAll()
-        file.close()
-        local nimg = create2Darray(decode(textutils.unserialise(data)))
-        local temp = create2Darray()
-        for x,dat in pairs(nimg) do
-            if type(x) ~= "string" then
-                for y,data in pairs(dat) do
-                    temp[x-nimg.offset[1]+1][y-nimg.offset[2]+5] = {
-                        text_color=data.t,
-                        background_color=data.b,
-                        symbol=data.s
-                    }
-                end
+    local file,data
+    if not (type(file_name) == "table") and (file_name:match(".nimg$") and fs.exists(file_name)) then
+        file = fs.open(file_name,"r")
+        if not file then error("file doesnt exist",2) end
+        data = textutils.unserialise(file.readAll())
+    else
+        data = file_name
+    end
+    local nimg = create2Darray(decode(data))
+    local temp = create2Darray()
+    for x,dat in pairs(nimg) do
+        if type(x) ~= "string" then
+            for y,data in pairs(dat) do
+                temp[x-nimg.offset[1]+1][y-nimg.offset[2]+5] = {
+                    text_color=data.t,
+                    background_color=data.b,
+                    symbol=data.s
+                }
             end
         end
-        temp.scale = {get2DarraySquareWH(temp)}
-        return {
-            tex=temp,
-            offset=nimg.offset
-        }
-    else
-        error("file doesnt exist",2)
     end
+    temp.scale = {get2DarraySquareWH(temp)}
+    return {
+        tex=temp,
+        offset=nimg.offset
+    }
 end
 local function get_pixel(x,y,tex,fill_empty)
     local texture = tex.tex

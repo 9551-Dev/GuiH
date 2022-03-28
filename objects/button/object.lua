@@ -20,7 +20,6 @@ return function(object,data)
         react_to_events={
             mouse_click=true,
             monitor_touch=true,
-            mouse_drag=true
         },
         tags={},
         value=(data.value ~= nil) and data.value or true
