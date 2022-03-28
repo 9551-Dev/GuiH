@@ -30,7 +30,7 @@ return function(object,event,self)
         end
         object.last_click = event
         local nx,ny = wx+change_x,wy+change_y
-        if not object.on_move(object) then
+        if not object.on_move(object,{x=nx,y=ny}) then
             object.window.reposition(nx,ny)
         end
     end
