@@ -22,19 +22,15 @@ return function(object,event,self)
     elseif event.name == "mouse_drag" and object.dragged and object.dragable then
         local wx,wy = object.window.getPosition()
         local ww,wh = object.window.getSize()
-        object.new_pos = {
-            x=event.x-object.last_click.x,
-            y=event.y-object.last_click.y
-        }
         local change_x,change_y = event.x-object.last_click.x,event.y-object.last_click.y
+        for h=1,wh do
+            local trm = object.canvas.term_object
+            trm.setCursorPos(wx,h+wy-1)
+            trm.write((" "):rep(ww))
+        end
+        object.last_click = event
         local nx,ny = wx+change_x,wy+change_y
-        if not object.on_move(object,{x=nx,y=ny}) == false then
-            for h=1,wh do
-                local trm = object.canvas.term_object
-                trm.setCursorPos(wx,h+wy-1)
-                trm.write((" "):rep(ww))
-            end
-            object.last_click = event
+        if not object.on_move(object) then
             object.window.reposition(nx,ny)
         end
     end
