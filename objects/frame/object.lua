@@ -1,4 +1,4 @@
-local main = require("guiH.a-tools.gui_object")
+local main = require("GuiH.a-tools.gui_object")
 
 return function(object,data)
     data = data or {}
