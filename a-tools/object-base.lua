@@ -1,25 +1,10 @@
-return function(object,data)
-    data = data or {}
-    local btn = setmetatable({
-        canvas=object,
-        name=data.name or "",
-        positioning = {
-            x=data.x or 1,
-            y=data.y or 1,
-            width=data.width or 0,
-            height=data.height or 0
-        },
-        visible=(data.visible ~= nil) and data.visible or true,
-        reactive=(data.reactive ~= nil) and data.reactive or true,
-        react_to_events={
-            events
-        },
-    },{
-        __index = {
-            logic=require("GuiH.objects.<name>.logic"),
-            graphic=require("GuiH.objects.<name>.graphic")
-        }
-    })
-    object.gui.button[btn.name] = btn
+return function(object,input_data)
+    local btn = {
+        name=input_data.name or "",
+        visible=(input_data.visible ~= nil) and input_data.visible or true,
+        reactive=(input_data.reactive ~= nil) and input_data.reactive or true,
+        react_to_events={}, --a look up table with the event names
+        --btn={} --optional LUT table with the keys this object should respond to
+    }
     return btn
 end

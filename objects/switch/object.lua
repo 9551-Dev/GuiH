@@ -26,11 +26,6 @@ return function(object,data)
         },
         tags={},
         value=(data.value ~= nil) and data.value or false
-    },{
-        __index = {
-            logic=require("GuiH.objects.switch.logic"),
-            graphic=require("GuiH.objects.switch.graphic")
-        }
     }
     return btn
 end
