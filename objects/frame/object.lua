@@ -2,8 +2,7 @@ local main = require("GuiH.a-tools.gui_object")
 
 return function(object,data)
     data = data or {}
-    local btn = setmetatable({
-        canvas=object,
+    local btn = {
         name=data.name or "",
         positioning = {
             x=data.x or 1,
@@ -29,14 +28,9 @@ return function(object,data)
         on_select=data.on_select or function() end,
         on_any=data.on_any or function() end,
         on_graphic=data.on_graphic or function() end
-    },{
-        __index = {
-            logic=require("GuiH.objects.frame.logic"),
-            graphic=require("GuiH.objects.frame.graphic")
-        }
-    })
+    }
     local window = window.create(
-        btn.canvas.term_object,
+        object.term_object,
         btn.positioning.x,
         btn.positioning.y,
         btn.positioning.width,
@@ -52,6 +46,5 @@ return function(object,data)
     end
     btn.child = main(window)
     btn.window = window
-    object.gui.frame[btn.name] = btn
     return btn
 end

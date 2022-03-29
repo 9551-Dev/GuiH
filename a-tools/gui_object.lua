@@ -15,7 +15,7 @@ local function create_gui_object(term_object)
     local function updater(timeout,visible,is_child,data)
         update(gui,timeout,visible,is_child,data)
     end
-    gui.create = objects.main(gui)
+    gui.create = objects.main(gui,gui.gui)
     gui.update = updater
     gui.text = function(data)
         data = data or {}

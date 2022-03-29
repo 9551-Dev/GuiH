@@ -7,8 +7,7 @@ local types = {
 
 return function(object,data)
     data = data or {}
-    local btn = setmetatable({
-        canvas=object,
+    local btn = {
         name=data.name or "",
         positioning = {
             x=data.x or 1,
@@ -22,12 +21,6 @@ return function(object,data)
         texture=data.tex,
         value=data.value or 0,
         direction=types[data.direction] and data.direction or "left-right"
-    },{
-        __index = {
-            logic=require("GuiH.objects.progressbar.logic"),
-            graphic=require("GuiH.objects.progressbar.graphic")
-        }
-    })
-    object.gui.progressbar[btn.name] = btn
+    }
     return btn
 end

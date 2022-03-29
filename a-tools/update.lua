@@ -5,6 +5,10 @@ local events = {
     ["mouse_scroll"]=true,
     ["mouse_up"]=true
 }
+local valid_mouse_events = {
+    [1]=true,
+    [2]=true
+}
 return function(self,timeout,visible,is_child,data_in)
     if visible == nil then visible = true end
     local ev_name = "none"
@@ -26,7 +30,7 @@ return function(self,timeout,visible,is_child,data_in)
             if ev_name == "mouse_scroll" then ev_data = {name=ev_name,direction=e1,x=e2,y=e3} end
         end
         for _k,_v in pairs(gui) do for k,v in pairs(_v) do
-            if v.reactive and v.react_to_events[ev_data.name] then
+            if v.reactive and v.react_to_events[ev_data.name] and (v.btn or valid_mouse_events)[ev_data.button] then
                 v.logic(v,ev_data,self)
             end
         end end

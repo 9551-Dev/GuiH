@@ -1,7 +1,6 @@
 return function(object,data)
     data = data or {}
-    local btn = setmetatable({
-        canvas=object,
+    local btn = {
         name=data.name or "",
         positioning = {
             x=data.x or 1,
@@ -15,8 +14,8 @@ return function(object,data)
         text_color = data.text_color or object.term_object.getTextColor(),
         text_color_on = data.text_color_on or object.term_object.getTextColor(),
         symbol=data.symbol or " ",
-        texture = data.texture,
-        texture_on = data.texture_on,
+        texture = data.tex,
+        texture_on = data.tex_on,
         text=data.text,
         text_on=data.text_on,
         visible=(data.visible ~= nil) and data.visible or true,
@@ -32,7 +31,6 @@ return function(object,data)
             logic=require("GuiH.objects.switch.logic"),
             graphic=require("GuiH.objects.switch.graphic")
         }
-    })
-    object.gui.switch[btn.name] = btn
+    }
     return btn
 end
