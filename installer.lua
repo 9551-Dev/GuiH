@@ -8,7 +8,7 @@ local ls = {}
 local len = 0
 github_api.close()
 for k,v in pairs(list.tree) do
-    if v.type == "blob" then
+    if v.type == "blob" and v.path:lower():match(".+%.lua") then
         ls["https://raw.githubusercontent.com/9551-Dev/Gui-h/main/"..v.path] = v.path
         len = len + 1
     end
