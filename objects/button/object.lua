@@ -21,6 +21,7 @@ return function(object,data)
             monitor_touch=true,
         },
         tags={},
+        btn=data.btn,
         value=(data.value ~= nil) and data.value or true
     }
     return btn

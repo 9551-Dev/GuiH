@@ -23,6 +23,7 @@ return function(object,data)
             x=1,
             y=1
         },
+        btn=data.btn,
         dragable=data.dragable or true,
         on_move=data.on_move or function() end,
         on_select=data.on_select or function() end,
