@@ -1,4 +1,4 @@
-﻿# **GuiH -simple documentation**
+# **GuiH -simple documentation**
 ### info
 	GuiH is my work in progress computercraft GUI api
 	i made it in like a week trying to get usable performance and nice usage
@@ -369,6 +369,5 @@ here is an table with what the event will have depending on the event that happe
 
 
 # **oh well i think this is the end. i hope you like my API :D**
-
 
 
