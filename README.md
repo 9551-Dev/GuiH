@@ -1,4 +1,4 @@
-?# **GuiH -simple documentation**
+﻿# **GuiH -simple documentation**
 ### info
 	GuiH is my work in progress computercraft GUI api
 	i made it in like a week trying to get usable performance and nice usage
