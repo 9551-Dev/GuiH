@@ -7,7 +7,7 @@ local function create_gui_object(term_object)
         gui_objects[v] = {}
     end
     local gui = {
-        term_object=term_object,
+        term_object=term_object or term.current(),
         gui=gui_objects,
         update=update,
         visible=true,
@@ -20,7 +20,7 @@ local function create_gui_object(term_object)
     gui.update = updater
     gui.text = function(data)
         data = data or {}
-        return {
+        return setmetatable({
             text = data.text or "<TEXT OBJECT>",
             centered = (data.centered ~= nil) and data.centered or true,
             x = data or 1,
@@ -28,7 +28,20 @@ local function create_gui_object(term_object)
             offset_x = data.offset_x or 0,
             offset_y = data.offset_y or 0,
             blit = data.blit or {("0"):rep(13),("f"):rep(13)}
-        }
+        },{
+            __call=function(self)
+                local term = gui.term_object
+                if self.centered then
+                    local w,h = term.getSize()
+                    local y = h/2
+                    local x = math.ceil((w/2)-(#self.text/2))
+                    term.setCursorPos(x+self.offset_x,y+self.offset_y)
+                else
+                    term.setCursorPos(self.x+self.offset_x,self.y+self.offset_y)
+                end
+                term.blit(self.text,unpack(self.blit))
+            end
+        })
     end
     return gui
 end
