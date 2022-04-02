@@ -19,6 +19,7 @@ return function(self,timeout,visible,is_child,data_in)
     local gui = self.gui
     local e1,e2,e3,id
     local frames,layers={},{}
+    local updateD = true
     if (timeout or math.huge) >= 0 then
         if not data or not is_child then
             local tid = os.startTimer(timeout or 0)
@@ -34,14 +35,16 @@ return function(self,timeout,visible,is_child,data_in)
             if e2 ~= self.id and ev_name ~= "guih_data_event" then
                 os.queueEvent("guih_data_event",ev_data,self.id)
             else
-                return timeout,visible,is_child,data
+                updateD = false
             end
         end
-        for _k,_v in pairs(gui) do for k,v in pairs(_v) do
-            if v.reactive and v.react_to_events[ev_data.name] and (v.btn or valid_mouse_events)[ev_data.button] then
-                v.logic(v,ev_data,self)
-            end
-        end end
+        if updateD then
+            for _k,_v in pairs(gui) do for k,v in pairs(_v) do
+                if v.reactive and v.react_to_events[ev_data.name] and (v.btn or valid_mouse_events)[ev_data.button] then
+                    v.logic(v,ev_data,self)
+                end
+            end end
+        end
     end
     if visible and self.visible then
         for _k,_v in pairs(gui) do for k,v in pairs(_v) do
@@ -60,6 +63,7 @@ return function(self,timeout,visible,is_child,data_in)
     for k,v in api.tables.iterate_order(layers) do
         parallel.waitForAll(table.unpack(v))
     end
+    if not updateD then return timeout,visible,is_child,data end
     for k,v in pairs(frames) do
         local x,y = v.window.getPosition()
         local data = data or data_in or ev_data
