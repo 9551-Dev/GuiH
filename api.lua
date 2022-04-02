@@ -104,6 +104,25 @@ local compareTable = function(tbl1,tbl2)
     end
 end
 
+local function keys(tbl)
+    local keys = {}
+    for k,_ in pairs(tbl) do
+        table.insert(keys,k)
+    end
+    return keys
+end
+
+local function iterate_order(tbl)
+    local indice = 0
+    local keys = keys(tbl)
+    table.sort(keys, function(a, b) return a<b end)
+    return function()
+        indice = indice + 1
+        if tbl[keys[indice]] then return keys[indice],tbl[keys[indice]]
+        else return end
+    end
+end
+
 return {
     is_within_field=is_within_field,
     tables={
@@ -113,6 +132,7 @@ return {
         switchXYArray=switchXYArray,
         create2Darray=create2Darray,
         create3Darray=create3Darray,
+        iterate_order=iterate_order
     },
     math={
         interpolateY=interpolateY,

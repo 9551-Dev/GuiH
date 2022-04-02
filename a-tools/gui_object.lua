@@ -10,7 +10,8 @@ local function create_gui_object(term_object)
         term_object=term_object,
         gui=gui_objects,
         update=update,
-        visible=true
+        visible=true,
+        id=os.epoch("utc")
     }
     local function updater(timeout,visible,is_child,data)
         update(gui,timeout,visible,is_child,data)

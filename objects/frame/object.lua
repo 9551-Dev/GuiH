@@ -3,7 +3,7 @@ local main = require("GuiH.a-tools.gui_object")
 return function(object,data)
     data = data or {}
     local btn = {
-        name=data.name or "",
+        name=data.name or tostring(os.epoch("utc")),
         positioning = {
             x=data.x or 1,
             y=data.y or 1,
@@ -23,12 +23,14 @@ return function(object,data)
             x=1,
             y=1
         },
+        order=data.order or 1,
         btn=data.btn,
         dragable=data.dragable or true,
         on_move=data.on_move or function() end,
         on_select=data.on_select or function() end,
         on_any=data.on_any or function() end,
-        on_graphic=data.on_graphic or function() end
+        on_graphic=data.on_graphic or function() end,
+        clear=data.clear or true
     }
     local window = window.create(
         object.term_object,

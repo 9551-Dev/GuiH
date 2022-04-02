@@ -8,7 +8,7 @@ local types = {
 return function(object,data)
     data = data or {}
     local btn = {
-        name=data.name or "",
+        name=data.name or tostring(os.epoch("utc")),
         positioning = {
             x=data.x or 1,
             y=data.y or 1,
@@ -20,7 +20,8 @@ return function(object,data)
         bg=data.bg or colors.black,
         texture=data.tex,
         value=data.value or 0,
-        direction=types[data.direction] and data.direction or "left-right"
+        direction=types[data.direction] and data.direction or "left-right",
+        order=data.order or 1
     }
     return btn
 end

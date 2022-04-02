@@ -7,6 +7,14 @@ return {
         if ev_name == "mouse_click" or ev_name == "mouse_up" then ev_data = {name=ev_name,button=e1,x=e2,y=e3} end
         if ev_name == "mouse_drag" then ev_data = {name=ev_name,button=e1,x=e2,y=e3} end
         if ev_name == "mouse_scroll" then ev_data = {name=ev_name,direction=e1,x=e2,y=e3} end
-        return ev_data
-    end
+        return ev_data or {name=ev_name}
+    end,
+    valid_events={
+        ["mouse_click"]=true,
+        ["mouse_drag"]=true,
+        ["monitor_touch"]=true,
+        ["mouse_scroll"]=true,
+        ["mouse_up"]=true,
+        ["guih_data_event"]=true
+    }
 }
