@@ -4,6 +4,9 @@ local events = {
     ["monitor_touch"]=true,
     ["mouse_scroll"]=true,
     ["mouse_up"]=true,
+    ["key"]=true,
+    ["key_up"]=true,
+    ["char"]=true,
     ["guih_data_event"]=true
 }
 local valid_mouse_events = {
@@ -31,6 +34,9 @@ return function(self,timeout,visible,is_child,data_in)
             if ev_name == "mouse_click" or ev_name == "mouse_up" then ev_data = {name=ev_name,button=e1,x=e2,y=e3} end
             if ev_name == "mouse_drag" then ev_data = {name=ev_name,button=e1,x=e2,y=e3} end
             if ev_name == "mouse_scroll" then ev_data = {name=ev_name,direction=e1,x=e2,y=e3} end
+            if ev_name == "key" then ev_data = {name=ev_name,key=e1,held=e2,x=math.huge,y=math.huge} end
+            if ev_name =="key_up" then ev_data = {name=ev_name,key=e1,x=math.huge,y=math.huge} end
+            if ev_name == "char" then ev_data = {name=ev_name,character=e1,x=math.huge,y=math.huge} end
             if ev_name == "guih_data_event" then ev_data = e1 end
             if e2 ~= self.id and ev_name ~= "guih_data_event" then
                 os.queueEvent("guih_data_event",ev_data,self.id)
@@ -40,9 +46,11 @@ return function(self,timeout,visible,is_child,data_in)
         end
         if updateD then
             for _k,_v in pairs(gui) do for k,v in pairs(_v) do
-                if v.reactive and v.react_to_events[ev_data.name] and (v.btn or valid_mouse_events)[ev_data.button] then
-                    v.logic(v,ev_data,self)
-                end
+                if v.reactive and v.react_to_events[ev_data.name] and
+                    ((v.btn or valid_mouse_events)[ev_data.button or math.huge] or
+                    (ev_name == "key" or ev_name == "char" or ev_name == "key_up")) then
+                        v.logic(v,ev_data,self)
+                    end
             end end
         end
     end
@@ -60,9 +68,7 @@ return function(self,timeout,visible,is_child,data_in)
             end)
         end end
     end
-    for k,v in api.tables.iterate_order(layers) do
-        parallel.waitForAll(table.unpack(v))
-    end
+    for k,v in api.tables.iterate_order(layers) do parallel.waitForAll(table.unpack(v)) end
     if not updateD then return timeout,visible,is_child,data end
     for k,v in pairs(frames) do
         local x,y = v.window.getPosition()
@@ -74,9 +80,12 @@ return function(self,timeout,visible,is_child,data_in)
                 name = data.name,
                 monitor = data.monitor,
                 button = data.button,
-                direction = data.direction
+                direction = data.direction,
+                held=data.held,
+                key=data.key,
+                character=data.character
             }
-            v.child.update(0,visible,true,dat)
+            v.child.update(0,v.visible,true,dat)
         end
     end
     return timeout,visible,is_child,data
