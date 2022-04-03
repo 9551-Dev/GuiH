@@ -15,7 +15,7 @@ return function(object)
         graphic.to_blit[object.text_color]:rep(#text),
         graphic.to_blit[object.background_color]:rep(#text)
     )
-    if object.selected then
+    if object.selected and #object.input < object.char_limit then
         term.setCursorPos(cursor_x+object.shift,object.positioning.y)
         if cursor_x+object.shift < object.positioning.x then
             object.shift = object.shift + 1

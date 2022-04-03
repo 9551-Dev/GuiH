@@ -68,7 +68,7 @@ return function(self,timeout,visible,is_child,data_in)
             end)
         end end
     end
-    for k,v in api.tables.iterate_order(layers) do parallel.waitForAll(table.unpack(v)) end
+    for k,v in api.tables.iterate_order(layers) do parallel.waitForAll(unpack(v)) end
     if not updateD then return timeout,visible,is_child,data end
     for k,v in pairs(frames) do
         local x,y = v.window.getPosition()
