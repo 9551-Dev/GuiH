@@ -15,7 +15,7 @@ return function(object)
         graphic.to_blit[object.text_color]:rep(#text),
         graphic.to_blit[object.background_color]:rep(#text)
     )
-    if object.selected and #object.input < object.char_limit then
+    if object.selected and (object.char_limit > object.cursor_pos) then
         term.setCursorPos(cursor_x+object.shift,object.positioning.y)
         if cursor_x+object.shift < object.positioning.x then
             object.shift = object.shift + 1
@@ -36,6 +36,13 @@ return function(object)
             cursor ~= "" and cursor or "_",
             cursor ~= "" and graphic.to_blit[object.background_color] or graphic.to_blit[object.text_color],
             cursor ~= "" and graphic.to_blit[object.text_color] or graphic.to_blit[object.background_color]
+        )
+    else
+        term.setCursorPos(object.positioning.x+object.positioning.width,object.positioning.y)
+        term.blit(
+            "\127",
+            graphic.to_blit[object.text_color],
+            graphic.to_blit[object.background_color]
         )
     end
 end
