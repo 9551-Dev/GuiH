@@ -14,11 +14,11 @@ return function(object,event)
             if object.selected then
                 object.cursor_pos = math.min(object.cursor_pos + (event.x-object.cursor_x),#object.input)
             else
-                object.on_change_select(object,event,not object.select)
+                object.on_change_select(object,event,true)
             end
             object.selected = true
         else
-            if object.selected then object.on_change_select(object,event,not object.select) end
+            if object.selected then object.on_change_select(object,event,false) end
             object.selected = false
         end
     end
