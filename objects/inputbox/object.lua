@@ -25,7 +25,8 @@ return function(object,data)
         shift=0,
         background_symbol=data.background_symbol or " ",
         on_change_select=data.on_change_select or function() end,
-        on_change_input=data.on_change_input or function() end
+        on_change_input=data.on_change_input or function() end,
+        replace_char=data.replace_char
     }
     btn.cursor_x = btn.positioning.x
     return btn

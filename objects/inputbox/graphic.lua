@@ -9,14 +9,19 @@ return function(object)
     end
     local cursor_x = (object.positioning.x+object.cursor_pos)-mv
     term.setCursorPos(object.positioning.x,object.positioning.y)
+    local or_text = text
     text = text..object.background_symbol:rep(object.positioning.width-#text+1)
+    local rChar
+    if object.replace_char then
+        rChar = object.replace_char:rep(#or_text)..object.background_symbol:rep(object.positioning.width-#or_text+1)
+    end
     term.blit(
-        text,
+        rChar or text,
         graphic.to_blit[object.text_color]:rep(#text),
         graphic.to_blit[object.background_color]:rep(#text)
     )
     if object.selected and (object.char_limit > object.cursor_pos) then
-        term.setCursorPos(cursor_x+object.shift,object.positioning.y)
+        term.setCursorPos(math.max(cursor_x+object.shift,object.positioning.x),object.positioning.y)
         if cursor_x+object.shift < object.positioning.x then
             object.shift = object.shift + 1
         end
@@ -33,7 +38,7 @@ return function(object)
         end
         object.cursor_x = cursor_x+object.shift
         term.blit(
-            cursor ~= "" and cursor or "_",
+            (cursor) ~= "" and (object.replace_char or cursor) or "_",
             cursor ~= "" and graphic.to_blit[object.background_color] or graphic.to_blit[object.text_color],
             cursor ~= "" and graphic.to_blit[object.text_color] or graphic.to_blit[object.background_color]
         )
