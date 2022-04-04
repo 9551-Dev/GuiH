@@ -8,7 +8,7 @@ return function(object,event)
             event.y,
             object.positioning.x,
             object.positioning.y,
-            object.positioning.width,
+            object.positioning.width+1,
             1
         ) then
             if object.selected then
