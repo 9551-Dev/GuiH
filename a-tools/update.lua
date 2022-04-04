@@ -9,6 +9,11 @@ local events = {
     ["char"]=true,
     ["guih_data_event"]=true
 }
+local keyboard_events = {
+    ["key"]=true,
+    ["key_up"]=true,
+    ["char"]=true
+}
 local valid_mouse_events = {
     [1]=true,
     [2]=true
@@ -46,11 +51,15 @@ return function(self,timeout,visible,is_child,data_in)
         end
         if updateD then
             for _k,_v in pairs(gui) do for k,v in pairs(_v) do
-                if v.reactive and v.react_to_events[ev_data.name] and
-                    ((v.btn or valid_mouse_events)[ev_data.button or math.huge] or
-                    (ev_name == "key" or ev_name == "char" or ev_name == "key_up")) then
+                if v.reactive and v.react_to_events[ev_data.name] then
+                    if keyboard_events[ev_name] then
                         v.logic(v,ev_data,self)
+                    else
+                        if (v.btn or valid_mouse_events) then
+                            v.logic(v,ev_data,self)
+                        end
                     end
+                end
             end end
         end
     end
@@ -69,7 +78,7 @@ return function(self,timeout,visible,is_child,data_in)
         end end
     end
     for k,v in api.tables.iterate_order(layers) do parallel.waitForAll(unpack(v)) end
-    if not updateD then return timeout,visible,is_child,data end
+    if not updateD then return ev_data,table.pack(ev_name,e1,e2,e3,id) end
     for k,v in pairs(frames) do
         local x,y = v.window.getPosition()
         local data = data or data_in or ev_data
@@ -88,5 +97,5 @@ return function(self,timeout,visible,is_child,data_in)
             v.child.update(0,v.visible,true,dat)
         end
     end
-    return timeout,visible,is_child,data
+    return ev_data,table.pack(ev_name,e1,e2,e3,id)
 end
