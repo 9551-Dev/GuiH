@@ -43,13 +43,14 @@ return function(self,timeout,visible,is_child,data_in)
             if ev_name =="key_up" then ev_data = {name=ev_name,key=e1,x=math.huge,y=math.huge} end
             if ev_name == "char" then ev_data = {name=ev_name,character=e1,x=math.huge,y=math.huge} end
             if ev_name == "guih_data_event" then ev_data = e1 end
+            if not ev_data.monitor then ev_data.monitor = "term_object" end
             if e2 ~= self.id and ev_name ~= "guih_data_event" then
                 os.queueEvent("guih_data_event",ev_data,self.id)
             else
                 updateD = false
             end
         end
-        if updateD then
+        if updateD and ev_data.monitor == self.monitor then
             for _k,_v in pairs(gui) do for k,v in pairs(_v) do
                 if v.reactive and v.react_to_events[ev_data.name] then
                     if keyboard_events[ev_name] then

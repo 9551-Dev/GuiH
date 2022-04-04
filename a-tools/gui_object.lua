@@ -3,6 +3,10 @@ local update = require("GuiH.a-tools.update")
 
 local function create_gui_object(term_object)
     local gui_objects = {}
+    local type = "term_object"
+    pcall(function()
+        type = peripheral.getType(term_object)
+    end)
     for k,v in pairs(objects.types) do
         gui_objects[v] = {}
     end
@@ -15,6 +19,11 @@ local function create_gui_object(term_object)
     }
     local function updater(timeout,visible,is_child,data)
         return update(gui,timeout,visible,is_child,data)
+    end
+    if type == "monitor" then
+        gui.monitor = peripheral.getName(term_object)
+    else
+        gui.monitor = "term_object"
     end
     gui.create = objects.main(gui,gui.gui)
     gui.update = updater

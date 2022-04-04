@@ -23,7 +23,9 @@ return function(object,data)
         text_color = data.text_color or object.term_object.getTextColor(),
         order = data.order or 1,
         shift=0,
-        background_symbol=data.background_symbol or " "
+        background_symbol=data.background_symbol or " ",
+        on_change_select=data.on_change_select or function() end,
+        on_change_input=data.on_change_input or function() end
     }
     btn.cursor_x = btn.positioning.x
     return btn

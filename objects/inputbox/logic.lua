@@ -13,9 +13,12 @@ return function(object,event)
         ) then
             if object.selected then
                 object.cursor_pos = math.min(object.cursor_pos + (event.x-object.cursor_x),#object.input)
+            else
+                object.on_change_select(object,event,not object.select)
             end
             object.selected = true
         else
+            if object.selected then object.on_change_select(object,event,not object.select) end
             object.selected = false
         end
     end
@@ -25,12 +28,14 @@ return function(object,event)
         if #object.input < object.char_limit then
             object.input = a..event.character..b
             object.cursor_pos = object.cursor_pos + 1
+            object.on_change_input(object,event,object.input)
         end
     end
     if event.name == "key" and object.selected then
         if event.key == keys.backspace then
             object.input = a:gsub(".$","")..b
             object.cursor_pos = math.max(object.cursor_pos-1,0)
+            object.on_change_input(object,event,object.input)
         end
         if event.key == keys.left then
             object.cursor_pos = math.max(object.cursor_pos-1,0)
@@ -42,6 +47,7 @@ return function(object,event)
             if #object.input < object.char_limit then
                 object.input = a.."\t"..b
                 object.cursor_pos = object.cursor_pos + 1
+                object.on_change_input(object,event,object.input)
             end
         end
     end
