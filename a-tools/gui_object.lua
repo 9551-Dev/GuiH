@@ -49,8 +49,8 @@ local function create_gui_object(term_object)
         coroutine.resume(gui_coro)
         while (coroutine.status(func_coro) ~= "dead" or not (_G.type(fnc) == "function")) and coroutine.status(gui_coro) ~= "dead" do
             local event = table.pack(os.pullEvent())
-            coroutine.resume(func_coro,table.unpack(event,1,event.n))
             coroutine.resume(gui_coro,table.unpack(event,1,event.n))
+            coroutine.resume(func_coro,table.unpack(event,1,event.n))
         end
     end
     gui.create = objects.main(gui,gui.gui)

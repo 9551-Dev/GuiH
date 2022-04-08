@@ -14,9 +14,15 @@ local keyboard_events = {
     ["key_up"]=true,
     ["char"]=true
 }
-local valid_mouse_events = {
+local valid_mouse_buttons = {
     [1]=true,
     [2]=true
+}
+local valid_mouse_event = {
+    ["mouse_click"]=true,
+    ["mouse_drag"]=true,
+    ["mouse_up"]=true,
+    ["mouse_scroll"]=true
 }
 local api = require("GuiH.api")
 return function(self,timeout,visible,is_child,data_in)
@@ -50,19 +56,24 @@ return function(self,timeout,visible,is_child,data_in)
                 updateD = false
             end
         end
+        local update_layers = {}
         if updateD and ev_data.monitor == self.monitor then
             for _k,_v in pairs(gui) do for k,v in pairs(_v) do
                 if v.reactive and v.react_to_events[ev_data.name] then
-                    if keyboard_events[ev_name] then
-                        v.logic(v,ev_data,self)
-                    else
-                        if (v.btn or valid_mouse_events) then
+                    if not update_layers[v.order] then update_layers[v.order] = {} end
+                    table.insert(update_layers[v.order],function()
+                        if keyboard_events[ev_data.name] then
                             v.logic(v,ev_data,self)
+                        else
+                            if (v.btn or valid_mouse_buttons)[ev_data.button] then
+                                v.logic(v,ev_data,self)
+                            end
                         end
-                    end
+                    end)
                 end
             end end
         end
+        for k,v in api.tables.iterate_order(update_layers) do parallel.waitForAll(unpack(v)) end
     end
     if visible and self.visible then
         for _k,_v in pairs(gui) do for k,v in pairs(_v) do
