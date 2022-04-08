@@ -25,18 +25,49 @@ local function create_gui_object(term_object)
     else
         gui.monitor = "term_object"
     end
+    gui.execute=function(fnc,on_event)
+        local trm = gui.term_object
+        local execution_window = window.create(trm,1,1,trm.getSize())
+        local event
+        gui.term_object = execution_window
+        local sbg  = execution_window.getBackgroundColor()
+        local gui_coro = coroutine.create(function() 
+            execution_window.setVisible(true)
+            gui.update(0)
+            execution_window.redraw()
+            while true do
+                execution_window.setVisible(false)
+                execution_window.setBackgroundColor(sbg)
+                execution_window.clear()
+                local event = gui.update();
+                (on_event or function() end)(event)
+                execution_window.setVisible(true)
+            end
+        end)
+        local func_coro = coroutine.create(fnc or function() end)
+        coroutine.resume(func_coro)
+        coroutine.resume(gui_coro)
+        while (coroutine.status(func_coro) ~= "dead" or not fnc) and coroutine.status(gui_coro) ~= "dead" do
+            local event = table.pack(os.pullEvent())
+            coroutine.resume(func_coro,table.unpack(event,1,event.n))
+            coroutine.resume(gui_coro,table.unpack(event,1,event.n))
+        end
+    end
     gui.create = objects.main(gui,gui.gui)
     gui.update = updater
     gui.text = function(data)
         data = data or {}
+        if _G.type(data.centered) ~= "boolean" then data.centered = true end
+        local fg = (_G.type(data.text) == "string") and ("0"):rep(#data.text) or ("0"):rep(13)
+        local bg = (_G.type(data.text) == "string") and ("f"):rep(#data.text) or ("f"):rep(13)
         return setmetatable({
             text = data.text or "<TEXT OBJECT>",
-            centered = (data.centered ~= nil) and data.centered or true,
-            x = data or 1,
-            y = data or 1,
+            centered = data.centered,
+            x = data.x or 1,
+            y = data.y or 1,
             offset_x = data.offset_x or 0,
             offset_y = data.offset_y or 0,
-            blit = data.blit or {("0"):rep(13),("f"):rep(13)}
+            blit = data.blit or {fg,bg}
         },{
             __call=function(self)
                 local term = gui.term_object
