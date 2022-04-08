@@ -47,7 +47,7 @@ local function create_gui_object(term_object)
         local func_coro = coroutine.create(fnc or function() end)
         coroutine.resume(func_coro)
         coroutine.resume(gui_coro)
-        while (coroutine.status(func_coro) ~= "dead" or not fnc) and coroutine.status(gui_coro) ~= "dead" do
+        while (coroutine.status(func_coro) ~= "dead" or not (_G.type(fnc) == "function")) and coroutine.status(gui_coro) ~= "dead" do
             local event = table.pack(os.pullEvent())
             coroutine.resume(func_coro,table.unpack(event,1,event.n))
             coroutine.resume(gui_coro,table.unpack(event,1,event.n))
