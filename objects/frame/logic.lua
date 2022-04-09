@@ -19,7 +19,7 @@ return function(object,event,self)
         end
     elseif event.name == "mouse_up" then
         object.dragged = false
-        object.on_deselect(object,event)
+        object.on_select(object,event)
     elseif event.name == "mouse_drag" and object.dragged and object.dragable then
         local wx,wy = object.window.getPosition()
         local ww,wh = object.window.getSize()
