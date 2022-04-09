@@ -1,5 +1,7 @@
 return function(object,data)
     data = data or {}
+    if type(data.visible) ~= "boolean" then data.visible = true end
+    if type(data.reactive) ~= "boolean" then data.reactive = true end
     local btn = {
         name=data.name or tostring(os.epoch("utc")),
         positioning = {
@@ -14,8 +16,8 @@ return function(object,data)
         symbol=data.symbol or " ",
         texture = data.tex,
         text=data.text,
-        visible=(data.visible ~= nil) and data.visible or true,
-        reactive=(data.reactive ~= nil) and data.reactive or true,
+        visible=data.visible,
+        reactive=data.reactive,
         react_to_events={
             mouse_click=true,
             monitor_touch=true,

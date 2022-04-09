@@ -7,6 +7,7 @@ local types = {
 
 return function(object,data)
     data = data or {}
+    if type(data.visible) ~= "boolean" then data.visible = true end
     local btn = {
         name=data.name or tostring(os.epoch("utc")),
         positioning = {
@@ -15,7 +16,7 @@ return function(object,data)
             width=data.width or 0,
             height=data.height or 0
         },
-        visible=(data.visible ~= nil) and data.visible or true,
+        visible=data.visible,
         fg=data.fg or colors.white,
         bg=data.bg or colors.black,
         texture=data.tex,

@@ -2,8 +2,10 @@ local main = require("GuiH.a-tools.gui_object")
 
 return function(object,data)
     data = data or {}
-    if data.clear == nil then data.clear = true end
+    if type(data.clear) ~= "boolean" then data.clear = true end
     if type(data.draggable) ~= "boolean" then data.draggable = true end
+    if type(data.visible) ~= "boolean" then data.visible = true end
+    if type(data.reactive) ~= "boolean" then data.reactive = true end
     local btn = {
         name=data.name or tostring(os.epoch("utc")),
         positioning = {
@@ -12,8 +14,8 @@ return function(object,data)
             width=data.width or 0,
             height=data.height or 0
         },
-        visible=(data.visible ~= nil) and data.visible or true,
-        reactive=(data.reactive ~= nil) and data.reactive or true,
+        visible=data.visible,
+        reactive=data.reactive,
         react_to_events={
             mouse_drag=true,
             mouse_click=true,
