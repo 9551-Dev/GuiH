@@ -27,7 +27,7 @@ local function create_gui_object(term_object)
         local event
         gui.term_object = execution_window
         local sbg  = execution_window.getBackgroundColor()
-        local err = {}
+        local err = "ok"
         local gui_coro = coroutine.create(function()
             local ok,erro = pcall(function()
                 execution_window.setVisible(true)
