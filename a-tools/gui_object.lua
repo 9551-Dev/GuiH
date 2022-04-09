@@ -27,30 +27,39 @@ local function create_gui_object(term_object)
         local event
         gui.term_object = execution_window
         local sbg  = execution_window.getBackgroundColor()
-        local gui_coro = coroutine.create(function() 
-            execution_window.setVisible(true)
-            updater(0)
-            execution_window.redraw()
-            while true do
-                execution_window.setVisible(false)
-                execution_window.setBackgroundColor(gui.background or sbg)
-                execution_window.clear();
-                (on_event or function() end)(event)
-                updater()
+        local err = {}
+        local gui_coro = coroutine.create(function()
+            local ok,erro = pcall(function()
                 execution_window.setVisible(true)
-                execution_window.setCursorPos(1,1)
-            end
+                updater(0)
+                execution_window.redraw()
+                while true do
+                    execution_window.setVisible(false)
+                    execution_window.setBackgroundColor(gui.background or sbg)
+                    execution_window.clear();
+                    (on_event or function() end)(event)
+                    updater()
+                    execution_window.setVisible(true)
+                    execution_window.setCursorPos(1,1)
+                end
+            end)
+            if not ok then err = erro end
         end)
-        local func_coro = coroutine.create(fnc or function() end)
+        local function main()
+            local ok,erro = pcall(fnc or function() end)
+            if not ok then err = erro end
+        end
+        local func_coro = coroutine.create(main)
         coroutine.resume(func_coro)
         coroutine.resume(gui_coro)
         while (coroutine.status(func_coro) ~= "dead" or not (_G.type(fnc) == "function")) and coroutine.status(gui_coro) ~= "dead" do
             local event = table.pack(os.pullEventRaw())
-            if event[1] == "terminate" then break end
+            if event[1] == "terminate" then err = "Terminated" break end
             coroutine.resume(func_coro,table.unpack(event,1,event.n))
             coroutine.resume(gui_coro,table.unpack(event,1,event.n))
         end
         execution_window.setVisible(true)
+        return err
     end
     if type == "monitor" then
         gui.monitor = peripheral.getName(term_object)
