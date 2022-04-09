@@ -11,7 +11,7 @@ local function create_gui_object(term_object)
         gui_objects[v] = {}
     end
     local gui = {
-        term_object=term_object or term.current(),
+        term_object=(term_object == term) and window.create(term.current(),1,1,term.getSize()) or window.create(term_object,1,1,term_object.getSize()),
         gui=gui_objects,
         update=update,
         visible=true,
@@ -24,34 +24,6 @@ local function create_gui_object(term_object)
         gui.monitor = peripheral.getName(term_object)
     else
         gui.monitor = "term_object"
-    end
-    gui.execute=function(fnc,on_event)
-        local trm = gui.term_object
-        local execution_window = window.create(trm,1,1,trm.getSize())
-        local event
-        gui.term_object = execution_window
-        local sbg  = execution_window.getBackgroundColor()
-        local gui_coro = coroutine.create(function() 
-            execution_window.setVisible(true)
-            gui.update(0)
-            execution_window.redraw()
-            while true do
-                execution_window.setVisible(false)
-                execution_window.setBackgroundColor(sbg)
-                execution_window.clear()
-                local event = gui.update();
-                (on_event or function() end)(event)
-                execution_window.setVisible(true)
-            end
-        end)
-        local func_coro = coroutine.create(fnc or function() end)
-        coroutine.resume(func_coro)
-        coroutine.resume(gui_coro)
-        while (coroutine.status(func_coro) ~= "dead" or not (_G.type(fnc) == "function")) and coroutine.status(gui_coro) ~= "dead" do
-            local event = table.pack(os.pullEvent())
-            coroutine.resume(gui_coro,table.unpack(event,1,event.n))
-            coroutine.resume(func_coro,table.unpack(event,1,event.n))
-        end
     end
     gui.create = objects.main(gui,gui.gui)
     gui.update = updater
@@ -83,6 +55,33 @@ local function create_gui_object(term_object)
             end
         })
     end
+    gui.execute=setmetatable(gui,{__call=function(self,fnc,on_event)
+        local execution_window = self.term_object 
+        local event
+        gui.term_object = execution_window
+        local sbg  = execution_window.getBackgroundColor()
+        local gui_coro = coroutine.create(function() 
+            execution_window.setVisible(true)
+            gui.update(0)
+            execution_window.redraw()
+            while true do
+                execution_window.setVisible(false)
+                execution_window.setBackgroundColor(sbg)
+                execution_window.clear()
+                self.update();
+                (on_event or function() end)(event)
+                execution_window.setVisible(true)
+            end
+        end)
+        local func_coro = coroutine.create(fnc or function() end)
+        coroutine.resume(func_coro)
+        coroutine.resume(gui_coro)
+        while (coroutine.status(func_coro) ~= "dead" or not (_G.type(fnc) == "function")) and coroutine.status(gui_coro) ~= "dead" do
+            local event = table.pack(os.pullEvent())
+            coroutine.resume(gui_coro,table.unpack(event,1,event.n))
+            coroutine.resume(func_coro,table.unpack(event,1,event.n))
+        end
+    end})
     return gui
 end
 

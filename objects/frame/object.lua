@@ -3,6 +3,7 @@ local main = require("GuiH.a-tools.gui_object")
 return function(object,data)
     data = data or {}
     if data.clear == nil then data.clear = true end
+    if type(data.draggable) ~= "boolean" then data.draggable = true end
     local btn = {
         name=data.name or tostring(os.epoch("utc")),
         positioning = {
@@ -26,7 +27,7 @@ return function(object,data)
         },
         order=data.order or 1,
         btn=data.btn,
-        dragable=data.dragable or true,
+        dragable=data.draggable,
         on_move=data.on_move or function() end,
         on_select=data.on_select or function() end,
         on_any=data.on_any or function() end,
