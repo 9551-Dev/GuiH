@@ -22,7 +22,7 @@ local function create_gui_object(term_object)
     local function updater(timeout,visible,is_child,data)
         return update(gui,timeout,visible,is_child,data)
     end
-    gui.execute=function(self,fnc,on_event)
+    gui.execute=function(fnc,on_event)
         local execution_window = gui.term_object 
         local event
         gui.term_object = execution_window
