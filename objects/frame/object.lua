@@ -34,8 +34,7 @@ return function(object,data)
         on_select=data.on_select or function() end,
         on_any=data.on_any or function() end,
         on_graphic=data.on_graphic or function() end,
-        on_deselect=data.on_deselect or function() end,
-        clear=data.clear
+        on_deselect=data.on_deselect or function() end
     }
     local window = window.create(
         object.term_object,

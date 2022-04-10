@@ -24,13 +24,6 @@ return function(object,event,self)
         local wx,wy = object.window.getPosition()
         local ww,wh = object.window.getSize()
         local change_x,change_y = event.x-object.last_click.x,event.y-object.last_click.y
-        if object.clear then
-            for h=1,wh do
-                local trm = object.canvas.term_object
-                trm.setCursorPos(wx,h+wy-1)
-                trm.write((" "):rep(ww))
-            end
-        end
         object.last_click = event
         local nx,ny = wx+change_x,wy+change_y
         if not object.on_move(object,{x=nx,y=ny}) then

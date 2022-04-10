@@ -36,11 +36,10 @@ local function create_gui_object(term_object)
                 while true do
                     execution_window.setVisible(false)
                     execution_window.setBackgroundColor(gui.background or sbg)
-                    execution_window.clear();
-                    (on_event or function() end)(event)
-                    updater()
-                    execution_window.setVisible(true)
-                    execution_window.setCursorPos(1,1)
+                    execution_window.clear()
+                    updater();
+                    (on_event or function() end)(execution_window,event)
+                    execution_window.setVisible(true);
                 end
             end)
             if not ok then err = erro end
