@@ -22,7 +22,9 @@ return function(object,data)
         texture=data.tex,
         value=data.value or 0,
         direction=types[data.direction] and data.direction or "left-right",
-        order=data.order or 1
+        order=data.order or 1,
+        logic_order=data.logic_order,
+        graphic_order=data.graphic_order,
     }
     return btn
 end

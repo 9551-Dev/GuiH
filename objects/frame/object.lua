@@ -28,6 +28,8 @@ return function(object,data)
             y=1
         },
         order=data.order or 1,
+        logic_order=data.logic_order,
+        graphic_order=data.graphic_order,
         btn=data.btn,
         dragable=data.draggable,
         on_move=data.on_move or function() end,

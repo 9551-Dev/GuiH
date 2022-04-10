@@ -24,6 +24,8 @@ return function(object,data)
         background_color = data.background_color or object.term_object.getBackgroundColor(),
         text_color = data.text_color or object.term_object.getTextColor(),
         order = data.order or 1,
+        logic_order=data.logic_order,
+        graphic_order=data.graphic_order,
         shift=0,
         background_symbol=data.background_symbol or " ",
         on_change_select=data.on_change_select or function() end,

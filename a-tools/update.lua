@@ -61,7 +61,7 @@ return function(self,timeout,visible,is_child,data_in)
             for _k,_v in pairs(gui) do for k,v in pairs(_v) do
                 if v.reactive and v.react_to_events[ev_data.name] then
                     if not update_layers[v.order] then update_layers[v.order] = {} end
-                    table.insert(update_layers[v.order],function()
+                    table.insert(update_layers[v.logic_order or v.order],function()
                         if keyboard_events[ev_data.name] then
                             v.logic(v,ev_data,self)
                         else
@@ -78,7 +78,7 @@ return function(self,timeout,visible,is_child,data_in)
     if visible and self.visible then
         for _k,_v in pairs(gui) do for k,v in pairs(_v) do
             if not layers[v.order] then layers[v.order] = {} end
-            table.insert(layers[v.order],function()
+            table.insert(layers[v.graphic_order or v.order],function()
                 if _k ~= "frame" then
                     if v.visible then v.graphic(v,self) end
                 else

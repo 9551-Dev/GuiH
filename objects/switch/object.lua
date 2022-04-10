@@ -28,6 +28,8 @@ return function(object,data)
         },
         btn=data.btn,
         order=data.order or 1,
+        logic_order=data.logic_order,
+        graphic_order=data.graphic_order,
         tags={},
         value=(data.value ~= nil) and data.value or false
     }

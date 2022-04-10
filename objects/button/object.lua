@@ -23,6 +23,8 @@ return function(object,data)
             monitor_touch=true,
         },
         order=data.order or 1,
+        logic_order=data.logic_order,
+        graphic_order=data.graphic_order,
         tags={},
         btn=data.btn,
         value=(data.value ~= nil) and data.value or true
