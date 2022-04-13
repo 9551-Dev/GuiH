@@ -37,7 +37,7 @@ local function create_gui_object(term_object)
                     execution_window.setVisible(false)
                     execution_window.setBackgroundColor(gui.background or sbg)
                     execution_window.clear()
-                    updater();
+                    local event = updater();
                     (on_event or function() end)(execution_window,event)
                     execution_window.setVisible(true);
                 end

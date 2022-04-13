@@ -30,7 +30,8 @@ return function(object,data)
         background_symbol=data.background_symbol or " ",
         on_change_select=data.on_change_select or function() end,
         on_change_input=data.on_change_input or function() end,
-        replace_char=data.replace_char
+        replace_char=data.replace_char,
+        ignore_tab = data.ignore_tab
     }
     btn.cursor_x = btn.positioning.x
     return btn

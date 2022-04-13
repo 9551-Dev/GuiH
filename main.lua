@@ -11,6 +11,7 @@ return {
         if ev_name =="key_up" then ev_data = {name=ev_name,key=e1,x=math.huge,y=math.huge} end
         if ev_name == "char" then ev_data = {name=ev_name,character=e1,x=math.huge,y=math.huge} end
         if ev_name == "guih_data_event" then ev_data = e1 end
+        if not ev_data.monitor then ev_data.monitor = "term_object" end
         return ev_data or {name=ev_name}
     end,
     valid_events={

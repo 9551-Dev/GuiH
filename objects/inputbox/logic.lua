@@ -43,7 +43,7 @@ return function(object,event)
         if event.key == keys.right then
             object.cursor_pos = math.min(math.max(object.cursor_pos+1,0),#object.input)
         end
-        if event.key == keys.tab then
+        if event.key == keys.tab and not object.ignore_tab then
             if #object.input < object.char_limit then
                 object.input = a.."\t"..b
                 object.cursor_pos = object.cursor_pos + 1
