@@ -1,17 +1,15 @@
 local objects = require("GuiH.object-loader")
 local update = require("GuiH.a-tools.update")
 
-local function create_gui_object(term_object)
+local function create_gui_object(term_object,orig)
     local gui_objects = {}
     local type = "term_object"
     pcall(function()
-        type = peripheral.getType(term_object)
+        type = peripheral.getType(orig)
     end)
     for k,v in pairs(objects.types) do gui_objects[v] = {} end
-    local w_win = ((term_object == term) and window.create(term.current(),1,1,term.getSize()) or window.create(term_object,1,1,term_object.getSize()))
     local gui = {
-        term_object=(term_object == term) and term.current() or term_object,
-        w_win=w_win,
+        term_object=term_object,
         gui=gui_objects,
         update=update,
         visible=true,
@@ -33,9 +31,8 @@ local function create_gui_object(term_object)
         end)
     end
     gui.execute=function(fnc,on_event,bef_draw)
-        local execution_window = gui.term_object 
+        local execution_window = gui.term_object
         local event
-        gui.term_object = execution_window
         local sbg  = execution_window.getBackgroundColor()
         local gui_coro = coroutine.create(function()
             local ok,erro = pcall(function()
@@ -89,7 +86,7 @@ local function create_gui_object(term_object)
         return err
     end
     if type == "monitor" then
-        gui.monitor = peripheral.getName(term_object)
+        gui.monitor = peripheral.getName(orig)
     else
         gui.monitor = "term_object"
     end

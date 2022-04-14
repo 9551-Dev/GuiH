@@ -65,7 +65,7 @@ return function(self,timeout,visible,is_child,data_in)
                         if keyboard_events[ev_data.name] then
                             v.logic(v,ev_data,self)
                         else
-                            if (v.btn or valid_mouse_buttons)[ev_data.button] then
+                            if ((v.btn or valid_mouse_buttons)[ev_data.button]) or ev_data.monitor == self.monitor then
                                 v.logic(v,ev_data,self)
                             end
                         end

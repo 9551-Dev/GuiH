@@ -1,5 +1,10 @@
 return {
-    create_gui=require("GuiH.a-tools.gui_object"),
+    create_gui=function(m)
+        local create = require("GuiH.a-tools.gui_object")
+        local win = window.create(m,1,1,m.getSize())
+        local gui = create(win,m)
+        return gui
+    end,
     load_texture=require("GuiH.texture-wrapper").load_texture,
     convert_event=function(ev_name,e1,e2,e3,id)
         local ev_data = {}
