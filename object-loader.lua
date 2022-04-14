@@ -54,7 +54,7 @@ return {main=function(i_self,guis)
                             return "name of copy cannot be the same!"
                         else
                             local temp = deepcopy(guis[v][object.name])
-                            guis[v][name] = temp
+                            guis[v][name or ""] = temp
                             temp.name = name
                             return temp,true
                         end
