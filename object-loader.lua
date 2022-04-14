@@ -55,6 +55,7 @@ return {main=function(i_self,guis)
                         else
                             local temp = deepcopy(guis[v][object.name])
                             guis[v][name] = temp
+                            temp.name = name
                             return temp,true
                         end
                     else

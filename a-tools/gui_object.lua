@@ -15,17 +15,28 @@ local function create_gui_object(term_object)
         gui=gui_objects,
         update=update,
         visible=true,
-        id=os.epoch("utc")
+        id=os.epoch("utc"),
+        task_schedule={},
+        update_delay=0,
     }
     local function updater(timeout,visible,is_child,data)
         return update(gui,timeout,visible,is_child,data)
+    end
+    local task_routine = {}
+    local task_id = 0
+    local err = "ok"
+    gui.schedule=function(fnc)
+        task_id = task_id + 1
+        task_routine[task_id] = coroutine.create(function()
+            local ok,erro  = pcall(fnc,gui,gui.term_object)
+            if not ok then err = erro end
+        end)
     end
     gui.execute=function(fnc,on_event,bef_draw)
         local execution_window = gui.term_object 
         local event
         gui.term_object = execution_window
         local sbg  = execution_window.getBackgroundColor()
-        local err = "ok"
         local gui_coro = coroutine.create(function()
             local ok,erro = pcall(function()
                 execution_window.setVisible(true)
@@ -43,8 +54,18 @@ local function create_gui_object(term_object)
             end)
             if not ok then err = erro end
         end)
+        local mns = function()
+            while true do
+                (fnc or function() end)()
+                gui.update(0)
+                if gui.update_delay > 0 then
+                    os.queueEvent("_")
+                    os.pullEvent("_")
+                else sleep(gui.update_delay) end
+            end
+        end
         local function main()
-            local ok,erro = pcall(fnc or function() end)
+            local ok,erro = pcall(mns)
             if not ok then err = erro end
         end
         local func_coro = coroutine.create(main)
@@ -55,6 +76,14 @@ local function create_gui_object(term_object)
             if event[1] == "terminate" then err = "Terminated" break end
             coroutine.resume(func_coro,table.unpack(event,1,event.n))
             coroutine.resume(gui_coro,table.unpack(event,1,event.n))
+            for k,v in pairs(task_routine) do
+                if coroutine.status(v) ~= "dead" then
+                    coroutine.resume(v,table.unpack(event,1,event.n))
+                else
+                    task_routine[k] = nil
+                    gui.task_schedule[k] = nil
+                end
+            end
         end
         execution_window.setVisible(true)
         return err
