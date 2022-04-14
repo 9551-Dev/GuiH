@@ -22,7 +22,7 @@ local function create_gui_object(term_object)
     local function updater(timeout,visible,is_child,data)
         return update(gui,timeout,visible,is_child,data)
     end
-    gui.execute=function(fnc,on_event)
+    gui.execute=function(fnc,on_event,bef_draw)
         local execution_window = gui.term_object 
         local event
         gui.term_object = execution_window
@@ -36,8 +36,9 @@ local function create_gui_object(term_object)
                 while true do
                     execution_window.setVisible(false)
                     execution_window.setBackgroundColor(gui.background or sbg)
-                    execution_window.clear()
-                    local event = updater();
+                    execution_window.clear();
+                    (bef_draw or function() end)(execution_window)
+                    local event = update(gui,nil,true,false,nil);
                     (on_event or function() end)(execution_window,event)
                     execution_window.setVisible(true);
                 end
