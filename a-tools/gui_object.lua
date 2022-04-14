@@ -7,9 +7,7 @@ local function create_gui_object(term_object)
     pcall(function()
         type = peripheral.getType(term_object)
     end)
-    for k,v in pairs(objects.types) do
-        gui_objects[v] = {}
-    end
+    for k,v in pairs(objects.types) do gui_objects[v] = {} end
     local w_win = ((term_object == term) and window.create(term.current(),1,1,term.getSize()) or window.create(term_object,1,1,term_object.getSize()))
     local gui = {
         term_object=(term_object == term) and term.current() or term_object,

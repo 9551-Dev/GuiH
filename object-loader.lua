@@ -48,7 +48,7 @@ return {main=function(i_self,guis)
                         return false,"object no longer exist"
                     end
                 end,
-                replicate=function(_,name)
+                replicate=function(name)
                     if guis[v][object.name] then
                         if name == object.name then
                             return "name of copy cannot be the same!"
