@@ -56,7 +56,7 @@ local function create_gui_object(term_object)
         end)
         local mns = function()
             while true do
-                (fnc or function() end)()
+                (fnc or function() end)(execution_window)
                 gui.update(0)
                 if gui.update_delay > 0 then
                     os.queueEvent("_")
