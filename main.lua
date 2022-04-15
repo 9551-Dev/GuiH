@@ -1,3 +1,11 @@
+local apis = {}
+for k,v in pairs(fs.list("GuiH/apis")) do
+    local name = v:match("[^.]+")
+    if not fs.isDir("GuiH/apis/"..v) then
+        apis[name] = require("GuiH.apis."..name)
+    end
+end
+
 return {
     create_gui=function(m)
         local create = require("GuiH.a-tools.gui_object")
@@ -19,6 +27,7 @@ return {
         if not ev_data.monitor then ev_data.monitor = "term_object" end
         return ev_data or {name=ev_name}
     end,
+    apis=apis,
     valid_events={
         ["mouse_click"]=true,
         ["mouse_drag"]=true,
