@@ -1,6 +1,8 @@
 fs.makeDir("GuiH")
 fs.makeDir("GuiH/a-tools")
 fs.makeDir("GuiH/objects")
+fs.makeDir("GuiH/apis/")
+fs.makeDir("GuiH/apis/fonts.7sh")
 
 local github_api = http.get("https://api.github.com/repos/9551-Dev/Gui-h/git/trees/main?recursive=1")
 local list = textutils.unserialiseJSON(github_api.readAll())
