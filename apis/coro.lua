@@ -95,6 +95,11 @@ local function coro_main(...)
         stop=function()
             object.running=false
         end,
+        kill_all=function()
+            object.running=false
+            object.coros={}
+            object.id_names={}
+        end,
         run=function()
             object.running=true
             while object.running do
