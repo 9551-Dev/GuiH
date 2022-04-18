@@ -16,6 +16,7 @@ local function create_gui_object(term_object,orig)
         id=os.epoch("utc"),
         task_schedule={},
         update_delay=0,
+        held_keys={},
     }
     local function updater(timeout,visible,is_child,data)
         return update(gui,timeout,visible,is_child,data)
@@ -29,6 +30,11 @@ local function create_gui_object(term_object,orig)
             local ok,erro  = pcall(fnc,gui,gui.term_object)
             if not ok then err = erro end
         end)
+    end
+    gui.isHeld = function(key)
+        local info = gui.held_keys[key] or {}
+        if info[1] then return true,info[2] end
+        return false,false
     end
     gui.execute=function(fnc,on_event,bef_draw)
         local execution_window = gui.term_object
@@ -65,6 +71,11 @@ local function create_gui_object(term_object,orig)
             local ok,erro = pcall(mns)
             if not ok then err = erro end
         end
+        local key_handler = coroutine.create(function()
+            local name,key,held = os.pullEvent()
+            if name == "key" then gui.held_keys[key] = {true,held} end
+            if name == "key_up" then gui.held_keys[key] = nil end
+        end)
         local func_coro = coroutine.create(main)
         coroutine.resume(func_coro)
         coroutine.resume(gui_coro)
@@ -73,6 +84,9 @@ local function create_gui_object(term_object,orig)
             if event[1] == "terminate" then err = "Terminated" break end
             coroutine.resume(func_coro,table.unpack(event,1,event.n))
             coroutine.resume(gui_coro,table.unpack(event,1,event.n))
+            if event[1] == "key" or event[1]== "key_up" then
+                coroutine.resume(key_handler,table.unpack(event,1,event.n))
+            end
             for k,v in pairs(task_routine) do
                 if coroutine.status(v) ~= "dead" then
                     coroutine.resume(v,table.unpack(event,1,event.n))
