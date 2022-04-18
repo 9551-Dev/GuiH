@@ -25,7 +25,8 @@ local function coro_main(...)
     local object = {
         coros={},
         id_names={},
-        running=true
+        running=true,
+        filters={}
     }
     local routine_id = 0
     local function create_wrapped_coro(func)
@@ -94,6 +95,11 @@ local function coro_main(...)
         stop=function()
             object.running=false
         end,
+        kill_all=function()
+            object.running=false
+            object.coros={}
+            object.id_names={}
+        end,
         run=function()
             object.running=true
             while object.running do
@@ -106,7 +112,10 @@ local function coro_main(...)
                             object.coros[key][k] = nil
                             object.id_names[k] = nil
                         else
-                            coroutine.resume(coro.coro,table.unpack(event,1,event.n))
+                            if object.filters[coro.coro] == nil or object.filters[coro.coro] == event[1] then
+                                local _,filter = coroutine.resume(coro.coro,table.unpack(event,1,event.n))
+                                object.filters[coro.coro] = filter
+                            end
                         end
                     end
                 end
