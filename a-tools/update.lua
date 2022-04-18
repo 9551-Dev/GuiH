@@ -7,12 +7,14 @@ local events = {
     ["key"]=true,
     ["key_up"]=true,
     ["char"]=true,
-    ["guih_data_event"]=true
+    ["guih_data_event"]=true,
+    ["paste"]=true
 }
 local keyboard_events = {
     ["key"]=true,
     ["key_up"]=true,
-    ["char"]=true
+    ["char"]=true,
+    ["paste"]=true
 }
 local valid_mouse_buttons = {
     [1]=true,
@@ -34,7 +36,7 @@ return function(self,timeout,visible,is_child,data_in)
     local e1,e2,e3,id
     local frames,layers={},{}
     local updateD = true
-    if (timeout or math.huge) >= 0 then
+    if (timeout or math.huge) > 0 then
         if not data or not is_child then
             local tid = os.startTimer(timeout or 0)
             if timeout == 0 then os.queueEvent("mouse_click",math.huge,-math.huge,-math.huge) end
@@ -46,7 +48,8 @@ return function(self,timeout,visible,is_child,data_in)
             if ev_name == "mouse_drag" then ev_data = {name=ev_name,button=e1,x=e2,y=e3} end
             if ev_name == "mouse_scroll" then ev_data = {name=ev_name,direction=e1,x=e2,y=e3} end
             if ev_name == "key" then ev_data = {name=ev_name,key=e1,held=e2,x=math.huge,y=math.huge} end
-            if ev_name =="key_up" then ev_data = {name=ev_name,key=e1,x=math.huge,y=math.huge} end
+            if ev_name == "key_up" then ev_data = {name=ev_name,key=e1,x=math.huge,y=math.huge} end
+            if ev_name == "paste" then ev_data = {name=ev_name,text=e1,x=math.huge,y=math.huge} end
             if ev_name == "char" then ev_data = {name=ev_name,character=e1,x=math.huge,y=math.huge} end
             if ev_name == "guih_data_event" then ev_data = e1 end
             if not ev_data.monitor then ev_data.monitor = "term_object" end
@@ -104,7 +107,8 @@ return function(self,timeout,visible,is_child,data_in)
                 direction = data.direction,
                 held=data.held,
                 key=data.key,
-                character=data.character
+                character=data.character,
+                text=data.text
             }
             v.child.update(0,v.visible,true,dat)
         end

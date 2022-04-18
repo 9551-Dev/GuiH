@@ -10,13 +10,18 @@ return function(object,data)
             ["monitor_touch"]=true,
             ["char"]=true,
             ["key"]=true,
+            ["key_up"]=true,
+            ["paste"]=true
         },
         positioning = {
             x=data.x or 1,
             y=data.y or 1,
             width=data.width or 0,
         },
+        pattern=data.pattern or ".",
         selected=data.selected or false,
+        insert=false,
+        ctrl=false,
         btn=data.btn,
         cursor_pos=data.cursor_pos or 0,
         char_limit = data.char_limit or data.width or math.huge,
