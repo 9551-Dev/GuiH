@@ -1,5 +1,9 @@
 local graphic = require("GuiH.texture-wrapper").code
 
+local function depattern(str)
+    return str:gsub("[%[%]%(%)%.%+%-%%%$%^%*%?]", "%%%1")
+end
+
 return function(object)
     local term = object.canvas.term_object
     local text,mv = object.input,0
@@ -9,7 +13,7 @@ return function(object)
     end
     local cursor_x = (object.positioning.x+object.cursor_pos)-mv
     term.setCursorPos(object.positioning.x,object.positioning.y)
-    local or_text = text
+    local or_text = text:gsub(" ","\175")
     text = text..object.background_symbol:rep(object.positioning.width-#text+1)
     local rChar
     if object.replace_char then
@@ -49,5 +53,21 @@ return function(object)
             graphic.to_blit[object.text_color],
             graphic.to_blit[object.background_color]
         )
+    end
+    if object.autoc.str_diff then
+        term.setCursorPos(object.cursor_x+object.shift,object.positioning.y)
+        local str = object.autoc.sorted[object.autoc.selected]
+        if str then
+            local mid = object.input:match("%S+$") or ""
+            local diff = str:gsub("^"..mid:gsub(" $",""),"")
+            if object.cursor_pos >= #object.input then
+                local diff = diff:gsub("%%(.)", "%1")
+                term.blit(
+                    diff,
+                    graphic.to_blit[object.autoc.fg]:rep(#diff),
+                    graphic.to_blit[object.autoc.bg]:rep(#diff)
+                )
+            end
+        end
     end
 end

@@ -57,20 +57,22 @@ local function create_gui_object(term_object,orig)
             end)
             if not ok then err = erro end
         end)
-        local mns = function()
+        local mns = fnc or function() end
+        local function main()
+            local ok,erro = pcall(mns,execution_window)
+            if not ok then err = erro end
+        end
+        local graphics_updater = coroutine.create(function()
             while true do
-                (fnc or function() end)(execution_window)
                 gui.update(0)
+                execution_window.setVisible(true)
+                execution_window.setVisible(false)
                 if gui.update_delay > 0 then
                     os.queueEvent("_")
                     os.pullEvent("_")
                 else sleep(gui.update_delay) end
             end
-        end
-        local function main()
-            local ok,erro = pcall(mns)
-            if not ok then err = erro end
-        end
+        end)
         local key_handler = coroutine.create(function()
             local name,key,held = os.pullEvent()
             if name == "key" then gui.held_keys[key] = {true,held} end
@@ -83,7 +85,6 @@ local function create_gui_object(term_object,orig)
             local event = table.pack(os.pullEventRaw())
             if event[1] == "terminate" then err = "Terminated" break end
             coroutine.resume(func_coro,table.unpack(event,1,event.n))
-            coroutine.resume(gui_coro,table.unpack(event,1,event.n))
             if event[1] == "key" or event[1]== "key_up" then
                 coroutine.resume(key_handler,table.unpack(event,1,event.n))
             end
@@ -95,6 +96,8 @@ local function create_gui_object(term_object,orig)
                     gui.task_schedule[k] = nil
                 end
             end
+            coroutine.resume(graphics_updater,table.unpack(event,1,event.n))
+            coroutine.resume(gui_coro,table.unpack(event,1,event.n))
         end
         execution_window.setVisible(true)
         return err

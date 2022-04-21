@@ -1,6 +1,8 @@
 return function(object,data)
     if type(data.visible) ~= "boolean" then data.visible = true end
     if type(data.reactive) ~= "boolean" then data.reactive = true end
+    if not data.autoc then data.autoc = {} end
+    if type(data.autoc.put_space) ~= "boolean" then data.autoc.put_space = true end
     local btn = {
         name=data.name or "",
         visible=data.visible,
@@ -36,7 +38,16 @@ return function(object,data)
         on_change_select=data.on_change_select or function() end,
         on_change_input=data.on_change_input or function() end,
         replace_char=data.replace_char,
-        ignore_tab = data.ignore_tab
+        ignore_tab = data.ignore_tab,
+        autoc={
+            strings=data.autoc.strings or {},
+            spec_strings=data.autoc.spec_strings or {},
+            bg=data.autoc.bg or data.background_color or object.term_object.getBackgroundColor(),
+            fg=data.autoc.fg or data.text_color or object.term_object.getTextColor(),
+            current="",
+            selected=1,
+            put_space=data.autoc.put_space
+        }
     }
     btn.cursor_x = btn.positioning.x
     return btn
