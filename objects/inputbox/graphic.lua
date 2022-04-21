@@ -13,8 +13,8 @@ return function(object)
     end
     local cursor_x = (object.positioning.x+object.cursor_pos)-mv
     term.setCursorPos(object.positioning.x,object.positioning.y)
-    local or_text = text:gsub(" ","\175")
-    text = text..object.background_symbol:rep(object.positioning.width-#text+1)
+    local or_text = text
+    text = text:gsub(" ",object.space_symbol)..object.background_symbol:rep(object.positioning.width-#text+1)
     local rChar
     if object.replace_char then
         rChar = object.replace_char:rep(#or_text)..object.background_symbol:rep(object.positioning.width-#or_text+1)
