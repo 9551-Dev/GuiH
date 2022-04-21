@@ -66,11 +66,16 @@ return function(object,event)
             if object.selected then
                 object.cursor_pos = math.min(object.cursor_pos + (event.x-object.cursor_x),#object.input)
             else
+                object.cursor_pos = object.old_cursor or 0
                 object.on_change_select(object,event,true)
             end
             object.selected = true
         else
-            if object.selected then object.on_change_select(object,event,false) end
+            if object.selected then
+                object.on_change_select(object,event,false)
+                object.old_cursor = object.cursor_pos
+                object.cursor_pos = -math.huge
+            end
             object.selected = false
         end
     end
@@ -82,7 +87,6 @@ return function(object,event)
         local array = object.autoc.spec_strings[select(2,a:gsub("%W+",""))+1] or object.autoc.strings
         if array then
             local sorted = sort_strings_likeness(search_string,array)
-            _G.sorted = sorted
             object.autoc.sorted = sorted
             if object.autoc.selected > #sorted then
                 object.autoc.selected = #sorted
@@ -164,6 +168,10 @@ return function(object,event)
             if object.autoc.selected > 1 then
                 object.autoc.selected = object.autoc.selected - 1
             end
+        elseif event.key == keys.enter and object.selected then
+            local arguments = {}
+            object.input:gsub("%S+",function(str) table.insert(arguments,str) end)
+            object.on_enter(object,event,arguments)
         end
     end
     if event.name == "paste" then

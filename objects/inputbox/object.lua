@@ -37,6 +37,7 @@ return function(object,data)
         background_symbol=data.background_symbol or " ",
         on_change_select=data.on_change_select or function() end,
         on_change_input=data.on_change_input or function() end,
+        on_enter=data.on_enter or function() end,
         replace_char=data.replace_char,
         ignore_tab = data.ignore_tab,
         autoc={
