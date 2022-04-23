@@ -52,6 +52,14 @@ local create3Darray = function(tbl)
     )
 end
 
+local function merge_tables(...)
+    local out = {}
+    for k,v in pairs({...}) do
+        for _k,_v in pairs(v) do table.insert(out,_v) end
+    end
+    return out
+end
+
 local function interpolateY(a,b,y)
     local ya = y - a.y
     local ba = b.y - a.y
@@ -132,7 +140,8 @@ return {
         switchXYArray=switchXYArray,
         create2Darray=create2Darray,
         create3Darray=create3Darray,
-        iterate_order=iterate_order
+        iterate_order=iterate_order,
+        merge=merge_tables
     },
     math={
         interpolateY=interpolateY,

@@ -17,11 +17,12 @@ local function deepcopy(orig)
     return copy
 end
 
-return {main=function(i_self,guis)
+return {main=function(i_self,guis,log)
     local object = i_self
     local objects = {}
     local object_list = fs.list("GuiH/objects")
     for k,v in pairs(object_list) do
+        log("loading object: "..v,log.update)
         local main = require("GuiH.objects."..v..".object")
         objects[v] = function(data)
             local object = main(object,data)
@@ -32,8 +33,10 @@ return {main=function(i_self,guis)
                 kill=function()
                     if guis[v][object.name] then
                         guis[v][object.name] = nil
+                        log("killed "..v..">"..object.name,log.warn)
                         return true
                     else
+                        log("tried to manipulate dead object.",log.error)
                         return false,"object no longer exist"
                     end
                 end,
@@ -45,6 +48,7 @@ return {main=function(i_self,guis)
                             return false,"object doesnt have positioning information"
                         end
                     else
+                        log("tried to manipulate dead object.",log.error)
                         return false,"object no longer exist"
                     end
                 end,
@@ -53,20 +57,24 @@ return {main=function(i_self,guis)
                         if name == object.name then
                             return "name of copy cannot be the same!"
                         else
+                            log("Replicated "..v..">"..object.name.." as "..v..">"..name,log.info)
                             local temp = deepcopy(guis[v][object.name])
                             guis[v][name or ""] = temp
                             temp.name = name
                             return temp,true
                         end
                     else
+                        log("tried to manipulate dead object.",log.error)
                         return false,"object no longer exist"
                     end
                 end,
                 isolate=function()
                     if guis[v][object.name] then
                         local object = deepcopy(guis[v][object.name])
+                        log("isolated "..v..">"..object.name,log.info)
                         return {
                             parse=function(name)
+                                log("parsed "..v..">"..object.name,log.info)
                                 if object then
                                     local name = name or object.name
                                     if guis[v][name] then guis[v][name] = nil end
@@ -78,16 +86,19 @@ return {main=function(i_self,guis)
                             end,
                             get=function()
                                 if object then
+                                    log("returned "..v..">"..object.name,log.info)
                                     return object
                                 else
                                     return false,"object no longer exist"
                                 end
                             end,
                             clear=function()
+                                log("Removed copied object "..v..">"..object.name,log.info)
                                 object = nil
                             end,
                         }
                     else
+                        log("tried to manipulate dead object.",log.error)
                         return false,"object no longer exist"
                     end
                 end,
@@ -95,9 +106,11 @@ return {main=function(i_self,guis)
                     if guis[v][object.name] then
                         local object = deepcopy(guis[v][object.name])
                         guis[v][object.name] = nil
+                        log("cut "..v..">"..object.name,log.info)
                         return {
                             parse=function()
                                 if object then
+                                    log("parsed "..v..">"..object.name,log.info)
                                     if guis[v][object.name] then guis[v][object.name] = nil end
                                     guis[v][object.name] = object
                                     return guis[v][object.name]
@@ -106,13 +119,16 @@ return {main=function(i_self,guis)
                                 end
                             end,
                             get=function()
+                                log("returned "..v..">"..object.name,log.info)
                                 return object
                             end,
                             clear=function()
+                                log("Removed copied object "..v..">"..object.name,log.info)
                                 object = nil
                             end
                         }
                     else
+                        log("tried to manipulate dead object.",log.error)
                         return false,"object no longer exist"
                     end
                 end
@@ -123,6 +139,8 @@ return {main=function(i_self,guis)
             if not type(index.graphic) == "function" then error("object "..v.." has invalid graphic.lua") end
             setmetatable(object,{__index = index})
             object.canvas = i_self
+            log("created new "..v..">"..object.name,log.info)
+            log:dump()
             return object
         end
     end

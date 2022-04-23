@@ -1,16 +1,41 @@
-local apis = {}
+local logger = require("GuiH.a-tools.logger")
+local log = logger.create_log()
+local apis = {
+    algo=require("GuiH.a-tools.algo")
+}
+local presets={}
+
+log("loading apis..",log.update)
 for k,v in pairs(fs.list("GuiH/apis")) do
     local name = v:match("[^.]+")
     if not fs.isDir("GuiH/apis/"..v) then
         apis[name] = require("GuiH.apis."..name)
+        log("loaded api: "..name)
     end
 end
+log("")
+log("loading presets..",log.update)
+for k,v in pairs(fs.list("GuiH/presets")) do
+    for _k,_v in pairs(fs.list("GuiH/presets/"..v)) do
+        if not presets[v] then presets[v] = {} end
+        local name = _v:match("[^.]+")
+        presets[v][name] = require("GuiH.presets."..v.."."..name)
+        log("loaded preset: "..v.." > "..name)
+    end
+end
+log("")
+log("finished loading",log.sucess)
+log("")
+
+log:dump()
 
 return {
     create_gui=function(m)
         local create = require("GuiH.a-tools.gui_object")
         local win = window.create(m,1,1,m.getSize())
-        local gui = create(win,m)
+        log("creating gui object..",log.update)
+        local gui = create(win,m,log)
+        log("finished creating gui object!",log.success)
         return gui
     end,
     load_texture=require("GuiH.texture-wrapper").load_texture,
@@ -28,6 +53,7 @@ return {
         return ev_data or {name=ev_name}
     end,
     apis=apis,
+    presets=presets,
     valid_events={
         ["mouse_click"]=true,
         ["mouse_drag"]=true,
@@ -38,5 +64,6 @@ return {
         ["key_up"]=true,
         ["char"]=true,
         ["guih_data_event"]=true
-    }
+    },
+    log=log
 }
