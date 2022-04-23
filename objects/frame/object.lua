@@ -53,7 +53,7 @@ return function(object,data)
             height=1
         }
     end
-    btn.child = main(window)
+    btn.child = main(window,object.term_object,object.log)
     btn.window = window
     return btn
 end
