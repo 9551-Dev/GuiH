@@ -110,7 +110,7 @@ return function(self,timeout,visible,is_child,data_in)
                 character=data.character,
                 text=data.text
             }
-            v.child.update(0,v.visible,true,dat)
+            v.child.update(math.huge,v.visible,true,dat)
         end
     end
     return ev_data,table.pack(ev_name,e1,e2,e3,id)
