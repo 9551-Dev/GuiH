@@ -1,10 +1,12 @@
+local api = require("GuiH.api")
+
 return function(object,data)
     if type(data.visible) ~= "boolean" then data.visible = true end
     if type(data.reactive) ~= "boolean" then data.reactive = true end
     if not data.autoc then data.autoc = {} end
     if type(data.autoc.put_space) ~= "boolean" then data.autoc.put_space = true end
     local btn = {
-        name=data.name or "",
+        name=data.name or api.uuid4(),
         visible=data.visible,
         reactive=data.reactive,
         react_to_events={

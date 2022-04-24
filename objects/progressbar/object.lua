@@ -1,3 +1,5 @@
+local api = require("GuiH.api")
+
 local types = {
     ["left-right"]=true,
     ["right-left"]=true,
@@ -9,7 +11,7 @@ return function(object,data)
     data = data or {}
     if type(data.visible) ~= "boolean" then data.visible = true end
     local btn = {
-        name=data.name or tostring(os.epoch("utc")),
+        name=data.name or api.uuid4(),
         positioning = {
             x=data.x or 1,
             y=data.y or 1,

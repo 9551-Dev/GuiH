@@ -1,3 +1,5 @@
+local api = require("GuiH.api")
+
 local types = {
     ["left-right"]=true,
     ["right-left"]=true,
@@ -14,7 +16,7 @@ return function(object,data)
     if type(data.p2) ~= "table" then data.p2 = {} end
     if type(data.p3) ~= "table" then data.p3 = {} end
     local btn = {
-        name=data.name or tostring(os.epoch("utc")),
+        name=data.name or api.uuid4(),
         positioning = {
             p1 = {
                 x=data.p1[1] or 1,
