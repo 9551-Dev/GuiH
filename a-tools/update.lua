@@ -78,6 +78,7 @@ return function(self,timeout,visible,is_child,data_in)
         end
         for k,v in api.tables.iterate_order(update_layers) do parallel.waitForAll(unpack(v)) end
     end
+    local cx,cy = self.term_object.getCursorPos()
     if visible and self.visible then
         for _k,_v in pairs(gui) do for k,v in pairs(_v) do
             if not layers[v.graphic_order or v.order] then layers[v.graphic_order or v.order] = {} end
@@ -113,5 +114,6 @@ return function(self,timeout,visible,is_child,data_in)
             v.child.update(math.huge,v.visible,true,dat)
         end
     end
+    self.term_object.setCursorPos(cx,cy)
     return ev_data,table.pack(ev_name,e1,e2,e3,id)
 end
