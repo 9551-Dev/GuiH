@@ -140,6 +140,9 @@ local function create_gui_object(term_object,orig,log)
         if _G.type(data.centered) ~= "boolean" then data.centered = true end
         local fg = (_G.type(data.text) == "string") and ("0"):rep(#data.text) or ("0"):rep(13)
         local bg = (_G.type(data.text) == "string") and ("f"):rep(#data.text) or ("f"):rep(13)
+        if type(data.blit) ~= "table" then data.blit = {fg,bg} end
+        data.blit[1] = (data.blit[1] or fg):lower()
+        data.blit[2] = (data.blit[2] or bg):lower()
         log("created new text object",log.info)
         return setmetatable({
             text = data.text or "<TEXT OBJECT>",
