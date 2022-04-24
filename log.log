@@ -1,0 +1,59 @@
+[7:59 PM] loading apis..                                                                            (1) type: update
+[7:59 PM] loaded api: coro                                                                          (1) type: info
+[7:59 PM] loaded api: fuzzy_find                                                                    (1) type: info
+[7:59 PM] loaded api: log                                                                           (1) type: info
+[7:59 PM] loaded api: nimg                                                                          (1) type: info
+[7:59 PM] loaded api: pathfind                                                                      (1) type: info
+[7:59 PM] loaded api: sevensh                                                                       (1) type: info
+[7:59 PM]                                                                                           (1) type: info
+[7:59 PM] loading presets..                                                                         (1) type: update
+[7:59 PM] loaded preset: rect > frame                                                               (1) type: info
+[7:59 PM] loaded preset: rect > frame_thick                                                         (1) type: info
+[7:59 PM] loaded preset: rect > framed_window                                                       (1) type: info
+[7:59 PM] loaded preset: rect > window                                                              (1) type: info
+[7:59 PM] loaded preset: tex > brick                                                                (1) type: info
+[7:59 PM] loaded preset: tex > checker                                                              (1) type: info
+[7:59 PM]                                                                                           (1) type: info
+[7:59 PM] finished loading                                                                          (1) type: sucess
+[7:59 PM]                                                                                           (1) type: info
+[7:59 PM] creating gui object..                                                                     (1) type: update
+[7:59 PM] set up updater                                                                            (1) type: update
+[7:59 PM] Display object: term                                                                      (1) type: info
+[7:59 PM]                                                                                           (1) type: info
+[7:59 PM] Starting creator..                                                                        (1) type: info
+[7:59 PM] loading object: button                                                                    (1) type: update
+[7:59 PM] loading object: circle                                                                    (1) type: update
+[7:59 PM] loading object: ellipse                                                                   (1) type: update
+[7:59 PM] loading object: frame                                                                     (1) type: update
+[7:59 PM] loading object: inputbox                                                                  (1) type: update
+[7:59 PM] loading object: progressbar                                                               (1) type: update
+[7:59 PM] loading object: rectangle                                                                 (1) type: update
+[7:59 PM] loading object: switch                                                                    (1) type: update
+[7:59 PM] loading object: text                                                                      (1) type: update
+[7:59 PM] loading object: triangle                                                                  (1) type: update
+[7:59 PM]                                                                                           (1) type: info
+[7:59 PM] loading text object...                                                                    (1) type: update
+[7:59 PM]                                                                                           (1) type: info
+[7:59 PM] finished creating gui object!                                                             (1) type: success
+[7:59 PM] created new text object                                                                   (1) type: info
+[7:59 PM] created new text > 346fde7f-8e3e-4fde-8efb-17156c27b031                                   (1) type: info
+[7:59 PM] Replicated text > 346fde7f-8e3e-4fde-8efb-17156c27b031 as text > 1                        (1) type: info
+[7:59 PM] Replicated text > 346fde7f-8e3e-4fde-8efb-17156c27b031 as text > 2                        (1) type: info
+[7:59 PM] Replicated text > 346fde7f-8e3e-4fde-8efb-17156c27b031 as text > 3                        (1) type: info
+[7:59 PM] Replicated text > 346fde7f-8e3e-4fde-8efb-17156c27b031 as text > 4                        (1) type: info
+[7:59 PM] Replicated text > 346fde7f-8e3e-4fde-8efb-17156c27b031 as text > 5                        (1) type: info
+[7:59 PM] Replicated text > 346fde7f-8e3e-4fde-8efb-17156c27b031 as text > 6                        (1) type: info
+[7:59 PM] Replicated text > 346fde7f-8e3e-4fde-8efb-17156c27b031 as text > 7                        (1) type: info
+[7:59 PM] Replicated text > 346fde7f-8e3e-4fde-8efb-17156c27b031 as text > 8                        (1) type: info
+[7:59 PM] Replicated text > 346fde7f-8e3e-4fde-8efb-17156c27b031 as text > 9                        (1) type: info
+[7:59 PM] Replicated text > 346fde7f-8e3e-4fde-8efb-17156c27b031 as text > 10                       (1) type: info
+[7:59 PM]                                                                                           (1) type: info
+[7:59 PM] loading execute..                                                                         (1) type: update
+[7:59 PM] created graphic routine 1                                                                 (1) type: update
+[7:59 PM] created custom updater                                                                    (1) type: update
+[7:59 PM] created graphic routine 2                                                                 (1) type: update
+[7:59 PM] created key handler                                                                       (1) type: info
+[7:59 PM]                                                                                           (1) type: info
+[7:59 PM] Started execution..                                                                       (1) type: success
+[7:59 PM]                                                                                           (1) type: info
+[8:00 PM] a Fatal error occured: ok                                                                 (1) type: fatal
