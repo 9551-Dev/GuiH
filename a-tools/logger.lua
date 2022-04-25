@@ -66,7 +66,7 @@ local function write_to_log_internal(self,str,type)
         self.nstr = 1
     end
     self.lastLog = str..type
-    local timeStr = "["..textutils.formatTime(os.time("local")).."] "
+    local timeStr = tostring(table.getn(self.history)).." ["..(os.date("%T", os.epoch "local" / 1000) .. (".%03d"):format(os.epoch "local" % 1000)):gsub("%."," ").."] "
     local lFg,lBg = unpack(typeList[type] or {})
     local strWrt = timeStr..str..(" "):rep(math.max(100-(#timeStr+#str),3))
     table.insert(self.history,{
