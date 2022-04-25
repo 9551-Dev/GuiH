@@ -1,5 +1,6 @@
 local objects = require("GuiH.object-loader")
 local update = require("GuiH.a-tools.update")
+local api = require("GuiH.api")
 
 local function create_gui_object(term_object,orig,log)
     local gui_objects = {}
@@ -13,24 +14,23 @@ local function create_gui_object(term_object,orig,log)
         gui=gui_objects,
         update=update,
         visible=true,
-        id=os.epoch("utc"),
+        id=api.uuid4(),
         task_schedule={},
         update_delay=0,
         held_keys={},
-        log=log
+        log=log,
+        task_routine={},
     }
     log("set up updater",log.update)
     local function updater(timeout,visible,is_child,data)
         return update(gui,timeout,visible,is_child,data)
     end
-    local task_routine = {}
-    local task_id = 0
     local err = "ok"
     gui.schedule=function(fnc)
-        task_id = task_id + 1
+        local task_id = api.uuid4()
         log("scheduled task: "..tostring(task_id))
-        task_routine[task_id] = coroutine.create(function()
-            local ok,erro  = pcall(fnc,gui,gui.term_object)
+        gui.task_routine[task_id] = coroutine.create(function()
+            local ok,erro = pcall(fnc,gui,gui.term_object)
             if not ok then err = erro end
         end)
     end
@@ -103,11 +103,11 @@ local function create_gui_object(term_object,orig,log)
             if event[1] == "key" or event[1]== "key_up" then
                 coroutine.resume(key_handler,table.unpack(event,1,event.n))
             end
-            for k,v in pairs(task_routine) do
+            for k,v in pairs(gui.task_routine) do
                 if coroutine.status(v) ~= "dead" then
                     coroutine.resume(v,table.unpack(event,1,event.n))
                 else
-                    task_routine[k] = nil
+                    gui.task_routine[k] = nil
                     gui.task_schedule[k] = nil
                     log("Finished sheduled task: "..tostring(k),log.sucess)
                 end
