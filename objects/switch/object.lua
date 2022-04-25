@@ -1,9 +1,11 @@
+local api = require("GuiH.api")
+
 return function(object,data)
     data = data or {}
     if type(data.visible) ~= "boolean" then data.visible = true end
     if type(data.reactive) ~= "boolean" then data.reactive = true end
     local btn = {
-        name=data.name or tostring(os.epoch("utc")),
+        name=data.name or api.uuid4(),
         positioning = {
             x=data.x or 1,
             y=data.y or 1,
