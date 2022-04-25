@@ -83,7 +83,7 @@ return function(self,timeout,visible,is_child,data_in)
         for _k,_v in pairs(gui) do for k,v in pairs(_v) do
             if not layers[v.graphic_order or v.order] then layers[v.graphic_order or v.order] = {} end
             table.insert(layers[v.graphic_order or v.order],function()
-                if _k ~= "frame" then
+                if not (v.gui or v.child) then
                     if v.visible then v.graphic(v,self) end
                 else
                     if v.visible then v.graphic(v,self) end
@@ -111,7 +111,7 @@ return function(self,timeout,visible,is_child,data_in)
                 character=data.character,
                 text=data.text
             }
-            v.child.update(math.huge,v.visible,true,dat)
+            (v.child or v.gui).update(math.huge,v.visible,true,dat)
         end
     end
     self.term_object.setCursorPos(cx,cy)
