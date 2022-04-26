@@ -15,12 +15,13 @@ local index = {
     error=1,
     warn=2,
     fatal=3,
-    sucess=4,
-    success=5,
+    success=4,
     message=6,
     update=7,
     info=8
 }
+
+local type_space = 15
 
 local revIndex = {}
 for k,v in pairs(index) do
@@ -44,7 +45,7 @@ function index:dump()
         else
             nstr = 1
         end
-        outputInternal[#outputInternal+1] = v.str.."("..tostring(nstr)..") type: "..(revIndex[v.type] or "info")
+        outputInternal[#outputInternal+1] = v.str.."("..tostring(nstr)..")"
         lastLog = remove_time(v.str)..v.type
     end
     for k,v in ipairs(outputInternal) do
@@ -68,7 +69,9 @@ local function write_to_log_internal(self,str,type)
     self.lastLog = str..type
     local timeStr = tostring(table.getn(self.history))..": ["..(os.date("%T", os.epoch "local" / 1000) .. (".%03d"):format(os.epoch "local" % 1000)):gsub("%."," ").."] "
     local lFg,lBg = unpack(typeList[type] or {})
-    local strWrt = timeStr..str..(" "):rep(math.max(100-(#timeStr+#str),3))
+    local type_str = "["..(revIndex[type] or "info").."]"
+    local base = timeStr..type_str..(" "):rep(type_space-#type_str-#tostring(#self.history)-1).."\127"..str
+    local strWrt = base..(" "):rep(math.max(100-(#base),3))
     table.insert(self.history,{
         str=strWrt,
         type=type

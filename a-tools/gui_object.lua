@@ -39,7 +39,7 @@ local function create_gui_object(term_object,orig,log)
         if info[1] then return true,info[2] end
         return false,false
     end
-    gui.execute=function(fnc,on_event,bef_draw)
+    gui.execute=function(fnc,on_event,bef_draw,after_draw)
         log("")
         log("loading execute..",log.update)
         local execution_window = gui.term_object
@@ -56,7 +56,8 @@ local function create_gui_object(term_object,orig,log)
                     execution_window.clear();
                     (bef_draw or function() end)(execution_window)
                     local event = update(gui,nil,true,false,nil);
-                    (on_event or function() end)(execution_window,event)
+                    (on_event or function() end)(execution_window,event);
+                    (after_draw or function() end)(execution_window)
                     execution_window.setVisible(true);
                 end
             end)
@@ -71,7 +72,9 @@ local function create_gui_object(term_object,orig,log)
         log("created custom updater",log.update)
         local graphics_updater = coroutine.create(function()
             while true do
-                gui.update(0)
+                execution_window.setVisible(false)
+                gui.update(0);
+                (after_draw or function() end)(execution_window)
                 execution_window.setVisible(true)
                 execution_window.setVisible(false)
                 if gui.update_delay > 0 then
@@ -109,14 +112,14 @@ local function create_gui_object(term_object,orig,log)
                 else
                     gui.task_routine[k] = nil
                     gui.task_schedule[k] = nil
-                    log("Finished sheduled task: "..tostring(k),log.sucess)
+                    log("Finished sheduled task: "..tostring(k),log.success)
                 end
             end
-            coroutine.resume(graphics_updater,table.unpack(event,1,event.n))
             coroutine.resume(gui_coro,table.unpack(event,1,event.n))
+            coroutine.resume(graphics_updater,table.unpack(event,1,event.n))
         end
         execution_window.setVisible(true)
-        if err then log("a Fatal error occured: "..err,log.fatal)
+        if err then log("a Fatal error occured: "..err..debug.traceback(),log.fatal)
         else log("finished execution",log.success) end
         log:dump()
         return err

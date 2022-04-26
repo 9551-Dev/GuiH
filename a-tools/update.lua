@@ -66,10 +66,10 @@ return function(self,timeout,visible,is_child,data_in)
                     if not update_layers[v.logic_order or v.order] then update_layers[v.logic_order or v.order] = {} end
                     table.insert(update_layers[v.logic_order or v.order],function()
                         if keyboard_events[ev_data.name] then
-                            v.logic(v,ev_data,self)
+                            if v.logic then v.logic(v,ev_data,self) end
                         else
                             if ((v.btn or valid_mouse_buttons)[ev_data.button]) or ev_data.monitor == self.monitor then
-                                v.logic(v,ev_data,self)
+                                if v.logic then v.logic(v,ev_data,self) end
                             end
                         end
                     end)
@@ -84,9 +84,9 @@ return function(self,timeout,visible,is_child,data_in)
             if not layers[v.graphic_order or v.order] then layers[v.graphic_order or v.order] = {} end
             table.insert(layers[v.graphic_order or v.order],function()
                 if not (v.gui or v.child) then
-                    if v.visible then v.graphic(v,self) end
+                    if v.visible and v.graphic then v.graphic(v,self) end
                 else
-                    if v.visible then v.graphic(v,self) end
+                    if v.visible and v.graphic then v.graphic(v,self) end
                     v.window.redraw()
                     table.insert(frames,v)
                 end
@@ -97,6 +97,7 @@ return function(self,timeout,visible,is_child,data_in)
     if not updateD then return ev_data,table.pack(ev_name,e1,e2,e3,id) end
     for k,v in pairs(frames) do
         local x,y = v.window.getPosition()
+        local w,h = v.window.getSize()
         local data = data or data_in or ev_data
         if data then
             local dat = {
@@ -111,7 +112,9 @@ return function(self,timeout,visible,is_child,data_in)
                 character=data.character,
                 text=data.text
             }
-            (v.child or v.gui).update(math.huge,v.visible,true,dat)
+            if api.is_within_field(dat.x,dat.y,x,y,x+w,y+h) then
+                (v.child or v.gui).update(math.huge,v.visible,true,dat)
+            end
         end
     end
     self.term_object.setCursorPos(cx,cy)

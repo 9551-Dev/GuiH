@@ -24,7 +24,7 @@ for k,v in pairs(fs.list("GuiH/presets")) do
     end
 end
 log("")
-log("finished loading",log.sucess)
+log("finished loading",log.success)
 log("")
 
 log:dump()
@@ -36,6 +36,7 @@ return {
         log("creating gui object..",log.update)
         local gui = create(win,m,log)
         log("finished creating gui object!",log.success)
+        log:dump()
         return gui
     end,
     load_texture=require("GuiH.texture-wrapper").load_texture,
