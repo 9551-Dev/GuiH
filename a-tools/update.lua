@@ -112,7 +112,11 @@ return function(self,timeout,visible,is_child,data_in)
                 character=data.character,
                 text=data.text
             }
-            if api.is_within_field(dat.x,dat.y,x,y,x+w,y+h) then
+            if api.is_within_field(data.x,data.y,x,y,x+w,y+h) then
+                (v.child or v.gui).update(math.huge,v.visible,true,dat)
+            else
+                dat.x = -math.huge
+                dat.y = -math.huge;
                 (v.child or v.gui).update(math.huge,v.visible,true,dat)
             end
         end
