@@ -9,9 +9,9 @@ return function(object)
             for y=object.positioning.y,object.positioning.height+object.positioning.y-1 do
                 term.setCursorPos(object.positioning.x,y)
                 term.blit(
-                    (" "):rep(pointValue)..(" "):rep(left),
-                    ("f"):rep(pointValue)..("f"):rep(left),
-                    graphic.code.to_blit[object.fg]:rep(pointValue)..graphic.code.to_blit[object.bg]:rep(left)
+                    (" "):rep(pointValue)..(" "):rep(math.ceil(left)),
+                    ("f"):rep(pointValue)..("f"):rep(math.ceil(left)),
+                    graphic.code.to_blit[object.fg]:rep(pointValue)..graphic.code.to_blit[object.bg]:rep(math.ceil(left))
                 )
             end
         else
