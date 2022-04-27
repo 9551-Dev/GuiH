@@ -20,6 +20,7 @@ for k,v in pairs(list.tree) do
 end
 local percent = 100/len
 local finished = 0
+local size_gained = 0
 for k,v in pairs(ls) do
     local web = http.get(k)
     local file = fs.open("./GuiH/"..v,"w")
@@ -27,6 +28,8 @@ for k,v in pairs(ls) do
     file.close()
     web.close()
     finished = finished + 1
-    print("downloading "..v.."  "..tostring(math.ceil(finished*percent)).."%")
+    local file_size = fs.getSize("./GuiH/"..v)
+    size_gained = size_gained + file_size
+    print("downloading "..v.."  "..tostring(math.ceil(finished*percent)).."% "..tostring(math.ceil(file_size/1024*10)/10).."kB total: "..math.ceil(size_gained/1024).."kB")
 end
 print("Finished downloading GuiH")
