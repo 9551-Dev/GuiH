@@ -73,7 +73,7 @@ local function create_gui_object(term_object,orig,log)
         local graphics_updater = coroutine.create(function()
             while true do
                 execution_window.setVisible(false)
-                gui.update(0);
+                gui.update(0,true,nil,{type="mouse_click",x=-math.huge,y=-math.huge,button=-math.huge});
                 (after_draw or function() end)(execution_window)
                 execution_window.setVisible(true)
                 execution_window.setVisible(false)
