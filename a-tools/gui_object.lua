@@ -162,10 +162,10 @@ local function create_gui_object(term_object,orig,log)
                 local x,y = 1,1
                 local w,h = term.getSize()
                 if self.centered then
-                    local y = h/2
-                    local x = math.ceil((w/2)-(#self.text/2))
-                    term.setCursorPos(x+self.offset_x,y+self.offset_y)
-                    x,y = x+self.offset_x,y+self.offset_y
+                    local y_centered = h/2
+                    local x_centered = math.ceil((w/2)-(#self.text/2))
+                    term.setCursorPos(x_centered+self.offset_x,y_centered+self.offset_y)
+                    x,y = x_centered+self.offset_x,y_centered+self.offset_y
                 else
                     term.setCursorPos(self.x+self.offset_x,self.y+self.offset_y)
                     x,y = self.x+self.offset_x,self.y+self.offset_y
