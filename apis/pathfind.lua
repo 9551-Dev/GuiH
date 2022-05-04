@@ -1,40 +1,22 @@
-local pureLua = false
+local pure_lua = false
+
 local expect
-if not pureLua then
+if not pure_lua then
     expect = require("cc.expect").expect
 end
-local vector = {}
-vector.new = function(x,y,z)
-    return setmetatable({
-        x=x or 0,
-        y=y or 0,
-        z=z or 0
-    },{__add=function(i,x)
-        return {
-            x=i.x+x.x,
-            y=i.y+x.y,
-            z=i.z+x.z
-        }
-    end,
-    __tostring = function(self)
-        local x = tostring(self.x)
-        local y = tostring(self.y)
-        local z = tostring(self.z)
-        return x..","..y..","..z
+
+local function node(x,y,z,passable)
+    if not pure_lua then
+        expect(1,x,"number")
+        expect(2,y,"number")
+        expect(3,z,"number")
+        expect(4,passable,"boolean","nil")
     end
-    })
-end
-local createNode = function(passable,x,y,z)
     if passable == nil then passable = true end
-    if not pureLua then
-        expect(1,passable,"boolean","nil")
-        expect(2,x,"number")
-        expect(3,y,"number")
-    end
     local gCost = 0
     local hCost = 0
     return setmetatable({
-        isPassable = passable,
+        passable = passable,
         gCost = gCost,
         hCost = hCost,
         pos = vector.new(x,y,z),
@@ -45,147 +27,187 @@ local createNode = function(passable,x,y,z)
         end
     })
 end
-local createSelfIndexArray = function()
-    return setmetatable({},
-        {
-            __index=function(t,k)
-                local new = {}
-                t[k]=new
-                return new
-            end
-        }
-    )
+
+local function createNDarray(n, tbl)
+    tbl = tbl or {}
+    if n == 0 then return tbl end
+    setmetatable(tbl, {__index = function(t, k)
+        local new = createNDarray(n - 1)
+        t[k] = new
+        return new
+    end})
+    return tbl
 end
-local findInGrid = function(grid,vec)
-    if not pureLua then
-        expect(1,grid,"table")
-        expect(2,vec,"table")
+
+local function index_proximal(list,num)
+    local diffirences = {}
+    local outs = {}
+    for k,v in pairs(list) do
+        local diff = math.abs(k-num)
+        diffirences[#diffirences+1],outs[diff] = diff,k
     end
-    for k,v in pairs(grid) do
-        if (v.pos.x == vec.x) and (v.pos.y == vec.y) and (v.pos.z == vec.z) then
-            return v,grid[k],k
+    local proximal = math.min(table.unpack(diffirences))
+    return list[outs[proximal]]
+end
+
+local function get_distance(nodeA,nodeB)
+    return math.sqrt((nodeA.pos.x - nodeB.pos.x)^2 + (nodeA.pos.y - nodeB.pos.y)^2 + (nodeA.pos.z - nodeB.pos.z)^2)
+end
+
+local function tblRev(tbl)
+    local temp = {}
+    for k,v in pairs(tbl) do
+        temp[(#tbl-k+1)] = v
+    end
+    return temp
+end
+
+local function createField(w,h,d,xi,yi,zi)
+    if not pure_lua then
+        expect(1,w,"number")
+        expect(2,h,"number")
+        expect(3,d,"number")
+        expect(4,xi,"number","nil")
+        expect(5,yi,"number","nil")
+        expect(6,zi,"number","nil")
+    end
+    xi,yi,zi = xi or 1,yi or 1,zi or 1
+    local temp = createNDarray(3,{})
+    for x=xi,xi+w do
+        for y=yi,yi+h do
+            for z=zi,zi+d do
+                temp[x][y][z] = node(x,y,z,true)
+            end
+        end
+    end
+    return {grid=temp,size={w=w,h=h,d=d}}
+end
+
+local function add(tbl,pointer,pnode)
+    table.insert(tbl,pnode)
+    pointer[pnode.pos.x][pnode.pos.y][pnode.pos.z] = #tbl
+end
+
+local function find(tbl,pointer,node)
+    return tbl[pointer[node.pos.x][node.pos.y][node.pos.z]] or {}
+end
+
+local function match_cord(a,b)
+    local pa,pb = a.pos,b.pos
+    return pa.x == pb.x and pa.y == pb.y and pa.z == pb.z
+end
+
+local function decrem(tbl)
+    for x,yList in pairs(tbl) do
+        for y,zList in pairs(yList) do
+            for z,node in pairs(zList) do
+                tbl[x][y][z] = tbl[x][y][z]-1
+            end
         end
     end
 end
-local getNeighbors = function(grid,node,sizedat)
-    local foundNeighbors = {}
+
+local function getNeighbors(node,grid)
+    local neighbors = {}
     for x=-1,1 do
         for y=-1,1 do
             for z=-1,1 do
                 local abs = vector.new(math.abs(x),math.abs(y),math.abs(z))
                 if not (x == 0 and y == 0 and z == 0) and (abs.x+abs.y+abs.z == 1) then
-                    local relative = node.pos+vector.new(x,y,z)
-                    local relativeX,relativeY,relativeZ = relative.x,relative.y,relative.z
-                    if relativeX < sizedat.w+1 and relativeY < sizedat.h+1 and relativeZ < sizedat.d+1 then
-                        local neighbor = findInGrid(grid,vector.new(relativeX,relativeY,relativeZ))
-                        table.insert(foundNeighbors,neighbor)
+                    local check_x = node.pos.x+x
+                    local check_y = node.pos.y+y
+                    local check_z = node.pos.z+z
+                    if check_x < grid.size.w+1 and check_y < grid.size.h+1 and check_z < grid.size.d+1 then
+                        local neighbor = grid.grid[check_x][check_y][check_z]
+                        if next(neighbor) then table.insert(neighbors, neighbor) end
                     end
                 end
             end
         end
     end
-    return foundNeighbors
+    return neighbors
 end
-local getDistance = function(grid,nodeA,nodeB)
-    return math.sqrt((nodeA.pos.x - nodeB.pos.x)^2 + (nodeA.pos.y - nodeB.pos.y)^2 + (nodeA.pos.z - nodeB.pos.z)^2)
+
+local function retrace_path(set)
+    local path = {}
+    local current_node = set[#set]
+    while current_node do
+        table.insert(path,vector.new(current_node.pos.x,current_node.pos.y,current_node.pos.z))
+        current_node = current_node.parent
+    end
+    return tblRev(path)
 end
-local tblRev = function(tbl)
-    local temp = {}
-    for k,v in pairs(tbl) do
-        temp[(#tbl-k)] = v
+
+local function pathfind(grid_dat,startn,endn)
+    if not pure_lua then
+        expect(1,grid_dat,"table")
+        expect(2,startn,"table")
+        expect(3,endn,"table")
     end
-    return temp
-end
-local retracePath = function(grid,sNode,nNode,sizedat)
-    local path = {nNode}
-    local curNode = nNode
-    local eStr = tostring(sNode.pos)
-    local curNode = (getNeighbors(grid,curNode,sizedat))[1]
-    if curNode then
-        while tostring(curNode.pos) ~= eStr do
-            table.insert(path,curNode)
-            curNode = curNode.parent
+    local start_node = startn
+    local target_node = endn
+    local open_set = {}
+    local closed_set = {}
+    local open_pointer = createNDarray(2)
+    local closed_pointer = createNDarray(2)
+    add(open_set,open_pointer,start_node)
+    while next(open_set) do
+        local current_node = open_set[1]
+        for k,v in ipairs(open_set) do
+            if (v.fCost < current_node.fCost) or ((v.fCost == current_node.fCost) and v.hCost < current_node.hCost) then
+                current_node = v
+            end 
+        end 
+        add(closed_set,closed_pointer,current_node)
+        table.remove(open_set,1)
+        decrem(open_pointer)
+        open_pointer[current_node.pos.x][current_node.pos.y][current_node.pos.z] = nil
+        if match_cord(current_node,target_node) then
+            return retrace_path(closed_set)
         end
-    end
-    table.insert(path,sNode)
-    local output = {}
-    local tempValue = tblRev(path)
-    for k,v in pairs(tempValue or {}) do
-        table.insert(output,{x=v.pos.x,y=v.pos.y,z=v.pos.z,g=v.gCost,h=v.hCost,f=v.fCost})
-        tempValue = v.parent
-    end
-    return output
-end
-local createField = function(w,h,d,xin,yin,zin,width,height,depth)
-    if not pureLua then
-        expect(1,w,"number")
-        expect(2,h,"number")
-        expect(3,xin,"number")
-        expect(4,yin,"number")
-    end
-    width = width or w
-    height = height or h
-    local temp = {}
-    for x=xin,xin+width do
-        for y=yin,yin+height do
-            for z=zin,zin+depth do
-                table.insert(temp,createNode(true,x,y,z))
-            end
-        end
-    end
-    return {grid=temp,sizeData={w=w,h=h,d=d}}
-end
-local pathfind = function(gridData,startNode,endNode)
-    if not pureLua then
-        expect(1,gridData,"table")
-        expect(2,startNode,"table")
-        expect(3,endNode,"table")
-    end
-    local grid = gridData.grid
-    local sizedat = gridData.sizeData
-    local targetNode = endNode
-    local openSet = {startNode}
-    local closedSet = {}
-    while next(openSet) do
-        if not pureLua then
-            os.queueEvent("fake")
-            os.pullEvent("fake")
-        end
-        local lastIndice = 1
-        local curNode = openSet[1]
-        for i=2,#openSet do
-            if (openSet[i].fCost < curNode.fCost) or (openSet[i].fCost == curNode.fCost and openSet[i].hCost < curNode.hCost) then
-                curNode = openSet[i]
-                lastIndice = i
-            end
-        end
-        table.insert(closedSet,curNode)
-        table.remove(openSet, lastIndice)
-        local cx,cy,cz = curNode.pos.x,curNode.pos.y,curNode.pos.z
-        local ex,ey,ez = targetNode.pos.x,targetNode.pos.y,targetNode.pos.z
-        if cx == ex and cy == ey and cz == ez then
-            return retracePath(closedSet,startNode,targetNode,sizedat)
-        end
-        for i,neighbor in pairs(getNeighbors(grid,curNode,sizedat)) do
-            if not ((not neighbor.isPassable) or findInGrid(closedSet,neighbor.pos)) then
-                local newMovCostToNeighbor = curNode.gCost + getDistance(grid,curNode,neighbor)
-                if (newMovCostToNeighbor < neighbor.gCost) or not findInGrid(openSet,neighbor.pos) then
-                    neighbor.gCost = newMovCostToNeighbor
-                    neighbor.hCost = getDistance(grid,neighbor,targetNode)
-                    neighbor.parent = curNode
-                    if not findInGrid(openSet,neighbor.pos) then
-                        table.insert(openSet,neighbor)
+        for k,neighbor in pairs(getNeighbors(current_node,grid_dat)) do
+            if not (not neighbor.passable or next(find(closed_set,closed_pointer,neighbor))) then
+                local new_mov_cost = current_node.gCost + get_distance(current_node,neighbor)
+                if (new_mov_cost < neighbor.gCost) or not next(find(open_set,open_pointer,neighbor)) then
+                    neighbor.gCost = new_mov_cost
+                    neighbor.hCost = get_distance(neighbor,target_node)
+                    neighbor.parent = current_node
+                    if not next(find(open_set,open_pointer,neighbor)) then
+                        add(open_set,open_pointer,neighbor)
                     end
                 end
             end
         end
+        os.queueEvent("pathfinding")
+        os.pullEvent("pathfinding")
     end
-    return {},false,"unable to find path"
+    return false
+end
+
+local function get3DarraySquareWHD(array)
+    if not pure_lua then
+        expect(1,array,"table")
+    end
+    local minx, maxx = math.huge, -math.huge
+    local miny,maxy = math.huge, -math.huge
+    local minz,maxz = math.huge, -math.huge
+    for x,yList in pairs(array) do
+        minx, maxx = math.min(minx, x), math.max(maxx, x)
+        for y,zList in pairs(yList) do
+            miny, maxy = math.min(miny, y), math.max(maxy, y)
+            for z,_ in pairs(zList) do
+                minz, maxz = math.min(minz, z), math.max(maxz, z)
+            end
+        end
+    end
+    return {w=math.abs(minx)+maxx,h=math.abs(miny)+maxy,d=math.abs(minz)+maxz}
 end
 
 return {
     pathfind=pathfind,
+    node=node,
     createField=createField,
-    findInGrid=findInGrid,
-    createNode=createNode
+    get_array_whd=get3DarraySquareWHD,
+    index_proximal=index_proximal,
+    createNDarray=createNDarray
 }
