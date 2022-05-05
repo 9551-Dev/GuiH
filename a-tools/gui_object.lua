@@ -159,8 +159,8 @@ local function create_gui_object(term_object,orig,log)
             blit = data.blit or {fg,bg},
             transparent=data.transparent
         },{
-            __call=function(self,x,y,w,h)
-                local term = gui.term_object
+            __call=function(self,tobject,x,y,w,h)
+                local term = tobject or gui.term_object
                 local sval
                 if _G.type(x) ~= "number" or _G.type(y) ~= "number" then sval = 1 end
                 if _G.type(x) ~= "number" then x = 1 end

@@ -36,6 +36,6 @@ return function(object)
     if object.text and not object.value then
         object.text(object.positioning.x,object.positioning.y,object.positioning.width,object.positioning.height)
     elseif object.text_on and object.value then
-        object.text_on(object.positioning.x,object.positioning.y,object.positioning.width,object.positioning.height)
+        object.text_on(term,object.positioning.x,object.positioning.y,object.positioning.width,object.positioning.height)
     end
 end

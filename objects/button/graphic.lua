@@ -34,6 +34,6 @@ return function(object)
         end
     end
     if object.text then
-        object.text(object.positioning.x,object.positioning.y,object.positioning.width,object.positioning.height)
+        object.text(term,object.positioning.x,object.positioning.y,object.positioning.width,object.positioning.height)
     end
 end
