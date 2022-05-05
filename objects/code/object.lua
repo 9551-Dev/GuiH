@@ -6,8 +6,8 @@ return function(object,data)
     local base = {
         name=data.name or api.uuid4(),
         visible=data.visible,
-        code=object.code or function() return false end,
-        graphic=object.graphic or function() return false end,
+        code=data.code or function() return false end,
+        graphic=data.graphic or function() return false end,
         order=data.order or 1,
         logic_order=data.logic_order,
         graphic_order=data.graphic_order,
