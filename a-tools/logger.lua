@@ -1,5 +1,7 @@
 --! modified version of my log api for purpose of file logging
 
+local path = fs.getDir(select(2,...))
+
 local typeList = {
     {colors.red},
     {colors.yellow},
@@ -51,7 +53,7 @@ function index:dump()
     for k,v in ipairs(outputInternal) do
         str = str .. v .. "\n"
     end
-    local file = fs.open("GuiH/log.log","w")
+    local file = fs.open(path.."/log.log","w")
     file.write(str)
     file.close()
     return str

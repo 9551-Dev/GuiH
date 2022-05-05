@@ -9,6 +9,7 @@ local function create_gui_object(term_object,orig,log)
         type = peripheral.getType(orig)
     end)
     for k,v in pairs(objects.types) do gui_objects[v] = {} end
+    local w,h = term_object.getSize()
     local gui = {
         term_object=term_object,
         gui=gui_objects,
@@ -20,6 +21,7 @@ local function create_gui_object(term_object,orig,log)
         held_keys={},
         log=log,
         task_routine={},
+        w=w,h=h
     }
     log("set up updater",log.update)
     local function updater(timeout,visible,is_child,data)
@@ -157,23 +159,26 @@ local function create_gui_object(term_object,orig,log)
             blit = data.blit or {fg,bg},
             transparent=data.transparent
         },{
-            __call=function(self)
+            __call=function(self,x,y,w,h)
                 local term = gui.term_object
-                local x,y = 1,1
-                local w,h = term.getSize()
+                local sval
+                if _G.type(x) ~= "number" or _G.type(y) ~= "number" then sval = 1 end
+                if _G.type(x) ~= "number" then x = 1 end
+                if _G.type(y) ~= "number" then y = 1 end
+                local xin,yin = x,y
                 if self.centered then
-                    local y_centered = h/2
-                    local x_centered = math.ceil((w/2)-(#self.text/2))
-                    term.setCursorPos(x_centered+self.offset_x,y_centered+self.offset_y)
-                    x,y = x_centered+self.offset_x,y_centered+self.offset_y
+                    local y_centered = (h or gui.h)/2
+                    local x_centered = math.ceil(((w or gui.w)/2)-(#self.text/2))
+                    term.setCursorPos(x_centered+self.offset_x+xin,y_centered+self.offset_y+yin)
+                    x,y = x_centered+self.offset_x+xin,y_centered+self.offset_y+yin
                 else
-                    term.setCursorPos(self.x+self.offset_x,self.y+self.offset_y)
-                    x,y = self.x+self.offset_x,self.y+self.offset_y
+                    term.setCursorPos((sval or self.x)+self.offset_x+xin-1,(sval or self.y)+self.offset_y+yin-1)
+                    x,y = (sval or self.x)+self.offset_x+xin-1,(sval or self.y)+self.offset_y+yin-1
                 end
                 if self.transparent == true then
                     local fg,bg = table.unpack(self.blit)
-                    local _,_,line = term.getLine(y)
-                    local sc_bg = line:sub(x,math.min(x+#self.text-1,w))
+                    local _,_,line = term.getLine(math.floor(y))
+                    local sc_bg = line:sub(x,math.min(x+#self.text-1,gui.w))
                     local diff = #self.text-#sc_bg-1
                     term.blit(self.text,fg,sc_bg..bg:sub(#bg-diff,#bg))
                 else

@@ -1,4 +1,5 @@
 local logger = require("GuiH.a-tools.logger")
+local path = fs.getDir(select(2,...))
 local log = logger.create_log()
 local apis = {
     algo=require("GuiH.a-tools.algo")
@@ -6,17 +7,17 @@ local apis = {
 local presets={}
 
 log("loading apis..",log.update)
-for k,v in pairs(fs.list("GuiH/apis")) do
+for k,v in pairs(fs.list(path.."/apis")) do
     local name = v:match("[^.]+")
-    if not fs.isDir("GuiH/apis/"..v) then
+    if not fs.isDir(path.."/apis/"..v) then
         apis[name] = require("GuiH.apis."..name)
         log("loaded api: "..name)
     end
 end
 log("")
 log("loading presets..",log.update)
-for k,v in pairs(fs.list("GuiH/presets")) do
-    for _k,_v in pairs(fs.list("GuiH/presets/"..v)) do
+for k,v in pairs(fs.list(path.."/presets")) do
+    for _k,_v in pairs(fs.list(path.."/presets/"..v)) do
         if not presets[v] then presets[v] = {} end
         local name = _v:match("[^.]+")
         presets[v][name] = require("GuiH.presets."..v.."."..name)
@@ -31,12 +32,19 @@ log:dump()
 
 return {
     create_gui=function(m)
+        local selfDir = path:match("(.+)%/.+$") or ""
+        local old_path = package.path
+        package.path = string.format(
+            "%s;/%s/?.lua;/%s/?/init.lua",
+            package.path, selfDir,selfDir
+        )
         local create = require("GuiH.a-tools.gui_object")
         local win = window.create(m,1,1,m.getSize())
         log("creating gui object..",log.update)
         local gui = create(win,m,log)
         log("finished creating gui object!",log.success)
         log:dump()
+        package.path = old_path
         return gui
     end,
     load_texture=require("GuiH.texture-wrapper").load_texture,

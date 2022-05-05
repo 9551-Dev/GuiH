@@ -33,21 +33,9 @@ return function(object)
             term.blit(text_layers[k],fg_layers[k],bg_layers[k])
         end
     end
-    if object.text or object.text_on then
-        local text = (object.value and object.text_on or object.text)
-        if text.centered then
-            local centered_y = y+object.positioning.height/2
-            local centered_x = x+object.positioning.width/2-(#text.text/2)
-            term.setCursorPos(math.ceil(centered_x+text.offset_x),math.floor(centered_y)+text.offset_y)
-        else
-            term.setCursorPos(x+text.offset_x,y+text.offset_y)
-        end
-        if (#text.blit[1]+#text.blit[2])/2 == #text.text then
-            term.blit(text.text,text.blit[1],text.blit[2])
-        else
-            term.setBackgroundColor(object.value and object.background_color_on or object.background_color)
-            term.setTextColor(object.value and object.text_color_on or object.text_color)
-            term.write(text.text)
-        end
+    if object.text and not object.value then
+        object.text(object.positioning.x,object.positioning.y,object.positioning.width,object.positioning.height)
+    elseif object.text_on and object.value then
+        object.text_on(object.positioning.x,object.positioning.y,object.positioning.width,object.positioning.height)
     end
 end

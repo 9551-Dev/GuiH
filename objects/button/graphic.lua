@@ -34,19 +34,6 @@ return function(object)
         end
     end
     if object.text then
-        if object.text.centered then
-            local centered_y = y+object.positioning.height/2
-            local centered_x = x+object.positioning.width/2-(#object.text.text/2)
-            term.setCursorPos(math.ceil(centered_x+object.text.offset_x),math.floor(centered_y)+object.text.offset_y)
-        else
-            term.setCursorPos(x+object.text.offset_x,y+object.text.offset_y)
-        end
-        if (#object.text.blit[1]+#object.text.blit[2])/2 == #object.text.text then
-            term.blit(object.text.text,object.text.blit[1],object.text.blit[2])
-        else
-            term.setBackgroundColor(object.background_color)
-            term.setTextColor(object.text_color)
-            term.write(object.text.text)
-        end
+        object.text(object.positioning.x,object.positioning.y,object.positioning.width,object.positioning.height)
     end
 end
