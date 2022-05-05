@@ -34,7 +34,7 @@ return function(self,timeout,visible,is_child,data_in)
     local data = data_in
     local gui = self.gui
     local e1,e2,e3,id
-    local layers = {}
+    local frames,layers={},{}
     local updateD = true
     if (timeout or math.huge) > 0 then
         if not data or not is_child then
@@ -88,36 +88,39 @@ return function(self,timeout,visible,is_child,data_in)
                 else
                     if v.visible and v.graphic then v.graphic(v,self) end
                     v.window.redraw()
-                    local x,y = v.window.getPosition()
-                    local w,h = v.window.getSize()
-                    local data = data or data_in or ev_data
-                    if data then
-                        local dat = {
-                            x = (data.x-x)+1,
-                            y = (data.y-y)+1,
-                            name = data.name,
-                            monitor = data.monitor,
-                            button = data.button,
-                            direction = data.direction,
-                            held=data.held,
-                            key=data.key,
-                            character=data.character,
-                            text=data.text
-                        }
-                        if api.is_within_field(data.x,data.y,x,y,x+w,y+h) then
-                            (v.child or v.gui).update(math.huge,v.visible,true,dat)
-                        else
-                            dat.x = -math.huge
-                            dat.y = -math.huge;
-                            (v.child or v.gui).update(math.huge,v.visible,true,dat)
-                        end
-                    end
+                    table.insert(frames,v)
                 end
             end)
         end end
     end
     for k,v in api.tables.iterate_order(layers) do parallel.waitForAll(unpack(v)) end
     if not updateD then return ev_data,table.pack(ev_name,e1,e2,e3,id) end
+    for k,v in ipairs(frames) do
+        local x,y = v.window.getPosition()
+        local w,h = v.window.getSize()
+        local data = data or data_in or ev_data
+        if data then
+            local dat = {
+                x = (data.x-x)+1,
+                y = (data.y-y)+1,
+                name = data.name,
+                monitor = data.monitor,
+                button = data.button,
+                direction = data.direction,
+                held=data.held,
+                key=data.key,
+                character=data.character,
+                text=data.text
+            }
+            if api.is_within_field(data.x,data.y,x,y,x+w,y+h) then
+                (v.child or v.gui).update(math.huge,v.visible,true,dat)
+            else
+                dat.x = -math.huge
+                dat.y = -math.huge;
+                (v.child or v.gui).update(math.huge,v.visible,true,dat)
+            end
+        end
+    end
     self.term_object.setCursorPos(cx,cy)
     return ev_data,table.pack(ev_name,e1,e2,e3,id)
 end
