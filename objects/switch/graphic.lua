@@ -38,3 +38,4 @@ return function(object)
     elseif object.text_on and object.value then
         object.text_on(term,object.positioning.x,object.positioning.y,object.positioning.width,object.positioning.height)
     end
+end
