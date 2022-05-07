@@ -165,6 +165,8 @@ local function load_ppm_texture(terminal,file,mode,log)
                 local sym_x,sym_y = (x-1)%2+1,(y-1)%3+1
                 if not char_arrays[rel_x] then char_arrays[rel_x] = {} end
                 char_arrays[rel_x][rel_y] = set_symbols_xy(char_arrays[rel_x][rel_y] or {},sym_x,sym_y,c)
+                os.queueEvent("")
+                os.pullEvent("")
             end
         end
         log("transformation finished. "..tostring((img.width/2)*(img.height/3)).." characters",log.success)
@@ -184,6 +186,7 @@ local function load_ppm_texture(terminal,file,mode,log)
         end
         log("building finished. texture loaded.",log.success)
         log("")
+        log:dump()
         return load_texture(texture_raw),img
     end
 end
