@@ -94,6 +94,29 @@ local function decode(_file)
                         if y_list then
                             return y_list[math.floor(y+0.5)]
                         end
+                    end,
+                    get_palette=function()
+                        local cols = {}
+                        local palette_cols = 0
+                        local out = {}
+                        local final = {}
+                        for k,v in pairs(_temp) do
+                            local hex = colors.packRGB(v.r,v.g,v.b)
+                            if not cols[hex] then
+                                palette_cols = palette_cols + 1
+                                cols[hex] = {c=hex,count=0}
+                            end
+                            cols[hex].count = cols[hex].count + 1
+                        end
+                        for k,v in pairs(cols) do
+                            table.insert(out,v)
+                        end
+                        table.sort(out,function(a,b) return a.count > b.count end)
+                        for k,v in ipairs(out) do
+                            local r,g,b = colors.unpackRGB(v.c)
+                            table.insert(final,{r=r,g=g,b=b,c=v.count})
+                        end
+                        return final,palette_cols
                     end
                 }
             end

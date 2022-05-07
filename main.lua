@@ -2,7 +2,8 @@ local logger = require("GuiH.a-tools.logger")
 local path = fs.getDir(select(2,...))
 local log = logger.create_log()
 local apis = {
-    algo=require("GuiH.a-tools.algo")
+    algo=require("GuiH.a-tools.algo"),
+    luappm=require("GuiH.a-tools.luappm")
 }
 local presets={}
 
