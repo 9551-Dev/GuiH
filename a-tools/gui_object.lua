@@ -1,4 +1,5 @@
 local objects = require("GuiH.object-loader")
+local graphic = require("GuiH.texture-wrapper")
 local update = require("GuiH.a-tools.update")
 local api = require("GuiH.api")
 
@@ -28,7 +29,7 @@ local function create_gui_object(term_object,orig,log)
         return update(gui,timeout,visible,is_child,data)
     end
     local err = "ok"
-    gui.schedule=function(fnc)
+    gui.schedule=function(fnc,t)
         local task_id = api.uuid4()
         log("scheduled task: "..tostring(task_id))
         gui.task_routine[task_id] = coroutine.create(function()
@@ -132,6 +133,19 @@ local function create_gui_object(term_object,orig,log)
     else
         log("Display object: term",log.info)
         gui.monitor = "term_object"
+    end
+    gui.load_texture = function(data)
+        log("Loading nimg texture.. ",log.update)
+        local tex = graphic.load_texture(data)
+        return tex
+    end
+    gui.load_ppm_texture = function(data,mode)
+        local ok,tex,img = pcall(graphic.load_ppm_texture,gui.term_object,data,mode,log)
+        if ok then
+            return tex,img
+        else
+            log("Failed to load texture: "..tex,log.error)
+        end
     end
     log("")
     log("Starting creator..",log.info)

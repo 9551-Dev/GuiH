@@ -1,3 +1,6 @@
+local decode_ppm = require "GuiH.a-tools.luappm"
+local api = require "GuiH.api"
+
 local chars = "0123456789abcdef"
 local saveCols, loadCols = {}, {}
 for i = 0, 15 do
@@ -101,6 +104,89 @@ local function load_texture(file_name)
         offset=nimg.offset
     }
 end
+
+local function get_color(terminal,c)
+    local palette = {}
+    for i=0,15 do
+        local r,g,b = term.getPaletteColor(2^i) 
+        table.insert(palette,{
+            dist=math.sqrt((r-c.r)^2 + (g-c.g)^2 + (b-c.b)^2),
+            color=2^i
+        })
+    end
+    table.sort(palette,function(a,b) return a.dist < b.dist end)
+    return palette[1].color
+end
+
+local function build_drawing_char(arr,mode)
+    local cols,fin,char,visited = {},{},{},{}
+    local entries = 0
+    for k,v in pairs(arr) do
+        cols[v] = cols[v] ~= nil and
+            {count=cols[v].count+1,c=cols[v].c}
+            or (function() entries = entries + 1 return {count=1,c=v} end)()
+    end
+    for k,v in pairs(cols) do
+        if not visited[v.c] then
+            visited[v.c] = true
+            if entries == 1 then table.insert(fin,v) end
+            table.insert(fin,v)
+        end
+    end
+    table.sort(fin,function(a,b) return a.count > b.count end)
+    for k=1,6 do
+        if arr[k] == fin[1].c then char[k] = 1
+        elseif arr[k] == fin[2].c then char[k] = 0
+        else char[k] = mode and 0 or 1 end
+    end
+    if char[6] == 1 then for i = 1, 5 do char[i] = 1-char[i] end end
+    local n = 128
+    for i = 0, 4 do n = n + char[i+1]*2^i end
+    return string.char(n),char[6] == 1 and fin[2].c or fin[1].c,char[6] == 1 and fin[1].c or fin[2].c
+end
+
+local function set_symbols_xy(tbl,x,y,val)
+    tbl[x+y*2-2] = val
+    return tbl
+end
+
+local function load_ppm_texture(terminal,file,mode,log)
+    log("loading ppm texture.. ",log.update)
+    log("decoding ppm.. ",log.update)
+    local img = decode_ppm(file)
+    log("decoding finished. ",log.success)
+    if img then
+        local char_arrays = {}
+        log("transforming pixels to characters..",log.update)
+        for x=1,img.width do
+            for y=1,img.height do
+                local c = get_color(terminal or term.current(),img.get_pixel(x,y))
+                local rel_x,rel_y = math.ceil(x/2),math.ceil(y/3)
+                local sym_x,sym_y = (x-1)%2+1,(y-1)%3+1
+                if not char_arrays[rel_x] then char_arrays[rel_x] = {} end
+                char_arrays[rel_x][rel_y] = set_symbols_xy(char_arrays[rel_x][rel_y] or {},sym_x,sym_y,c)
+            end
+        end
+        log("transformation finished. "..tostring((img.width/2)*(img.height/3)).." characters",log.success)
+        local texture_raw = api.tables.createNDarray(2,{
+            offset = {5, 13, 11, 4}
+        })
+        log("building nimg format..",log.update)
+        for x,yList in pairs(char_arrays) do
+            for y,sym_data in pairs(yList) do
+                local char,fg,bg = build_drawing_char(sym_data,mode)
+                texture_raw[x+4][y+8] = {
+                    s=char,
+                    t=saveCols[fg],
+                    b=saveCols[bg]
+                }
+            end
+        end
+        log("building finished. texture loaded.",log.success)
+        log("")
+        return load_texture(texture_raw),img
+    end
+end
 local function get_pixel(x,y,tex,fill_empty)
     local texture = tex.tex
     local w,h = math.floor(texture.scale[1]-0.5),math.floor(texture.scale[2]-0.5)
@@ -143,10 +229,12 @@ end
 
 return {
     load_texture=load_texture,
+    load_ppm_texture=load_ppm_texture,
     code={
         get_pixel=get_pixel,
         draw_box_tex=draw_box_tex,
         to_blit=saveCols,
-        to_color=loadCols
+        to_color=loadCols,
+        build_drawing_char=build_drawing_char
     }
 }
