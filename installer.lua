@@ -7,7 +7,11 @@ fs.makeDir("GuiH/presets")
 fs.makeDir("GuiH/presets/rect")
 fs.makeDir("GuiH/presets/tex")
 
-local github_api = http.get("https://api.github.com/repos/9551-Dev/Gui-h/git/trees/main?recursive=1")
+local github_api = http.get(
+	"https://api.github.com/repos/9551-Dev/Gui-h/git/trees/main?recursive=1",
+	_G._GIT_API_KEY and {Authorization = 'token ' .. _G._GIT_API_KEY}
+)
+
 local list = textutils.unserialiseJSON(github_api.readAll())
 local ls = {}
 local len = 0
