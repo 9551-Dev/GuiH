@@ -108,7 +108,7 @@ end
 local function get_color(terminal,c)
     local palette = {}
     for i=0,15 do
-        local r,g,b = term.getPaletteColor(2^i) 
+        local r,g,b = terminal.getPaletteColor(2^i) 
         table.insert(palette,{
             dist=math.sqrt((r-c.r)^2 + (g-c.g)^2 + (b-c.b)^2),
             color=2^i
