@@ -1,3 +1,5 @@
+docs kinda outdated. planning to fix in the future
+
 # **GuiH -simple documentation**
 ### info
 	GuiH is my work in progress computercraft GUI api
