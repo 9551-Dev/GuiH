@@ -190,11 +190,19 @@ local function create_gui_object(term_object,orig,log)
                     x,y = (sval or self.x)+self.offset_x+xin-1,(sval or self.y)+self.offset_y+yin-1
                 end
                 if self.transparent == true then
+                    local n_val = -1
+                    local text = self.text
+                    if x < 1 then
+                        n_val = math.abs(math.min(x+1,3)-2)
+                        term.setCursorPos(1,y)
+                        x = 1
+                        text = self.text:sub(n_val+1)
+                    end
                     local fg,bg = table.unpack(self.blit)
                     local _,_,line = term.getLine(math.floor(y))
-                    local sc_bg = line:sub(x,math.min(x+#self.text-1,gui.w))
-                    local diff = #self.text-#sc_bg-1
-                    term.blit(self.text,fg,sc_bg..bg:sub(#bg-diff,#bg))
+                    local sc_bg = line:sub(x,math.min(x+#text-1,gui.w))
+                    local diff = #text-#sc_bg-1
+                    term.blit(text,fg:sub(n_val+1),sc_bg..bg:sub(#bg-diff,#bg))
                 else
                     term.blit(self.text,table.unpack(self.blit))
                 end
