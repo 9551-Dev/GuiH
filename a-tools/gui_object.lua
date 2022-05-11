@@ -71,7 +71,9 @@ local function create_gui_object(term_object,orig,log)
                     log:dump()
                 end
             end
-        }})
+        },__tostring=function()
+            return "GuiH.EVENT_LISTENER."..id
+        end})
     end
     gui.isHeld = function(key)
         local info = gui.held_keys[key] or {}
