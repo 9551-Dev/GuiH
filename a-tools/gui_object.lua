@@ -41,12 +41,13 @@ local function create_gui_object(term_object,orig,log)
     end
     gui.add_listener = function(_filter,f,name)
         if not _G.type(f) == "function" then return end
+        if not (_G.type(_filter) == "table" or _G.type(_filter) == "string") then _filter = {} end
         local id = name or api.uuid4()
         local listener = {filter=_filter,code=f}
         gui.event_listeners[id] = listener
         log("created event listener: "..id,log.success)
         log:dump()
-        return setmetatable(listener,{__call={
+        return setmetatable(listener,{__index={
             kill=function()
                 gui.event_listeners[id] = nil
                 log("killed event listener: "..id,log.success)
@@ -127,8 +128,8 @@ local function create_gui_object(term_object,orig,log)
                 while true do
                     local eData = table.pack(os.pullEventRaw())
                     for k,v in pairs(gui.event_listeners) do
-                        if v.filter[eData[1]] or v.filter == eData[1] then
-                            v.code(table.unpack(eData,2,eData.n))
+                        if v.filter[eData[1]] or v.filter == eData[1] or (not next(v.filter)) then
+                            v.code(table.unpack(eData,_G.type(v.filter) ~= "table" and 2 or 1,eData.n))
                         end
                     end
                     os.queueEvent("")
@@ -160,7 +161,9 @@ local function create_gui_object(term_object,orig,log)
         while (coroutine.status(func_coro) ~= "dead" or not (_G.type(fnc) == "function")) and coroutine.status(gui_coro) ~= "dead" and err == "ok" do
             local event = table.pack(os.pullEventRaw())
             if event[1] == "terminate" then err = "Terminated" break end
-            coroutine.resume(listener_handle,table.unpack(event,1,event.n))
+            if event[1] ~= "guih_data_event" then
+                coroutine.resume(listener_handle,table.unpack(event,1,event.n))
+            end
             coroutine.resume(func_coro,table.unpack(event,1,event.n))
             if event[1] == "key" or event[1]== "key_up" then
                 coroutine.resume(key_handler,table.unpack(event,1,event.n))

@@ -44,6 +44,7 @@ return {
         log("creating gui object..",log.update)
         local gui = create(win,m,log)
         log("finished creating gui object!",log.success)
+        log("",log.info)
         log:dump()
         package.path = old_path
         return gui
