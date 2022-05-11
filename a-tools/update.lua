@@ -112,6 +112,7 @@ return function(self,timeout,visible,is_child,data_in)
                 character=data.character,
                 text=data.text
             }
+            if v.gui then v.gui.term_object.clear() end
             if api.is_within_field(data.x,data.y,x,y,x+w,y+h) then
                 (v.child or v.gui).update(math.huge,v.visible,true,dat)
             else
