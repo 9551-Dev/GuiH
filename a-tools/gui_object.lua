@@ -22,7 +22,9 @@ local function create_gui_object(term_object,orig,log)
         held_keys={},
         log=log,
         task_routine={},
-        w=w,h=h
+        w=w,h=h,
+        event_listeners={},
+        paused_listeners={}
     }
     log("set up updater",log.update)
     local function updater(timeout,visible,is_child,data)
@@ -36,6 +38,39 @@ local function create_gui_object(term_object,orig,log)
             local ok,erro = pcall(fnc,gui,gui.term_object)
             if not ok then err = erro end
         end)
+    end
+    gui.add_listener = function(_filter,f,name)
+        if not _G.type(f) == "function" then return end
+        local id = name or api.uuid4()
+        local listener = {filter=_filter,code=f}
+        gui.event_listeners[id] = listener
+        log("created event listener: "..id,log.success)
+        log:dump()
+        return setmetatable(listener,{__call={
+            kill=function()
+                gui.event_listeners[id] = nil
+                log("killed event listener: "..id,log.success)
+                log:dump()
+            end,
+            pause=function()
+                gui.paused_listeners[id] = listener
+                gui.event_listeners[id] = nil
+                log("paused event listener: "..id,log.success)
+                log:dump()
+            end,
+            resume=function()
+                local listener = gui.paused_listeners[id] or gui.event_listeners[id]
+                if listener then
+                    gui.event_listeners[id] = listener
+                    gui.paused_listeners[id] = nil
+                    log("resumed event listener: "..id,log.success)
+                    log:dump()
+                else
+                    log("event listener not found: "..id,log.error)
+                    log:dump()
+                end
+            end
+        }})
     end
     gui.isHeld = function(key)
         local info = gui.held_keys[key] or {}
@@ -64,13 +99,13 @@ local function create_gui_object(term_object,orig,log)
                     execution_window.setVisible(true);
                 end
             end)
-            if not ok then err = erro end
+            if not ok then err = erro log:dump() end
         end)
         log("created graphic routine 1",log.update)
         local mns = fnc or function() end
         local function main()
             local ok,erro = pcall(mns,execution_window)
-            if not ok then err = erro end
+            if not ok then err = erro log:dump() end
         end
         log("created custom updater",log.update)
         local graphics_updater = coroutine.create(function()
@@ -86,11 +121,31 @@ local function create_gui_object(term_object,orig,log)
                 else sleep(gui.update_delay) end
             end
         end)
+        log("created event listener handle",log.update)
+        local listener_handle = coroutine.create(function()
+            local ok,erro = pcall(function()
+                while true do
+                    local eData = table.pack(os.pullEventRaw())
+                    for k,v in pairs(gui.event_listeners) do
+                        if v.filter[eData[1]] or v.filter == eData[1] then
+                            v.code(table.unpack(eData,2,eData.n))
+                        end
+                    end
+                    os.queueEvent("")
+                    os.pullEvent("")
+                end
+            end)
+            if not ok then err = erro log:dump() end
+        end)
         log("created graphic routine 2",log.update)
         local key_handler = coroutine.create(function()
-            local name,key,held = os.pullEvent()
-            if name == "key" then gui.held_keys[key] = {true,held} end
-            if name == "key_up" then gui.held_keys[key] = nil end
+            while true do
+                local name,key,held = os.pullEvent()
+                if name == "key" then gui.held_keys[key] = {true,held} end
+                if name == "key_up" then gui.held_keys[key] = nil end
+                os.queueEvent("")
+                os.pullEvent("")
+            end
         end)
         log("created key handler")
         local func_coro = coroutine.create(main)
@@ -105,6 +160,7 @@ local function create_gui_object(term_object,orig,log)
         while (coroutine.status(func_coro) ~= "dead" or not (_G.type(fnc) == "function")) and coroutine.status(gui_coro) ~= "dead" and err == "ok" do
             local event = table.pack(os.pullEventRaw())
             if event[1] == "terminate" then err = "Terminated" break end
+            coroutine.resume(listener_handle,table.unpack(event,1,event.n))
             coroutine.resume(func_coro,table.unpack(event,1,event.n))
             if event[1] == "key" or event[1]== "key_up" then
                 coroutine.resume(key_handler,table.unpack(event,1,event.n))
