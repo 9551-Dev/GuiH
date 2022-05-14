@@ -4,7 +4,7 @@ local log = logger.create_log()
 local apis = {
     algo=require("GuiH.a-tools.algo"),
     luappm=require("GuiH.a-tools.luappm"),
-    graphic=require("GuiH.texture-wrapper"),
+    graphic=require("GuiH.texture-wrapper").code,
     general=require("GuiH.api")
 }
 local presets={}
