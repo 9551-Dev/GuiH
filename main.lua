@@ -31,24 +31,27 @@ log("")
 
 log:dump()
 
+local function generate_ui(m)
+    local selfDir = path:match("(.+)%/.+$") or ""
+    local old_path = package.path
+    package.path = string.format(
+        "%s;/%s/?.lua;/%s/?/init.lua",
+        package.path, selfDir,selfDir
+    )
+    local create = require("GuiH.a-tools.gui_object")
+    local win = window.create(m,1,1,m.getSize())
+    log("creating gui object..",log.update)
+    local gui = create(win,m,log)
+    log("finished creating gui object!",log.success)
+    log("",log.info)
+    log:dump()
+    package.path = old_path
+    return gui
+end
+ 
 return {
-    create_gui=function(m)
-        local selfDir = path:match("(.+)%/.+$") or ""
-        local old_path = package.path
-        package.path = string.format(
-            "%s;/%s/?.lua;/%s/?/init.lua",
-            package.path, selfDir,selfDir
-        )
-        local create = require("GuiH.a-tools.gui_object")
-        local win = window.create(m,1,1,m.getSize())
-        log("creating gui object..",log.update)
-        local gui = create(win,m,log)
-        log("finished creating gui object!",log.success)
-        log("",log.info)
-        log:dump()
-        package.path = old_path
-        return gui
-    end,
+    create_gui=generate_ui,
+    new=generate_ui,
     load_texture=require("GuiH.texture-wrapper").load_texture,
     convert_event=function(ev_name,e1,e2,e3,id)
         local ev_data = {}
