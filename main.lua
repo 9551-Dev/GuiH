@@ -3,7 +3,9 @@ local path = fs.getDir(select(2,...))
 local log = logger.create_log()
 local apis = {
     algo=require("GuiH.a-tools.algo"),
-    luappm=require("GuiH.a-tools.luappm")
+    luappm=require("GuiH.a-tools.luappm"),
+    graphic=require("GuiH.texture-wrapper"),
+    general=require("GuiH.api")
 }
 local presets={}
 
