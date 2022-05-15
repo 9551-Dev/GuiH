@@ -193,13 +193,13 @@ local function create_gui_object(term_object,orig,log)
             local ok,erro = pcall(function()
                 while true do
                     local eData = table.pack(os.pullEventRaw())
-                    local filter = v.filter
-                    if _G.type(filter) == "string" then filter = {[v.filter]=true} end
                     
                     --* iterates ever listeners with said event
                     --* and if the event matches the filter or there is no filter
                     --* runs the code asigned to the listener
                     for k,v in pairs(gui.event_listeners) do
+                        local filter = v.filter
+                        if _G.type(filter) == "string" then filter = {[v.filter]=true} end
                         if filter[eData[1]] or filter == eData[1] or (not next(filter)) then
                             v.code(table.unpack(eData,_G.type(v.filter) ~= "table" and 2 or 1,eData.n))
                         end
