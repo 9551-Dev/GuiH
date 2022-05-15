@@ -1,3 +1,5 @@
+--* builds a checkerboard texture with any amount of colors
+
 local api = require("GuiH.api")
 local graphic = require("GuiH.texture-wrapper")
 

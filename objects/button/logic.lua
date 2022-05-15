@@ -1,5 +1,7 @@
 local api = require("GuiH.api")
 return function(object,event)
+    --* if a click happens on the buttons area
+    --* run on_click function
     if api.is_within_field(
         event.x,
         event.y,

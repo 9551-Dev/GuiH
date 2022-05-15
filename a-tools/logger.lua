@@ -1,4 +1,8 @@
---! modified version of my log api for purpose of file logging
+--[[
+    * this is an modified version of my log api
+    * made specificaly for GuiH logging
+    * designed to log into a file
+]]
 
 local path = fs.getDir(select(2,...))
 
@@ -26,15 +30,19 @@ local index = {
 local type_space = 15
 
 local revIndex = {}
+
+--* reverses table indexe with value
 for k,v in pairs(index) do
     revIndex[v] = k
 end
 
+--*removes time data from start of a string. time format: ("HH:MM PM/AM?")
 local function remove_time(str)
     local str = str:gsub("^%[%d-%:%d-% %a-]","")
     return str
 end
 
+--* takes the logs history data and procceses it into a file
 function index:dump()
     local lastLog = ""
     local nstr = 1
@@ -59,6 +67,7 @@ function index:dump()
     return str
 end
 
+--* creates a new entry in  the log
 local function write_to_log_internal(self,str,type)
     local width,height = math.huge,math.huge
     local str = tostring(str)
@@ -80,6 +89,7 @@ local function write_to_log_internal(self,str,type)
     })
 end
 
+--* makes the log object
 local function createLogInternal(title,titlesym,auto_dump,file)
     titlesym = titlesym or "-"
     local log = setmetatable({

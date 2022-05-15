@@ -1,3 +1,9 @@
+--[[
+    * this file includes general usage functions so i wont
+    * explain them. i use this file almost everywhere and
+    * cause it has some useful stuff
+]]
+
 local function is_within_field(x,y,start_x,start_y,width,height)
     return x >= start_x and x < start_x+width and y >= start_y and y < start_y+height
 end

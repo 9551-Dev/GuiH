@@ -1,3 +1,9 @@
+--[[
+    ! this file doesnt do anything !
+    * it shows how to make a propper new object.lua
+    * for your own custom elements
+]]
+
 local api = require("GuiH.api")
 return function(object,data)
     data = data or {}

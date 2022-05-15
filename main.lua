@@ -1,6 +1,16 @@
+--[[
+    * this file is used to provide you with the main few main functions that
+    * and load all the nessesary presets and modules, also sets up log
+]]
+
 local logger = require("GuiH.a-tools.logger")
+
+--* gets this files path so it can be later used in package.path
 local path = fs.getDir(select(2,...))
+
 local log = logger.create_log()
+
+--* puts the internal apis into the apis table cause they may be useful
 local apis = {
     algo=require("GuiH.a-tools.algo"),
     luappm=require("GuiH.a-tools.luappm"),
@@ -9,6 +19,7 @@ local apis = {
 }
 local presets={}
 
+--* iterating over everything in the apis and presets folder and loading them
 log("loading apis..",log.update)
 for k,v in pairs(fs.list(path.."/apis")) do
     local name = v:match("[^.]+")
@@ -31,9 +42,12 @@ log("")
 log("finished loading",log.success)
 log("")
 
+--* dumps the log into the a-tools/log.log file
 log:dump()
 
+--* this function is used to build a new gui_object using the gui_object.lua file
 local function generate_ui(m)
+    
     local selfDir = path:match("(.+)%/.+$") or ""
     local old_path = package.path
     package.path = string.format(
@@ -50,7 +64,7 @@ local function generate_ui(m)
     package.path = old_path
     return gui
 end
- 
+
 return {
     create_gui=generate_ui,
     new=generate_ui,

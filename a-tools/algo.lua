@@ -1,3 +1,11 @@
+--[[
+    * this file is used for algorithms
+    * and shape drawing purposes
+    * i dont feel like explaining this file
+    * since i dont understand it very much myself.
+    ! sorry for that
+]]
+
 local api = require("GuiH.api")
 
 local function get_elipse_points(radius_x,radius_y,xc,yc,filled)
@@ -156,8 +164,6 @@ local function get_line_points(startX, startY, endX, endY)
     end
     return points
 end
-
-
 
 local function get_triangle_outline_points(v1,v2,v3)
     local final_points = {}
