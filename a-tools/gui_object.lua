@@ -118,6 +118,7 @@ local function create_gui_object(term_object,orig,log)
     --* used for running the actuall gui. handles graphics buffering
     --* event handling,key handling,multitasking and updating the gui
     gui.execute=function(fnc,on_event,bef_draw,after_draw)
+        err = "ok"
         log("")
         log("loading execute..",log.update)
         local execution_window = gui.term_object
@@ -281,6 +282,7 @@ local function create_gui_object(term_object,orig,log)
         log:dump()
 
         --* returns the reason for the stop in execution
+        gui.latest_error = err
         return err
     end
 
