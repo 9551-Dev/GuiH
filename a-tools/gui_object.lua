@@ -343,7 +343,9 @@ local function create_gui_object(term_object,orig,log)
             offset_x = data.offset_x or 0,
             offset_y = data.offset_y or 0,
             blit = data.blit or {fg,bg},
-            transparent=data.transparent
+            transparent=data.transparent,
+            bg=data.bg,
+            fg=data.fg
         },{
             __call=function(self,tobject,x,y,w,h)
                 local term = tobject or gui.term_object
@@ -379,6 +381,8 @@ local function create_gui_object(term_object,orig,log)
                     
                     --* get he provided blit data
                     local fg,bg = table.unpack(self.blit)
+                    if self.bg then bg = graphic.code.to_blit[self.bg]:rep(#self.text) end
+                    if self.fg then fg = graphic.code.to_blit[self.fg]:rep(#self.text) end
 
                     --* get the blit data on the line the text is on
                     local _,_,line = term.getLine(math.floor(y))
@@ -396,7 +400,10 @@ local function create_gui_object(term_object,orig,log)
                     term.blit(text,fg:sub(n_val+1),sc_bg..bg:sub(#bg-diff,#bg))
                 else
                     --* draw text with provided blit
-                    term.blit(self.text,table.unpack(self.blit))
+                    local fg,bg = table.unpack(self.blit)
+                    if self.bg then bg = graphic.code.to_blit[self.bg]:rep(#self.text) end
+                    if self.fg then fg = graphic.code.to_blit[self.fg]:rep(#self.text) end
+                    term.blit(self.text,fg,bg)
                 end
             end 
         })
