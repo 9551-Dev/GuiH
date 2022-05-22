@@ -1,5 +1,5 @@
 --* sets the package path to GuiH's path
-local selfDir = fs.getDir(select(2,...)):match("(.+)%/.+$") or ""
+local selfDir = fs.getDir(select(2,...)) or ""
 local old_path = package.path
 package.path = string.format(
     "%s;/%s/?.lua;/%s/?/init.lua",
