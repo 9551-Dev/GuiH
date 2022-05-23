@@ -62,6 +62,8 @@ local function generate_ui(m)
     package.path = old_path
     local mt = getmetatable(gui) or {}
     mt.__tostring = function() return "GuiH.MAIN_UI."..tostring(gui.id) end
+    gui.api=apis
+    gui.preset=presets
     return setmetatable(gui,mt)
 end
 

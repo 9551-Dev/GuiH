@@ -370,9 +370,14 @@ local function create_gui_object(term_object,orig,log)
             blit = data.blit or {fg,bg},
             transparent=data.transparent,
             bg=data.bg,
-            fg=data.fg
+            fg=data.fg,
+            width=data.width,
+            height=data.height
         },{
             __call=function(self,tobject,x,y,w,h)
+                x,y = x or self.x,y or self.y
+                if self.width then w = self.width end
+                if self.height then h = self.height end
                 local term = tobject or gui.term_object
                 local sval
                 if _G.type(x) == "number" and _G.type(y) == "number" then sval = 1 end
@@ -416,8 +421,12 @@ local function create_gui_object(term_object,orig,log)
                         if self.fg then fg = graphic.code.to_blit[self.fg]:rep(#text) end
 
                         --* get the blit data on the line the text is on
-                        local _,_,line = term.getLine(math.floor(y))
-
+                        local line
+                        pcall(function()
+                            _,_,line = term.getLine(math.floor(y))
+                        end)
+                        if not line then return end
+                        if not line then return end
                         --* calculate the blit under the text from its position
                         --* and data from that line
                         local sc_bg = line:sub(x,math.min(x+#text-1,gui.w))
@@ -429,7 +438,9 @@ local function create_gui_object(term_object,orig,log)
                         --* draw the final text subed by b_val in case
                         --* its off the screen to the left
                         if #fg ~= #text then fg = ("0"):rep(#text) end
-                        term.blit(text,fg:sub(n_val+1),sc_bg..bg:sub(#bg-diff,#bg))
+                        log(text.." "..fg:sub(n_val+1).." "..sc_bg..bg:sub(#bg-diff,#bg))
+                        log:dump()
+                        term.blit(text,fg:sub(math.min(x,1)),sc_bg..bg:sub(#bg-diff,#bg))
                     else
                         --* draw text with provided blit
                         local fg,bg = table.unpack(self.blit)
