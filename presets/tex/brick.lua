@@ -1,6 +1,6 @@
 --* creates a custom brick texture
 
-local graphic = require("GuiH.texture-wrapper")
+local graphic = require("texture-wrapper")
 
 return function(bg,brick)
     if not bg then bg = colors.gray end

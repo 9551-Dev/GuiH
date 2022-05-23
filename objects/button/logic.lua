@@ -1,4 +1,4 @@
-local api = require("GuiH.api")
+local api = require("api")
 return function(object,event)
     --* if a click happens on the buttons area
     --* run on_click function

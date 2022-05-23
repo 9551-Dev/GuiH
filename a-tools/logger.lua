@@ -4,7 +4,7 @@
     * designed to log into a file
 ]]
 
-local path = fs.getDir(select(2,...))
+local path = fs.getDir(select(2,...)):match("(.+)%/.+$")
 
 local typeList = {
     {colors.red},

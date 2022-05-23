@@ -1,4 +1,4 @@
-local api = require("GuiH.api")
+local api = require("api")
 
 return function(object,data)
     data = data or {}

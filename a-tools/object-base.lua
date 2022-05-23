@@ -4,7 +4,7 @@
     * for your own custom elements
 ]]
 
-local api = require("GuiH.api")
+local api = require("api")
 return function(object,data)
     data = data or {}
     if type(data.visible) ~= "boolean" then data.visible = true end

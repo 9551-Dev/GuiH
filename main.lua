@@ -3,7 +3,7 @@
     * and load all the nessesary presets and modules, also sets up log
 ]]
 
-local logger = require("GuiH.a-tools.logger")
+local logger = require("a-tools.logger")
 
 --* gets this files path so it can be later used in package.path
 local path = fs.getDir(select(2,...))
@@ -12,10 +12,10 @@ local log = logger.create_log()
 
 --* puts the internal apis into the apis table cause they may be useful
 local apis = {
-    algo=require("GuiH.a-tools.algo"),
-    luappm=require("GuiH.a-tools.luappm"),
-    graphic=require("GuiH.texture-wrapper").code,
-    general=require("GuiH.api")
+    algo=require("a-tools.algo"),
+    luappm=require("a-tools.luappm"),
+    graphic=require("texture-wrapper").code,
+    general=require("api")
 }
 local presets={}
 
@@ -24,7 +24,7 @@ log("loading apis..",log.update)
 for k,v in pairs(fs.list(path.."/apis")) do
     local name = v:match("[^.]+")
     if not fs.isDir(path.."/apis/"..v) then
-        apis[name] = require("GuiH.apis."..name)
+        apis[name] = require("apis."..name)
         log("loaded api: "..name)
     end
 end
@@ -34,7 +34,7 @@ for k,v in pairs(fs.list(path.."/presets")) do
     for _k,_v in pairs(fs.list(path.."/presets/"..v)) do
         if not presets[v] then presets[v] = {} end
         local name = _v:match("[^.]+")
-        presets[v][name] = require("GuiH.presets."..v.."."..name)
+        presets[v][name] = require("presets."..v.."."..name)
         log("loaded preset: "..v.." > "..name)
     end
 end
@@ -47,14 +47,12 @@ log:dump()
 
 --* this function is used to build a new gui_object using the gui_object.lua file
 local function generate_ui(m)
-    
-    local selfDir = path:match("(.+)%/.+$") or ""
     local old_path = package.path
     package.path = string.format(
         "%s;/%s/?.lua;/%s/?/init.lua",
-        package.path, selfDir,selfDir
+        package.path, path,path
     )
-    local create = require("GuiH.a-tools.gui_object")
+    local create = require("a-tools.gui_object")
     local win = window.create(m,1,1,m.getSize())
     log("creating gui object..",log.update)
     local gui = create(win,m,log)
@@ -62,13 +60,15 @@ local function generate_ui(m)
     log("",log.info)
     log:dump()
     package.path = old_path
-    return gui
+    local mt = getmetatable(gui) or {}
+    mt.__tostring = function() return "GuiH.MAIN_UI."..tostring(gui.id) end
+    return setmetatable(gui,mt)
 end
 
 return {
     create_gui=generate_ui,
     new=generate_ui,
-    load_texture=require("GuiH.texture-wrapper").load_texture,
+    load_texture=require("texture-wrapper").load_texture,
     convert_event=function(ev_name,e1,e2,e3,id)
         local ev_data = {}
         if ev_name == "monitor_touch" then ev_data = {name=ev_name,monitor=e1,x=e2,y=e3} end

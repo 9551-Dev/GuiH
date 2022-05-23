@@ -1,5 +1,5 @@
-local algo = require("GuiH.a-tools.algo")
-local graphic = require("GuiH.texture-wrapper").code
+local algo = require("a-tools.algo")
+local graphic = require("texture-wrapper").code
 
 return function(object)
     local term = object.canvas.term_object

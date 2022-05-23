@@ -4,7 +4,7 @@
     * gui.create table
 ]]
 
-local api = require("GuiH.api")
+local api = require("api")
 local path = fs.getDir(select(2,...))
 
 --* function used to dereference
@@ -51,19 +51,19 @@ return {main=function(i_self,guis,log)
     local objects = {}
 
     --* we get all the object names and iterate over them
-    local object_list = fs.list(path.."/objects")
+    local object_list = fs.list(fs.combine(path,"objects"))
     for k,v in pairs(object_list) do
         log("loading object: "..v,log.update)
 
         --* we require the main files for this object
-        local zok,main = pcall(require,"GuiH.objects."..v..".object")
+        local zok,main = pcall(require,"objects."..v..".object")
         if zok and type(main) == "function" then
-            local aok,adat = pcall(require,"GuiH.objects."..v..".logic")
-            local bok,bdat = pcall(require,"GuiH.objects."..v..".graphic")
+            local aok,adat = pcall(require,"objects."..v..".logic")
+            local bok,bdat = pcall(require,"objects."..v..".graphic")
 
             --* check if all files are present and working
             if aok and bok and (type(adat) == "function") and (type(bdat) == "function") then
-                local c_file_names = fs.list(path.."/objects/"..v)
+                local c_file_names = fs.list(fs.combine(path.."/objects/",v))
                 local custom_flags = {}
                 local custom_manipulators = {}
 
@@ -74,14 +74,14 @@ return {main=function(i_self,guis,log)
                     --* if the files name isnt any of the default files
                     --* and it isnt a directorory then
                     if not (name == "logic" or name == "graphic" or name == "object") and (not fs.isDir(path.."/objects/"..v.."/"..name)) then
-                        log("GuiH.objects."..v.."."..name)
+                        log("objects."..v.."."..name)
                         
                         --* we require that file and add the function it returns
                         --* into custom_flags saved under the files name
-                        local ok,err = pcall(require,"GuiH.objects."..v.."."..name)
+                        local ok,err = pcall(require,"objects."..v.."."..name)
                         if ok then
                             log("found custom object flag \""..name .. "\" for: " .. v,log.update)
-                            custom_flags[name] = require("GuiH.objects."..v.."."..name)
+                            custom_flags[name] = require("objects."..v.."."..name)
                         else
                             log("bad object flag "..err)
                         end
@@ -99,10 +99,10 @@ return {main=function(i_self,guis,log)
                                 --* we require the file and
                                 --* save it into custom_mainipulators
                                 --* table under its name
-                                local ok,err = pcall(require,".GuiH.objects."..v..".manipulators.".._v:match("(.*)%.") or _v)
+                                local ok,err = pcall(require,"objects."..v..".manipulators.".._v:match("(.*)%.") or _v)
                                 if ok then
                                     log("found custom object manipulator \"".._v .. "\" for: " .. v,log.update)
-                                    custom_manipulators[_v:match("(.*)%.") or _v] = err
+                                    custom_manipulators[_v:match("(.*)%.") or _v] = setmetatable({},{__call=function(_,...) return err(...) end,__index=err,__tostring=function() return "GuiH."..v..".manipulator" end})
                                 else
                                     log("bad object manipulator "..err)
                                 end
@@ -116,7 +116,7 @@ return {main=function(i_self,guis,log)
                 --* we attach the custom creation flags
                 --* to the new object creator table
                 __index=custom_flags,
-                __tostring=function() return "GuiH."..v..".builder" end,
+                __tostring=function() return "GuiH.element_builder."..v end,
 
                 --* add a __call for the object creation function
                 __call=function(_,data)
@@ -269,6 +269,7 @@ return {main=function(i_self,guis,log)
                     --* aliases for object.kill
                     index.destroy = index.kill
                     index.murder = index.destroy
+                    index.copy = index.isolate
 
                     --* we check if the object has propper main functions attached
                     if not type(index.logic) == "function" then log("object "..v.." has invalid logic.lua",log.error) return false end
@@ -276,7 +277,8 @@ return {main=function(i_self,guis,log)
 
                     --* we attach theese to the object
                     --* and give it a pointer to the gui object it is in
-                    setmetatable(object,{__index = index,__tostring=function() return "GuiH."..v.."."..object.name end})
+                    setmetatable(object,{__index = index,__tostring=function() return "GuiH.element."..v.."."..object.name end})
+                    if object.positioning then setmetatable(object.positioning,{__tostring=function() return "GuiH.element.position" end}) end
                     object.canvas = i_self
 
                     log("created new "..v.." > "..object.name,log.info)
@@ -318,4 +320,4 @@ return {main=function(i_self,guis,log)
 
     --* return the list of object builders
     return objects
-end,types=fs.list(path.."/objects")}
+end,types=fs.list(fs.combine(path,"objects"))}

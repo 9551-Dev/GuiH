@@ -6,10 +6,10 @@
 ]]
 
 --* loads the required modules
-local objects = require("GuiH.object-loader")
-local graphic = require("GuiH.texture-wrapper")
-local update = require("GuiH.a-tools.update")
-local api = require("GuiH.api")
+local objects = require("object-loader")
+local graphic = require("texture-wrapper")
+local update = require("a-tools.update")
+local api = require("api")
 
 local function create_gui_object(term_object,orig,log)
     local gui_objects = {}
@@ -117,7 +117,7 @@ local function create_gui_object(term_object,orig,log)
 
     --* used for running the actuall gui. handles graphics buffering
     --* event handling,key handling,multitasking and updating the gui
-    gui.execute=function(fnc,on_event,bef_draw,after_draw)
+    gui.execute=setmetatable({},{__call=function(_,fnc,on_event,bef_draw,after_draw)
         log("")
         log("loading execute..",log.update)
         local execution_window = gui.term_object
@@ -141,7 +141,7 @@ local function create_gui_object(term_object,orig,log)
                     execution_window.setBackgroundColor(gui.background or sbg)
                     execution_window.clear();
 
-                    --* rewdraw the gui
+                    --* redraw the gui
                     (bef_draw or function() end)(execution_window)
                     local event = update(gui,nil,true,false,nil);
                     (on_event or function() end)(execution_window,event);
@@ -270,16 +270,16 @@ local function create_gui_object(term_object,orig,log)
             coroutine.resume(gui_coro,table.unpack(event,1,event.n))
             coroutine.resume(graphics_updater,table.unpack(event,1,event.n))
         end
-
+        if err then gui.last_err = err end
         --* makes sure the window is visible when execution ends
         execution_window.setVisible(true)
         if err then log("a Fatal error occured: "..err..debug.traceback(),log.fatal)
         else log("finished execution",log.success) end
         log:dump()
-
+        err = "ok"
         --* returns the reason for the stop in execution
-        return err
-    end
+        return gui.last_err
+    end,__tostring=function() return "GuiH.main_gui_executor" end})
 
     --* if the term object happens to be an monitor then get its name
     if type == "monitor" then
@@ -309,7 +309,9 @@ local function create_gui_object(term_object,orig,log)
     end
     log("")
     log("Starting creator..",log.info)
-    gui.create = objects.main(gui,gui.gui,log)
+    local creators = objects.main(gui,gui.gui,log)
+    gui.create = creators
+    gui.new = creators
     log("")
     gui.update = updater
     log("loading text object...",log.update)
@@ -393,7 +395,8 @@ local function create_gui_object(term_object,orig,log)
                     --* draw text with provided blit
                     term.blit(self.text,table.unpack(self.blit))
                 end
-            end 
+            end,
+            __tostring=function() return "GuiH.primitive.text" end
         })
     end
     return gui

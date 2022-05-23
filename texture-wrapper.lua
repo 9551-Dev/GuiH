@@ -4,8 +4,8 @@
     * and draws them
 ]]
 
-local decode_ppm = require "GuiH.a-tools.luappm"
-local api = require "GuiH.api"
+local decode_ppm = require "a-tools.luappm"
+local api = require "api"
 
 local chars = "0123456789abcdef"
 local saveCols, loadCols = {}, {}
@@ -107,10 +107,10 @@ local function load_texture(file_name)
 
     --* returns the new texture with its
     --* dimensions,data,offset
-    return {
+    return setmetatable({
         tex=temp,
         offset=nimg.offset
-    }
+    },{__tostring=function() return "GuiH.texture" end})
 end
 
 --* finds the closest CC color to an RGB value
@@ -257,7 +257,7 @@ local function load_ppm_texture(terminal,file,mode,log)
 
         --* at last we use load_texture to convert it to GuiH texture
         --* and then we return it along with the decoded PPM image
-        return load_texture(texture_raw),img
+        return setmetatable(load_texture(texture_raw),{__tostring=function() return "GuiH.texture" end}),img
     end
 end
 

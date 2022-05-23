@@ -1,5 +1,5 @@
-local api = require("GuiH.api")
-local main = require("GuiH.a-tools.gui_object")
+local api = require("api")
+local main = require("a-tools.gui_object")
 
 return function(object,data)
     data = data or {}

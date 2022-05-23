@@ -1,4 +1,4 @@
-local api = require("GuiH.api")
+local api = require("api")
 return function(object,event,self)
     object.on_any(object,event)
     local x,y = object.window.getPosition()

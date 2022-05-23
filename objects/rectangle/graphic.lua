@@ -1,4 +1,4 @@
-local graphics = require("GuiH.texture-wrapper").code
+local graphics = require("texture-wrapper").code
 
 return function(object)
     local term = object.canvas.term_object
