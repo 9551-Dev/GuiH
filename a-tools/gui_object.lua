@@ -379,56 +379,66 @@ local function create_gui_object(term_object,orig,log)
                 if _G.type(x) ~= "number" then x = 1 end
                 if _G.type(y) ~= "number" then y = 1 end
                 local xin,yin = x,y
-                if self.centered then
-                    --* calcualte the center text position
-                    local y_centered = (h or gui.h)/2-0.5
-                    local x_centered = math.ceil(((w or gui.w)/2)-(#self.text/2))-0.5
-                    term.setCursorPos(x_centered+self.offset_x+xin,y_centered+self.offset_y+yin)
-                    x,y = x_centered+self.offset_x+xin,y_centered+self.offset_y+yin
-                else
-                    --* calculate the offset text position
-                    term.setCursorPos((sval or self.x)+self.offset_x+xin-1,(sval or self.y)+self.offset_y+yin-1)
-                    x,y = (sval or self.x)+self.offset_x+xin-1,(sval or self.y)+self.offset_y+yin-1
-                end
-                if self.transparent == true then
-
-                    --* if the text is of the screen to the left cut it
-                    --* at the spot where it leaves the screen
-                    --* also move its cursor pos all the way to the left
-                    local n_val = -1
-                    local text = self.text
-                    if x < 1 then
-                        n_val = math.abs(math.min(x+1,3)-2)
-                        term.setCursorPos(1,y)
-                        x = 1
-                        text = self.text:sub(n_val+1)
+                local strings = {}
+                for c in self.text:gmatch("[^\n]+") do table.insert(strings,c) end
+                if self.centered then yin = yin - #strings/2
+                else yin = yin - 1 end
+                for i=1,#strings do
+                    local text = strings[i]
+                    yin = yin + 1
+                    if self.centered then
+                        --* calcualte the center text position
+                        local y_centered = (h or gui.h)/2-0.5
+                        local x_centered = math.ceil(((w or gui.w)/2)-(#text/2)-0.5)
+                        term.setCursorPos(x_centered+self.offset_x+xin,y_centered+self.offset_y+yin)
+                        x,y = x_centered+self.offset_x+xin,y_centered+self.offset_y+yin
+                    else
+                        --* calculate the offset text position
+                        term.setCursorPos((sval or self.x)+self.offset_x+xin-1,(sval or self.y)+self.offset_y+yin-1)
+                        x,y = (sval or self.x)+self.offset_x+xin-1,(sval or self.y)+self.offset_y+yin-1
                     end
-                    
-                    --* get he provided blit data
-                    local fg,bg = table.unpack(self.blit)
-                    if self.bg then bg = graphic.code.to_blit[self.bg]:rep(#self.text) end
-                    if self.fg then fg = graphic.code.to_blit[self.fg]:rep(#self.text) end
+                    if self.transparent == true then
 
-                    --* get the blit data on the line the text is on
-                    local _,_,line = term.getLine(math.floor(y))
+                        --* if the text is of the screen to the left cut it
+                        --* at the spot where it leaves the screen  
+                        --* also move its cursor pos all the way to the left
+                        local n_val = -1
+                        if x < 1 then
+                            n_val = math.abs(math.min(x+1,3)-2)
+                            term.setCursorPos(1,y)
+                            x = 1
+                            text = text:sub(n_val+1)
+                        end
+                        
+                        --* get he provided blit data
+                        local fg,bg = table.unpack(self.blit)
+                        if self.bg then bg = graphic.code.to_blit[self.bg]:rep(#text) end
+                        if self.fg then fg = graphic.code.to_blit[self.fg]:rep(#text) end
 
-                    --* calculate the blit under the text from its position
-                    --* and data from that line
-                    local sc_bg = line:sub(x,math.min(x+#text-1,gui.w))
+                        --* get the blit data on the line the text is on
+                        local _,_,line = term.getLine(math.floor(y))
 
-                    --* see if that data from the line is enough
-                    --* if not dataa from text.blit will get added on draw
-                    local diff = #text-#sc_bg-1
+                        --* calculate the blit under the text from its position
+                        --* and data from that line
+                        local sc_bg = line:sub(x,math.min(x+#text-1,gui.w))
 
-                    --* draw the final text subed by b_val in case
-                    --* its off the screen to the left
-                    term.blit(text,fg:sub(n_val+1),sc_bg..bg:sub(#bg-diff,#bg))
-                else
-                    --* draw text with provided blit
-                    local fg,bg = table.unpack(self.blit)
-                    if self.bg then bg = graphic.code.to_blit[self.bg]:rep(#self.text) end
-                    if self.fg then fg = graphic.code.to_blit[self.fg]:rep(#self.text) end
-                    term.blit(self.text,fg,bg)
+                        --* see if that data from the line is enough
+                        --* if not data from text.blit will get added on draw
+                        local diff = #text-#sc_bg-1
+
+                        --* draw the final text subed by b_val in case
+                        --* its off the screen to the left
+                        if #fg ~= #text then fg = ("0"):rep(#text) end
+                        term.blit(text,fg:sub(n_val+1),sc_bg..bg:sub(#bg-diff,#bg))
+                    else
+                        --* draw text with provided blit
+                        local fg,bg = table.unpack(self.blit)
+                        if self.bg then bg = graphic.code.to_blit[self.bg]:rep(#text) end
+                        if self.fg then fg = graphic.code.to_blit[self.fg]:rep(#text) end
+                        if #fg ~= #text then fg = ("0"):rep(#text) end
+                        if #bg ~= #text then bg = ("f"):rep(#text) end
+                        term.blit(text,fg,bg)
+                    end
                 end
             end,
             __tostring=function() return "GuiH.primitive.text" end
