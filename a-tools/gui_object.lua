@@ -40,6 +40,8 @@ local function create_gui_object(term_object,orig,log)
         paused_listeners={},
         background=term_object.getBackgroundColor()
     }
+    gui.elements = gui.gui
+
     log("set up updater",log.update)
 
     --* attaches a-tools/update.lua to the gui object
@@ -105,6 +107,18 @@ local function create_gui_object(term_object,orig,log)
         end})
     end
 
+    --* a function used for clearing the gui
+    gui.clear = function()
+
+        log("clearing the gui..",log.update)
+        local empty = {}
+        for k,v in pairs(objects.types) do empty[v] = {} end
+        gui.gui = empty
+        local creators = objects.main(gui,empty,log)
+        gui.create = creators
+        gui.new = creators
+    end
+
     --* used for checking if any keys are currently held
     --* by reading gui.held_keys
     gui.isHeld = function(key)
@@ -117,12 +131,8 @@ local function create_gui_object(term_object,orig,log)
 
     --* used for running the actuall gui. handles graphics buffering
     --* event handling,key handling,multitasking and updating the gui
-<<<<<<< HEAD
     gui.execute=setmetatable({},{__call=function(_,fnc,on_event,bef_draw,after_draw)
-=======
-    gui.execute=function(fnc,on_event,bef_draw,after_draw)
         err = "ok"
->>>>>>> 67b00444bebca841278149a9e7ea8c17cefc04dc
         log("")
         log("loading execute..",log.update)
         local execution_window = gui.term_object
@@ -277,6 +287,16 @@ local function create_gui_object(term_object,orig,log)
             --* updates the GUI
             coroutine.resume(gui_coro,table.unpack(event,1,event.n))
             coroutine.resume(graphics_updater,table.unpack(event,1,event.n))
+
+            --* handling for window rescaling
+            local w,h = orig.getSize()
+            if w ~= gui.w or h ~= gui.h then
+                if (event[1] == "monitor_resize" and gui.monitor == event[2]) or gui.monitor == "term_object" then
+                    gui.term_object.reposition(1,1,w,h)
+                    coroutine.resume(gui_coro,"mouse_click",math.huge,-math.huge,-math.huge)
+                    gui.w,gui.h = w,h
+                end
+            end
         end
         if err then gui.last_err = err end
         --* makes sure the window is visible when execution ends
@@ -286,14 +306,8 @@ local function create_gui_object(term_object,orig,log)
         log:dump()
         err = "ok"
         --* returns the reason for the stop in execution
-<<<<<<< HEAD
         return gui.last_err
     end,__tostring=function() return "GuiH.main_gui_executor" end})
-=======
-        gui.latest_error = err
-        return err
-    end
->>>>>>> 67b00444bebca841278149a9e7ea8c17cefc04dc
 
     --* if the term object happens to be an monitor then get its name
     if type == "monitor" then
@@ -367,8 +381,8 @@ local function create_gui_object(term_object,orig,log)
                 local xin,yin = x,y
                 if self.centered then
                     --* calcualte the center text position
-                    local y_centered = (h or gui.h)/2
-                    local x_centered = math.ceil(((w or gui.w)/2)-(#self.text/2))
+                    local y_centered = (h or gui.h)/2-0.5
+                    local x_centered = math.ceil(((w or gui.w)/2)-(#self.text/2))-0.5
                     term.setCursorPos(x_centered+self.offset_x+xin,y_centered+self.offset_y+yin)
                     x,y = x_centered+self.offset_x+xin,y_centered+self.offset_y+yin
                 else
