@@ -117,7 +117,12 @@ local function create_gui_object(term_object,orig,log)
 
     --* used for running the actuall gui. handles graphics buffering
     --* event handling,key handling,multitasking and updating the gui
+<<<<<<< HEAD
     gui.execute=setmetatable({},{__call=function(_,fnc,on_event,bef_draw,after_draw)
+=======
+    gui.execute=function(fnc,on_event,bef_draw,after_draw)
+        err = "ok"
+>>>>>>> 67b00444bebca841278149a9e7ea8c17cefc04dc
         log("")
         log("loading execute..",log.update)
         local execution_window = gui.term_object
@@ -193,11 +198,14 @@ local function create_gui_object(term_object,orig,log)
             local ok,erro = pcall(function()
                 while true do
                     local eData = table.pack(os.pullEventRaw())
+                    
                     --* iterates ever listeners with said event
                     --* and if the event matches the filter or there is no filter
                     --* runs the code asigned to the listener
                     for k,v in pairs(gui.event_listeners) do
-                        if v.filter[eData[1]] or v.filter == eData[1] or (not next(v.filter)) then
+                        local filter = v.filter
+                        if _G.type(filter) == "string" then filter = {[v.filter]=true} end
+                        if filter[eData[1]] or filter == eData[1] or (not next(filter)) then
                             v.code(table.unpack(eData,_G.type(v.filter) ~= "table" and 2 or 1,eData.n))
                         end
                     end
@@ -278,8 +286,14 @@ local function create_gui_object(term_object,orig,log)
         log:dump()
         err = "ok"
         --* returns the reason for the stop in execution
+<<<<<<< HEAD
         return gui.last_err
     end,__tostring=function() return "GuiH.main_gui_executor" end})
+=======
+        gui.latest_error = err
+        return err
+    end
+>>>>>>> 67b00444bebca841278149a9e7ea8c17cefc04dc
 
     --* if the term object happens to be an monitor then get its name
     if type == "monitor" then
@@ -340,7 +354,9 @@ local function create_gui_object(term_object,orig,log)
             offset_x = data.offset_x or 0,
             offset_y = data.offset_y or 0,
             blit = data.blit or {fg,bg},
-            transparent=data.transparent
+            transparent=data.transparent,
+            bg=data.bg,
+            fg=data.fg
         },{
             __call=function(self,tobject,x,y,w,h)
                 local term = tobject or gui.term_object
@@ -376,6 +392,8 @@ local function create_gui_object(term_object,orig,log)
                     
                     --* get he provided blit data
                     local fg,bg = table.unpack(self.blit)
+                    if self.bg then bg = graphic.code.to_blit[self.bg]:rep(#self.text) end
+                    if self.fg then fg = graphic.code.to_blit[self.fg]:rep(#self.text) end
 
                     --* get the blit data on the line the text is on
                     local _,_,line = term.getLine(math.floor(y))
@@ -393,7 +411,10 @@ local function create_gui_object(term_object,orig,log)
                     term.blit(text,fg:sub(n_val+1),sc_bg..bg:sub(#bg-diff,#bg))
                 else
                     --* draw text with provided blit
-                    term.blit(self.text,table.unpack(self.blit))
+                    local fg,bg = table.unpack(self.blit)
+                    if self.bg then bg = graphic.code.to_blit[self.bg]:rep(#self.text) end
+                    if self.fg then fg = graphic.code.to_blit[self.fg]:rep(#self.text) end
+                    term.blit(self.text,fg,bg)
                 end
             end,
             __tostring=function() return "GuiH.primitive.text" end
