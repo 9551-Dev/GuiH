@@ -438,8 +438,6 @@ local function create_gui_object(term_object,orig,log)
                         --* draw the final text subed by b_val in case
                         --* its off the screen to the left
                         if #fg ~= #text then fg = ("0"):rep(#text) end
-                        log(text.." "..fg:sub(n_val+1).." "..sc_bg..bg:sub(#bg-diff,#bg))
-                        log:dump()
                         term.blit(text,fg:sub(math.min(x,1)),sc_bg..bg:sub(#bg-diff,#bg))
                     else
                         --* draw text with provided blit
