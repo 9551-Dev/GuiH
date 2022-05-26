@@ -427,7 +427,6 @@ local function create_gui_object(term_object,orig,log)
                             _,_,line = term.getLine(math.floor(y))
                         end)
                         if not line then return end
-                        if not line then return end
                         --* calculate the blit under the text from its position
                         --* and data from that line
                         local sc_bg = line:sub(x,math.min(x+#text-1,gui.w))
