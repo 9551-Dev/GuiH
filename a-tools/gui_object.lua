@@ -114,6 +114,7 @@ local function create_gui_object(term_object,orig,log)
         local empty = {}
         for k,v in pairs(objects.types) do empty[v] = {} end
         gui.gui = empty
+        gui.elements = empty
         local creators = objects.main(gui,empty,log)
         gui.create = creators
         gui.new = creators
