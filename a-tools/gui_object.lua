@@ -26,19 +26,23 @@ local function create_gui_object(term_object,orig,log)
     local w,h = term_object.getSize()
     local gui = {
         term_object=term_object,
+        term=term_object,
         gui=gui_objects,
         update=update,
         visible=true,
         id=api.uuid4(),
         task_schedule={},
-        update_delay=0,
+        update_delay=0.05,
         held_keys={},
         log=log,
         task_routine={},
+        paused_task_routine={},
         w=w,h=h,
+        width=w,height=h,
         event_listeners={},
         paused_listeners={},
-        background=term_object.getBackgroundColor()
+        background=term_object.getBackgroundColor(),
+        key={}
     }
     gui.elements = gui.gui
 
@@ -55,13 +59,89 @@ local function create_gui_object(term_object,orig,log)
     --* the gui objects task queue
     gui.schedule=function(fnc,t)
         local task_id = api.uuid4()
-        log("scheduled task: "..tostring(task_id))
-        gui.task_routine[task_id] = coroutine.create(function()
+        log("created new thread: "..tostring(task_id), log.info)
+        local errupvalue = {}
+        local routine = {c=coroutine.create(function()
             --* wraps function into pcall to catch errors
-            local ok,erro = pcall(fnc,gui,gui.term_object)
-            if not ok then err = erro end
-        end)
+            local ok,erro = pcall(function()
+                if t then api.precise_sleep(t) end
+                fnc(gui,gui.term_object)
+            end)
+            if not ok then
+                errupvalue.err = erro
+                log("error in thread: "..tostring(task_id).."\n"..tostring(erro),log.error)
+                log:dump()
+            end
+        end)}
+        gui.task_routine[task_id] = routine
+        local function step(...)
+            local task = gui.task_routine[task_id] or gui.paused_task_routine[task_id]
+            if task then
+                local ok,err = coroutine.resume(task.c,...)
+                if not ok then
+                    errupvalue.err = err
+                    log("task "..tostring(task_id).." error: "..tostring(err),log.error)
+                    log:dump()
+                end
+                return true,ok,err
+            else
+                log("task "..tostring(task_id).." not found",log.error)
+                log:dump()
+                return false
+            end
+        end
+        return setmetatable(routine,{__index={
+            kill=function()
+                gui.task_routine[task_id] = nil
+                gui.paused_task_routine[task_id] = nil
+                log("killed task: "..tostring(task_id), log.info)
+                log:dump()
+                return true
+            end,
+            alive=function()
+                local task = gui.task_routine[task_id] or gui.paused_task_routine[task_id]
+                if not task then return false end
+                return coroutine.status(task.c) ~= "dead"
+            end,
+            step=step,
+            update=step,
+            pause=function()
+                local task = gui.task_routine[task_id] or gui.paused_task_routine[task_id]
+                if task then
+                    gui.paused_task_routine[task_id] = task
+                    gui.task_routine[task_id] = nil
+                    log("paused task: "..tostring(task_id), log.info)
+                    log:dump()
+                    return true
+                else
+                    log("task "..tostring(task_id).." not found",log.error)
+                    log:dump()
+                    return false
+                end
+            end,
+            resume=function()
+                local task = gui.paused_task_routine[task_id] or gui.task_routine[task_id]
+                if task then
+                    gui.task_routine[task_id] = task
+                    gui.paused_task_routine[task_id] = nil
+                    log("resumed task: "..tostring(task_id), log.info)
+                    log:dump()
+                    return true
+                else
+                    log("task "..tostring(task_id).." not found",log.error)
+                    log:dump()
+                    return false
+                end
+            end,
+            get_error=function()
+                return errupvalue.err
+            end
+        },__tostring=function()
+            return "GuiH.SCHEDULED_THREAD."..task_id
+        end})
     end
+
+    gui.async = gui.schedule
 
     --* used for creation of new event listeners
     gui.add_listener = function(_filter,f,name)
@@ -78,6 +158,7 @@ local function create_gui_object(term_object,orig,log)
             kill=function()
                 --* removes the listener from the gui object
                 gui.event_listeners[id] = nil
+                gui.paused_listeners[id] = nil
                 log("killed event listener: "..id,log.success)
                 log:dump()
             end,
@@ -107,6 +188,12 @@ local function create_gui_object(term_object,orig,log)
         end})
     end
 
+    gui.cause_exeption = function(e,level)
+        err = e
+    end
+
+    gui.error = gui.cause_exeption
+
     --* a function used for clearing the gui
     gui.clear = function()
 
@@ -121,13 +208,21 @@ local function create_gui_object(term_object,orig,log)
 
     --* used for checking if any keys are currently held
     --* by reading gui.held_keys
-    gui.isHeld = function(key)
-        local info = gui.held_keys[key] or {}
-        if info[1] then return true,info[2] end
-        
-        --* if the key is not held return false
-        return false,false
+    gui.isHeld = function(...)
+        local k_list = {...}
+        local out1,out2 = true,true
+        for k,key in pairs(k_list) do
+            local info = gui.held_keys[key] or {}
+            if info[1] then
+                out1 = out1 and true
+                out2 = out2 and info[2]
+            else
+                return false,false,gui.held_keys
+            end
+        end
+        return out1,out2,gui.held_keys
     end
+    gui.key.held = gui.isHeld
 
     --* used for running the actuall gui. handles graphics buffering
     --* event handling,key handling,multitasking and updating the gui
@@ -195,9 +290,9 @@ local function create_gui_object(term_object,orig,log)
                 execution_window.setVisible(true)
                 execution_window.setVisible(false)
 
-                if gui.update_delay > 0 then
-                    os.queueEvent("_")
-                    os.pullEvent("_")
+                if gui.update_delay < 0.05 then
+                    os.queueEvent("waiting")
+                    os.pullEvent()
                 else sleep(gui.update_delay) end
             end
         end)
@@ -268,14 +363,14 @@ local function create_gui_object(term_object,orig,log)
 
             --* if the happening event is a keyboard based event then
             --* update held keys
-            if event[1] == "key" or event[1]== "key_up" then
+            if event[1] == "key" or event[1] == "key_up" then
                 coroutine.resume(key_handler,table.unpack(event,1,event.n))
             end
 
             --* executes schedules  tasks
             for k,v in pairs(gui.task_routine) do
-                if coroutine.status(v) ~= "dead" then
-                    coroutine.resume(v,table.unpack(event,1,event.n))
+                if coroutine.status(v.c) ~= "dead" then
+                    coroutine.resume(v.c,table.unpack(event,1,event.n))
                 else
                     --* if the task is dead then remove it
                     gui.task_routine[k] = nil
