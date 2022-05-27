@@ -2,8 +2,8 @@ docs kinda outdated. planning to fix in the future
 
 # **GuiH -simple documentation**
 ### info
-	GuiH is my work in progress computercraft GUI api
-	i made it in like a week trying to get usable performance and nice usage
+	GuiH is my WIP ComputerCraft GUI API.
+	I made it in like a week trying to get usable performance and nice usage.
 download: `wget run https://github.com/9551-Dev/Gui-h/raw/main/installer.lua`
 
 
@@ -12,27 +12,27 @@ download: `wget run https://github.com/9551-Dev/Gui-h/raw/main/installer.lua`
 		
 
  - **Core**
-	 - core features are the ones used to actually run the API
-	 since the api allows custom objects it provides you with
-	 an api to create them this api is really simple and will be documented later
-	 theese include
-	   - automatic file handling
-	   - automatic update handling
-	   - automatic child GUI processing,position correcting
-	   - grabbing events
-	   - texture wrapping
-	   - and more...
+	 - Core features are the ones used to actually run the API
+	 since the API allows custom objects. It provides you with
+	 an API to create them. This API is really simple and will be documented later.
+	 These include:
+	   - Automatic File Handling
+	   - Automatic Update Handling
+	   - Automatic Child GUI Processing and Position Correcting
+	   - Grabbing Events
+	   - Texture Wrapping
+	   - And More...
 	 
 	
  - **Gui**
-	 - this is going to be about the current objects the api comes with and short description
-	 - first of i need to note that all the function take in tables as inputs. all the values are optional
-	 but you should provide key ones like name and position  by default
-	 the actuall usage will be discussed later with the  arguments included
-	 - input functions: some build in objects provide you with "event functions"
-	 theese functions get called at specific times and might be useful !
+	 - This is going to be about the current objects the API comes with and short descriptions
+	 - First of all, I need to note that all the functions take in tables as input. All the values are optional
+	 but you should provide key ones like name and position by default.
+	 The actual usage will be discussed later with the arguments included.
+	 - Input functions: some build in objects provide you with "event functions"
+	 These functions get called at specific times and might be useful !
 	 
-	- each one of theese has a texture support via the `tex` input variable
+	- Each one of these has a texture support via the `tex` input variable
 
 	- buttons and switches have support for the text and tex_on input
 	for theese you input  the text object which gets create via 

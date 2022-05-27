@@ -201,6 +201,7 @@ local function create_gui_object(term_object,orig,log)
         local empty = {}
         for k,v in pairs(objects.types) do empty[v] = {} end
         gui.gui = empty
+        gui.elements = empty
         local creators = objects.main(gui,empty,log)
         gui.create = creators
         gui.new = creators
@@ -520,7 +521,6 @@ local function create_gui_object(term_object,orig,log)
                         pcall(function()
                             _,_,line = term.getLine(math.floor(y))
                         end)
-                        if not line then return end
                         if not line then return end
                         --* calculate the blit under the text from its position
                         --* and data from that line
