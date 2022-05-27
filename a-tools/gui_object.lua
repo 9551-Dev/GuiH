@@ -57,7 +57,7 @@ local function create_gui_object(term_object,orig,log)
 
     --* a function used for adding new things to
     --* the gui objects task queue
-    gui.schedule=function(fnc,t)
+    gui.schedule=function(fnc,t,errflag)
         local task_id = api.uuid4()
         log("created new thread: "..tostring(task_id), log.info)
         local errupvalue = {}
@@ -68,6 +68,7 @@ local function create_gui_object(term_object,orig,log)
                 fnc(gui,gui.term_object)
             end)
             if not ok then
+                if errflag == true then err = erro end
                 errupvalue.err = erro
                 log("error in thread: "..tostring(task_id).."\n"..tostring(erro),log.error)
                 log:dump()
