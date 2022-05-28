@@ -408,7 +408,10 @@ local function create_gui_object(term_object,orig,log)
             --* executes schedules  tasks
             for k,v in pairs(gui.task_routine) do
                 if coroutine.status(v.c) ~= "dead" then
-                    coroutine.resume(v.c,table.unpack(event,1,event.n))
+                    if v.filter == event[1] or v.filter == nil then
+                        local ok,filter = coroutine.resume(v.c,table.unpack(event,1,event.n))
+                        if ok then v.filter = filter end
+                    end
                 else
                     --* if the task is dead then remove it
                     gui.task_routine[k] = nil
