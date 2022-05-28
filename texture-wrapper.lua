@@ -6,6 +6,7 @@
 
 local decode_ppm = require "a-tools.luappm"
 local api = require "api"
+local expect = require "cc.expect"
 
 local chars = "0123456789abcdef"
 local saveCols, loadCols = {}, {}
@@ -111,6 +112,31 @@ local function load_texture(file_name)
         tex=temp,
         offset=nimg.offset
     },{__tostring=function() return "GuiH.texture" end})
+end
+
+--* a function so compec can shut up.
+local function load_cimg_texture(file_name)
+    local data
+    expect(1,file_name,"string","table")
+    if type(file_name) == "table" then
+        data = file_name
+    else
+        local file = fs.open(file_name,"r")
+        assert(file,"file doesnt exist")
+        data = textutils.unserialise(file.readAll())
+        file.close()
+    end
+    local texture_raw = api.tables.createNDarray(2,{offset = {5, 13, 11, 4}})
+    for x,y_list in pairs(data) do
+        for y,c in pairs(y_list) do
+            texture_raw[x+4][y+7] = {
+                s=" ",
+                b=c,
+                t="0"
+            }
+        end
+    end
+    return load_texture(texture_raw)
 end
 
 --* finds the closest CC color to an RGB value
@@ -309,7 +335,7 @@ local function draw_box_tex(term,tex,x,y,width,height,bg,tg,offsetx,offsety)
     for yis=1,height do
         for xis=1,width do
             local pixel = get_pixel(xis+offsetx,yis+offsety,tex)
-            if pixel then
+            if pixel and next(pixel) then
                 bg_layers[yis] = (bg_layers[yis] or "")..saveCols[pixel.background_color]
                 fg_layers[yis] = (fg_layers[yis] or "")..saveCols[pixel.text_color]
                 text_layers[yis] = (text_layers[yis] or "")..pixel.symbol
@@ -331,6 +357,7 @@ end
 return {
     load_texture=load_texture,
     load_ppm_texture=load_ppm_texture,
+    load_cimg_texture=load_cimg_texture,
     code={
         get_pixel=get_pixel,
         draw_box_tex=draw_box_tex,

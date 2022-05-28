@@ -444,6 +444,12 @@ local function create_gui_object(term_object,orig,log)
             log("Failed to load texture: "..tex,log.error)
         end
     end
+
+    gui.load_cimg_texture = function(data)
+        log("Loading cimg texture.. ",log.update)
+        local tex = graphic.load_cimg_texture(data)
+        return tex
+    end
     log("")
     log("Starting creator..",log.info)
     local creators = objects.main(gui,gui.gui,log)

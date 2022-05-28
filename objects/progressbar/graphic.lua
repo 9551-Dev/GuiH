@@ -22,7 +22,7 @@ return function(object)
                     object.positioning.x,
                     object.positioning.y,
                     pointValue,
-                    object.positioning.height,nil,nil,
+                    object.positioning.height,object.bg,object.fg,
                     object.tex_offset_x,
                     object.tex_offset_y
                 )
@@ -33,7 +33,7 @@ return function(object)
                     object.positioning.x,
                     object.positioning.y,
                     pointValue,
-                    object.positioning.height,nil,nil,
+                    object.positioning.height,object.bg,object.fg,
                     -pointValue+1+object.tex_offset_x,
                     object.tex_offset_y
                 )
@@ -66,7 +66,7 @@ return function(object)
                     object.positioning.x+object.positioning.width-pointValue,
                     object.positioning.y,
                     pointValue,
-                    object.positioning.height,nil,nil,
+                    object.positioning.height,object.bg,object.fg,
                     object.tex_offset_x,
                     object.tex_offset_y
                 )
@@ -77,7 +77,7 @@ return function(object)
                     object.positioning.x+object.positioning.width-pointValue,
                     object.positioning.y,
                     pointValue,
-                    object.positioning.height,nil,nil,
+                    object.positioning.height,object.bg,object.fg,
                     -pointValue+1+object.tex_offset_x,
                     object.tex_offset_y
                 )
@@ -120,7 +120,7 @@ return function(object)
                     object.positioning.x,
                     object.positioning.y,
                     object.positioning.width,
-                    pointValue,nil,nil,
+                    pointValue,object.bg,object.fg,
                     object.tex_offset_x,
                     object.tex_offset_y
                 )
@@ -131,7 +131,7 @@ return function(object)
                     object.positioning.x,
                     object.positioning.y,
                     object.positioning.width,
-                    pointValue,nil,nil,object.tex_offset_x,
+                    pointValue,object.bg,object.fg,object.tex_offset_x,
                     -pointValue+1+object.tex_offset_y
                 )
             end
@@ -173,7 +173,7 @@ return function(object)
                     object.positioning.x,
                     object.positioning.y+pointValue,
                     object.positioning.width,
-                    left,nil,nil,
+                    left,object.bg,object.fg,
                     object.tex_offset_x,
                     object.tex_offset_y
                 )
@@ -184,7 +184,7 @@ return function(object)
                     object.positioning.x,
                     object.positioning.y+pointValue,
                     object.positioning.width,
-                    left,nil,nil,object.tex_offset_x,
+                    left,object.bg,object.fg,object.tex_offset_x,
                     -left+1+object.tex_offset_y
                 )
             end
