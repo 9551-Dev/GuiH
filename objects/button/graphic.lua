@@ -19,7 +19,7 @@ return function(object)
             term,
             object.texture,
             x,y,object.positioning.width,object.positioning.height,
-            object.background_color,object.text_color
+            object.background_color,object.text_color,nil,nil,object.canvas.texture_cache
         )
     end
     if object.text then

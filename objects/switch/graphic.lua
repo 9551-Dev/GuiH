@@ -19,7 +19,8 @@ return function(object)
             object.positioning.width,
             object.positioning.height,
             (object.value and object.background_color_on or object.background_color) or colors.red,
-            (object.value and object.text_color_on or object.text_color) or colors.black
+            (object.value and object.text_color_on or object.text_color) or colors.black,nil,nil,
+            object.canvas.texture_cache
         )
     end
     if object.text and not object.value then

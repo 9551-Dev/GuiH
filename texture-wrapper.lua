@@ -110,7 +110,8 @@ local function load_texture(file_name)
     --* dimensions,data,offset
     return setmetatable({
         tex=temp,
-        offset=nimg.offset
+        offset=nimg.offset,
+        id=api.uuid4()
     },{__tostring=function() return "GuiH.texture" end})
 end
 
@@ -322,8 +323,9 @@ local function get_pixel(x,y,tex,fill_empty)
     --* and return our desired pixel
     return pixel
 end
+_G.saved_loads = 0
 
-local function draw_box_tex(term,tex,x,y,width,height,bg,tg,offsetx,offsety)
+local function draw_box_tex(term,tex,x,y,width,height,bg,tg,offsetx,offsety,cache)
     local bg_layers = {}
     local fg_layers = {}
     local text_layers = {}
@@ -332,21 +334,49 @@ local function draw_box_tex(term,tex,x,y,width,height,bg,tg,offsetx,offsety)
     offsety = offsety or 0
 
     --* we first iterate over the texture to loada it into blit data
-    for yis=1,height do
-        for xis=1,width do
-            local pixel = get_pixel(xis+offsetx,yis+offsety,tex)
-            if pixel and next(pixel) then
-                bg_layers[yis] = (bg_layers[yis] or "")..saveCols[pixel.background_color]
-                fg_layers[yis] = (fg_layers[yis] or "")..saveCols[pixel.text_color]
-                text_layers[yis] = (text_layers[yis] or "")..pixel.symbol
-            else
-                bg_layers[yis] = (bg_layers[yis] or "")..saveCols[bg]
-                fg_layers[yis] = (fg_layers[yis] or "")..saveCols[tg]
-                text_layers[yis] = (text_layers[yis] or "").." "
+    local same_args = false
+    if type(cache) == "table" and cache[tex.id] then
+        local c = cache[tex.id].args
+        same_args = c.term == term
+                and c.x == x
+                and c.y == y
+                and c.width == width
+                and c.height == height
+                and c.bg == bg
+                and c.tg == tg
+                and c.offsetx == offsetx
+                and c.offsety == offsety
+    end
+    if type(cache) == "table" and cache[tex.id] and same_args then
+        bg_layers = cache[tex.id].bg_layers
+        fg_layers = cache[tex.id].fg_layers
+        text_layers = cache[tex.id].text_layers
+    else
+        for yis=1,height do
+            for xis=1,width do
+                local pixel = get_pixel(xis+offsetx,yis+offsety,tex)
+                if pixel and next(pixel) then
+                    bg_layers[yis] = (bg_layers[yis] or "")..saveCols[pixel.background_color]
+                    fg_layers[yis] = (fg_layers[yis] or "")..saveCols[pixel.text_color]
+                    text_layers[yis] = (text_layers[yis] or "")..pixel.symbol
+                else
+                    bg_layers[yis] = (bg_layers[yis] or "")..saveCols[bg]
+                    fg_layers[yis] = (fg_layers[yis] or "")..saveCols[tg]
+                    text_layers[yis] = (text_layers[yis] or "").." "
+                end
             end
         end
+        if type(cache) == "table" then
+            cache[tex.id] = {
+                bg_layers = bg_layers,
+                fg_layers = fg_layers,
+                text_layers = text_layers,
+                args={
+                    term=term,x=x,y=y,width=width,height=height,bg=bg,tg=tg,offsetx=offsetx,offsety=offsety
+                }
+            }
+        end
     end
-
     --* then we draw the blit data to the screen
     for k,v in pairs(bg_layers) do
         term.setCursorPos(x,y+k-1)

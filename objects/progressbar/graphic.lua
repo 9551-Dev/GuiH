@@ -24,7 +24,8 @@ return function(object)
                     pointValue,
                     object.positioning.height,object.bg,object.fg,
                     object.tex_offset_x,
-                    object.tex_offset_y
+                    object.tex_offset_y,
+                    object.canvas.texture_cache
                 )
             else
                 graphic.code.draw_box_tex(
@@ -35,7 +36,8 @@ return function(object)
                     pointValue,
                     object.positioning.height,object.bg,object.fg,
                     -pointValue+1+object.tex_offset_x,
-                    object.tex_offset_y
+                    object.tex_offset_y,
+                    object.canvas.texture_cache
                 )
             end
             for y=object.positioning.y,object.positioning.height+object.positioning.y-1 do
@@ -68,7 +70,8 @@ return function(object)
                     pointValue,
                     object.positioning.height,object.bg,object.fg,
                     object.tex_offset_x,
-                    object.tex_offset_y
+                    object.tex_offset_y,
+                    object.canvas.texture_cache
                 )
             else
                 graphic.code.draw_box_tex(
@@ -79,7 +82,8 @@ return function(object)
                     pointValue,
                     object.positioning.height,object.bg,object.fg,
                     -pointValue+1+object.tex_offset_x,
-                    object.tex_offset_y
+                    object.tex_offset_y,
+                    object.canvas.texture_cache
                 )
             end
             for y=object.positioning.y,object.positioning.height+object.positioning.y-1 do
@@ -122,7 +126,8 @@ return function(object)
                     object.positioning.width,
                     pointValue,object.bg,object.fg,
                     object.tex_offset_x,
-                    object.tex_offset_y
+                    object.tex_offset_y,
+                    object.canvas.texture_cache
                 )
             else
                 graphic.code.draw_box_tex(
@@ -132,7 +137,8 @@ return function(object)
                     object.positioning.y,
                     object.positioning.width,
                     pointValue,object.bg,object.fg,object.tex_offset_x,
-                    -pointValue+1+object.tex_offset_y
+                    -pointValue+1+object.tex_offset_y,
+                    object.canvas.texture_cache
                 )
             end
             for y=object.positioning.y+pointValue,object.positioning.y+object.positioning.height-1 do
@@ -175,7 +181,7 @@ return function(object)
                     object.positioning.width,
                     left,object.bg,object.fg,
                     object.tex_offset_x,
-                    object.tex_offset_y
+                    object.tex_offset_y,object.canvas.texture_cache
                 )
             else
                 graphic.code.draw_box_tex(
@@ -185,7 +191,8 @@ return function(object)
                     object.positioning.y+pointValue,
                     object.positioning.width,
                     left,object.bg,object.fg,object.tex_offset_x,
-                    -left+1+object.tex_offset_y
+                    -left+1+object.tex_offset_y,
+                    object.canvas.texture_cache
                 )
             end
             for y=object.positioning.y,object.positioning.y+pointValue-1 do

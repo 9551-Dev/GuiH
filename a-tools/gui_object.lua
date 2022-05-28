@@ -43,7 +43,8 @@ local function create_gui_object(term_object,orig,log)
         paused_listeners={},
         background=term_object.getBackgroundColor(),
         cls=false,
-        key={}
+        key={},
+        texture_cache={}
     }
     gui.elements = gui.gui
 
