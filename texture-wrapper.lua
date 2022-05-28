@@ -297,15 +297,18 @@ local function get_pixel(x,y,tex,fill_empty)
     return pixel
 end
 
-local function draw_box_tex(term,tex,x,y,width,height,bg,tg)
+local function draw_box_tex(term,tex,x,y,width,height,bg,tg,offsetx,offsety)
     local bg_layers = {}
     local fg_layers = {}
     local text_layers = {}
 
+    offsetx = offsetx or 0
+    offsety = offsety or 0
+
     --* we first iterate over the texture to loada it into blit data
     for yis=1,height do
         for xis=1,width do
-            local pixel = get_pixel(xis,yis,tex)
+            local pixel = get_pixel(xis+offsetx,yis+offsety,tex)
             if pixel then
                 bg_layers[yis] = (bg_layers[yis] or "")..saveCols[pixel.background_color]
                 fg_layers[yis] = (fg_layers[yis] or "")..saveCols[pixel.text_color]

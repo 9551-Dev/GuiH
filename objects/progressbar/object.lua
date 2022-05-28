@@ -10,6 +10,7 @@ local types = {
 return function(object,data)
     data = data or {}
     if type(data.visible) ~= "boolean" then data.visible = true end
+    if type(data.drag_texture) ~= "boolean" then data.drag_texture = false end
     local btn = {
         name=data.name or api.uuid4(),
         positioning = {
@@ -27,6 +28,9 @@ return function(object,data)
         order=data.order or 1,
         logic_order=data.logic_order,
         graphic_order=data.graphic_order,
+        drag_texture=data.drag_texture,
+        tex_offset_x=data.tex_offset_x or 0,
+        tex_offset_y=data.tex_offset_y or 0,
     }
     return btn
 end
