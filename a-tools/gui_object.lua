@@ -61,9 +61,9 @@ local function create_gui_object(term_object,orig,log)
 
     --* a function used for adding new things to
     --* the gui objects task queue
-    gui.schedule=function(fnc,t,errflag)
+    gui.schedule=function(fnc,t,errflag,debug)
         local task_id = api.uuid4()
-        log("created new thread: "..tostring(task_id), log.info)
+        if debug then log("created new thread: "..tostring(task_id), log.info) end
         local errupvalue = {}
         local routine = {c=coroutine.create(function()
             --* wraps function into pcall to catch errors
@@ -74,10 +74,12 @@ local function create_gui_object(term_object,orig,log)
             if not ok then
                 if errflag == true then err = erro end
                 errupvalue.err = erro
-                log("error in thread: "..tostring(task_id).."\n"..tostring(erro),log.error)
-                log:dump()
+                if debug then
+                    log("error in thread: "..tostring(task_id).."\n"..tostring(erro),log.error)
+                    log:dump()
+                end
             end
-        end)}
+        end),dbug=debug}
         gui.task_routine[task_id] = routine
         local function step(...)
             local task = gui.task_routine[task_id] or gui.paused_task_routine[task_id]
@@ -85,13 +87,17 @@ local function create_gui_object(term_object,orig,log)
                 local ok,err = coroutine.resume(task.c,...)
                 if not ok then
                     errupvalue.err = err
-                    log("task "..tostring(task_id).." error: "..tostring(err),log.error)
-                    log:dump()
+                    if debug then
+                        log("task "..tostring(task_id).." error: "..tostring(err),log.error)
+                        log:dump()
+                    end
                 end
                 return true,ok,err
             else
-                log("task "..tostring(task_id).." not found",log.error)
-                log:dump()
+                if debug then
+                    log("task "..tostring(task_id).." not found",log.error)
+                    log:dump()
+                end
                 return false
             end
         end
@@ -99,8 +105,10 @@ local function create_gui_object(term_object,orig,log)
             kill=function()
                 gui.task_routine[task_id] = nil
                 gui.paused_task_routine[task_id] = nil
-                log("killed task: "..tostring(task_id), log.info)
-                log:dump()
+                if debug then
+                    log("killed task: "..tostring(task_id), log.info)
+                    log:dump()
+                end
                 return true
             end,
             alive=function()
@@ -115,12 +123,16 @@ local function create_gui_object(term_object,orig,log)
                 if task then
                     gui.paused_task_routine[task_id] = task
                     gui.task_routine[task_id] = nil
-                    log("paused task: "..tostring(task_id), log.info)
-                    log:dump()
+                    if debug then
+                        log("paused task: "..tostring(task_id), log.info)
+                        log:dump()
+                    end
                     return true
                 else
-                    log("task "..tostring(task_id).." not found",log.error)
-                    log:dump()
+                    if debug then
+                        log("task "..tostring(task_id).." not found",log.error)
+                        log:dump()
+                    end
                     return false
                 end
             end,
@@ -129,12 +141,16 @@ local function create_gui_object(term_object,orig,log)
                 if task then
                     gui.task_routine[task_id] = task
                     gui.paused_task_routine[task_id] = nil
-                    log("resumed task: "..tostring(task_id), log.info)
-                    log:dump()
+                    if debug then
+                        log("resumed task: "..tostring(task_id), log.info)
+                        log:dump()
+                    end
                     return true
                 else
-                    log("task "..tostring(task_id).." not found",log.error)
-                    log:dump()
+                    if debug then
+                        log("task "..tostring(task_id).." not found",log.error)
+                        log:dump()
+                    end
                     return false
                 end
             end,
@@ -149,7 +165,7 @@ local function create_gui_object(term_object,orig,log)
     gui.async = gui.schedule
 
     --* used for creation of new event listeners
-    gui.add_listener = function(_filter,f,name)
+    gui.add_listener = function(_filter,f,name,debug)
         if not _G.type(f) == "function" then return end
 
         --* if no event filter is present use an empty one
@@ -157,22 +173,28 @@ local function create_gui_object(term_object,orig,log)
         local id = name or api.uuid4()
         local listener = {filter=_filter,code=f}
         gui.event_listeners[id] = listener
-        log("created event listener: "..id,log.success)
-        log:dump()
+        if debug then
+            log("created event listener: "..id,log.success)
+            log:dump()
+        end
         return setmetatable(listener,{__index={
             kill=function()
                 --* removes the listener from the gui object
                 gui.event_listeners[id] = nil
                 gui.paused_listeners[id] = nil
-                log("killed event listener: "..id,log.success)
-                log:dump()
+                if debug then
+                    log("killed event listener: "..id,log.success)
+                    log:dump()
+                end
             end,
             pause=function()
                 --* pauses the listener by moving it out of gui.event_listeners
                 gui.paused_listeners[id] = listener
                 gui.event_listeners[id] = nil
-                log("paused event listener: "..id,log.success)
-                log:dump()
+                if debug then
+                    log("paused event listener: "..id,log.success)
+                    log:dump()
+                end
             end,
             resume=function()
                 --* resumes the listener by moving it back into gui.event_listeners
@@ -180,9 +202,11 @@ local function create_gui_object(term_object,orig,log)
                 if listener then
                     gui.event_listeners[id] = listener
                     gui.paused_listeners[id] = nil
-                    log("resumed event listener: "..id,log.success)
-                    log:dump()
-                else
+                    if debug then
+                        log("resumed event listener: "..id,log.success)
+                        log:dump()
+                    end
+                elseif debug then
                     log("event listener not found: "..id,log.error)
                     log:dump()
                 end
@@ -205,9 +229,10 @@ local function create_gui_object(term_object,orig,log)
     gui.error = gui.cause_exeption
 
     --* a function used for clearing the gui
-    gui.clear = function()
-
-        log("clearing the gui..",log.update)
+    gui.clear = function(debug)
+        if debug then
+            log("clearing the gui..",log.update)
+        end
         local empty = {}
         for k,v in pairs(objects.types) do empty[v] = {} end
         gui.gui = empty
@@ -388,7 +413,7 @@ local function create_gui_object(term_object,orig,log)
                     --* if the task is dead then remove it
                     gui.task_routine[k] = nil
                     gui.task_schedule[k] = nil
-                    log("Finished sheduled task: "..tostring(k),log.success)
+                    if v.dbug then log("Finished sheduled task: "..tostring(k),log.success) end
                 end
             end
 
