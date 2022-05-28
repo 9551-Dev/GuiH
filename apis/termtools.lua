@@ -34,6 +34,6 @@ local function make_shared_terminal(...)
 end
 
 return {
-    mirror_monitors,
+    mirror_monitors=mirror_monitors,
     make_shared_terminal=make_shared_terminal
 }
