@@ -323,22 +323,16 @@ local function get_pixel(x,y,tex,fill_empty)
     --* and return our desired pixel
     return pixel
 end
-_G.saved_loads = 0
 
 local function draw_box_tex(term,tex,x,y,width,height,bg,tg,offsetx,offsety,cache)
-    local bg_layers = {}
-    local fg_layers = {}
-    local text_layers = {}
-
-    offsetx = offsetx or 0
-    offsety = offsety or 0
+    local bg_layers,fg_layers,text_layers = {},{},{}
+    offsetx,offsety = offsetx or 0,offsety or 0
 
     --* we first iterate over the texture to loada it into blit data
     local same_args = false
     if type(cache) == "table" and cache[tex.id] then
         local c = cache[tex.id].args
-        same_args = c.term == term
-                and c.x == x
+        same_args = c.x == x
                 and c.y == y
                 and c.width == width
                 and c.height == height
