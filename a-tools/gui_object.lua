@@ -42,6 +42,7 @@ local function create_gui_object(term_object,orig,log)
         event_listeners={},
         paused_listeners={},
         background=term_object.getBackgroundColor(),
+        cls=false,
         key={}
     }
     gui.elements = gui.gui
@@ -53,7 +54,9 @@ local function create_gui_object(term_object,orig,log)
     local function updater(timeout,visible,is_child,data)
         return update(gui,timeout,visible,is_child,data)
     end
-    local err = "ok"
+
+    local err
+    local running = false
 
     --* a function used for adding new things to
     --* the gui objects task queue
@@ -189,10 +192,15 @@ local function create_gui_object(term_object,orig,log)
         end})
     end
 
-    gui.cause_exeption = function(e,level)
+    gui.cause_exeption = function(e)
         err = e
     end
 
+    gui.stop = function()
+        running = false
+    end
+
+    gui.kill = gui.stop
     gui.error = gui.cause_exeption
 
     --* a function used for clearing the gui
@@ -229,7 +237,9 @@ local function create_gui_object(term_object,orig,log)
     --* used for running the actuall gui. handles graphics buffering
     --* event handling,key handling,multitasking and updating the gui
     gui.execute=setmetatable({},{__call=function(_,fnc,on_event,bef_draw,after_draw)
-        err = "ok"
+        if running then log("Coulnt execute. Gui is already running",log.error) log:dump() return false end
+        err = nil
+        running = true
         log("")
         log("loading execute..",log.update)
         local execution_window = gui.term_object
@@ -348,7 +358,7 @@ local function create_gui_object(term_object,orig,log)
         log:dump()
 
         --* loops until either the gui or your custom function dies
-        while (coroutine.status(func_coro) ~= "dead" or not (_G.type(fnc) == "function")) and coroutine.status(gui_coro) ~= "dead" and err == "ok" do
+        while ((coroutine.status(func_coro) ~= "dead" or not (_G.type(fnc) == "function")) and coroutine.status(gui_coro) ~= "dead" and err == nil) and running do
             local event = table.pack(os.pullEventRaw())
 
             --* manual termination handling
@@ -401,10 +411,12 @@ local function create_gui_object(term_object,orig,log)
         if err then log("a Fatal error occured: "..err..debug.traceback(),log.fatal)
         else log("finished execution",log.success) end
         log:dump()
-        err = "ok"
+        err = nil
         --* returns the reason for the stop in execution
-        return gui.last_err
+        return gui.last_err,true
     end,__tostring=function() return "GuiH.main_gui_executor" end})
+
+    gui.run = gui.execute
 
     --* if the term object happens to be an monitor then get its name
     if type == "monitor" then
