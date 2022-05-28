@@ -1,6 +1,6 @@
 --* creates a custom brick texture
 
-local graphic = require("texture-wrapper")
+local graphic = require("graphic_handle")
 
 return function(bg,brick)
     if not bg then bg = colors.gray end

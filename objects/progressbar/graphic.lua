@@ -1,4 +1,4 @@
-local graphic = require("texture-wrapper")
+local graphic = require("graphic_handle")
 
 return function(object)
     local term = object.canvas.term_object

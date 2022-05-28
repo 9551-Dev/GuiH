@@ -14,7 +14,7 @@ local log = logger.create_log()
 local apis = {
     algo=require("a-tools.algo"),
     luappm=require("a-tools.luappm"),
-    graphic=require("texture-wrapper").code,
+    graphic=require("graphic_handle").code,
     general=require("api")
 }
 local presets={}
@@ -70,7 +70,7 @@ end
 return {
     create_gui=generate_ui,
     new=generate_ui,
-    load_texture=require("texture-wrapper").load_texture,
+    load_texture=require("graphic_handle").load_texture,
     convert_event=function(ev_name,e1,e2,e3,id)
         local ev_data = {}
         if ev_name == "monitor_touch" then ev_data = {name=ev_name,monitor=e1,x=e2,y=e3} end

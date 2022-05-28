@@ -1,5 +1,5 @@
 local algo = require("a-tools.algo")
-local graphic = require("texture-wrapper").code
+local graphic = require("graphic_handle").code
 local api = require("api")
 
 return function(object)

@@ -1,4 +1,4 @@
-local graphic = require("texture-wrapper").code
+local graphic = require("graphic_handle").code
 
 local function depattern(str)
     return str:gsub("[%[%]%(%)%.%+%-%%%$%^%*%?]", "%%%1")

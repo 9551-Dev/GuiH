@@ -1,7 +1,7 @@
 --* builds a checkerboard texture with any amount of colors
 
 local api = require("api")
-local graphic = require("texture-wrapper")
+local graphic = require("graphic_handle")
 
 return function(...)
     local out = api.tables.createNDarray(2,{

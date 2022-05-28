@@ -1,4 +1,4 @@
-local texture = require("texture-wrapper").code
+local texture = require("graphic_handle").code
 
 return function(object)
     local term = object.canvas.term_object
@@ -23,7 +23,7 @@ return function(object)
             object.canvas.texture_cache
         )
     end
-    if object.text and not object.value then
+    if object.text and ((not object.value ) or not object.text_on) then
         object.text(term,object.positioning.x,object.positioning.y,object.positioning.width,object.positioning.height)
     elseif object.text_on and object.value then
         object.text_on(term,object.positioning.x,object.positioning.y,object.positioning.width,object.positioning.height)
