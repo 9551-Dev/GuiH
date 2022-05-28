@@ -8,7 +8,7 @@ if config then
             config.set("standardsMode", true)
             os.reboot()
         else
-            error("GuiH cannot run wihnout standards mode",0)
+            error("GuiH cannot run without standards mode",0)
         end
     end
 end
