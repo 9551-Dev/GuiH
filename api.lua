@@ -161,6 +161,14 @@ local function piece_string(str)
     return out
 end
 
+local function create_blit_array(count)
+    local out = {}
+    for i=1,count do
+        out[i] = {"","",""}
+    end
+    return out
+end
+
 return {
     is_within_field=is_within_field,
     tables={
@@ -181,5 +189,6 @@ return {
     HSVToRGB=HSVToRGB,
     uuid4=uuid4,
     precise_sleep=precise_sleep,
-    piece_string=piece_string
+    piece_string=piece_string,
+    create_blit_array=create_blit_array
 }

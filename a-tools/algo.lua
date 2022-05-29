@@ -9,7 +9,7 @@
 local api = require("api")
 
 local function get_elipse_points(radius_x,radius_y,xc,yc,filled)
-    local rx,ry = math.floor(radius_x-0.5)/2,math.floor(radius_y-0.5)/2
+    local rx,ry = math.ceil(math.floor(radius_x-0.5)/2),math.ceil(math.floor(radius_y-0.5)/2)
     local x,y=0,ry
     local d1 = ((ry * ry) - (rx * rx * ry) + (0.25 * rx * rx))
     local dx = 2*ry^2*x
