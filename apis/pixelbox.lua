@@ -22,10 +22,6 @@ function OBJECT:within(x,y)
         and y <= self.height*3
 end
 
-function PIXELBOX.SWAP(a,b)
-    return b,a
-end
-
 function OBJECT:push_updates()
     PIXELBOX.ASSERT(type(self)=="table","Please use \":\" when running this function")
     self.symbols = api.tables.createNDarray(2)
