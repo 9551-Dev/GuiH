@@ -63,8 +63,8 @@ function OBJECT:clear(color)
     PIXELBOX.ASSERT(type(self)=="table","Please use \":\" when running this function")
     EXPECT(1,color,"number")
     self.CANVAS = api.tables.createNDarray(2)
-    for y=1,self.height do
-        for x=1,self.width do
+    for y=1,self.height*3 do
+        for x=1,self.width*2 do
             self.CANVAS[y][x] = color
         end
     end
