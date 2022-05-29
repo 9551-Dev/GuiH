@@ -6,7 +6,7 @@
 ]]
 
 --* loads the required modules
-local objects = require("object-loader")
+local objects = require("object_loader")
 local graphic = require("graphic_handle")
 local update = require("a-tools.update")
 local api = require("api")
@@ -489,7 +489,6 @@ local function create_gui_object(term_object,orig,log)
         local tex = graphic.load_texture(data)
         return tex
     end
-
     --* wrap the .ppm texture loader so you dont have to
     --* provide log and term object
     gui.load_ppm_texture = function(data,mode)
@@ -500,11 +499,25 @@ local function create_gui_object(term_object,orig,log)
             log("Failed to load texture: "..tex,log.error)
         end
     end
-
     gui.load_cimg_texture = function(data)
         log("Loading cimg texture.. ",log.update)
         local tex = graphic.load_cimg_texture(data)
         return tex
+    end
+    gui.load_blbfor_texture = function(data)
+        log("Loading blbfor texture.. ",log.update)
+        local tex = graphic.load_blbfor_texture(data)
+        return tex
+    end
+    gui.load_limg_texture = function(data,bg,image)
+        log("Loading limg texture.. ",log.update)
+        local tex = graphic.load_limg_texture(data,bg,image)
+        return tex
+    end
+    gui.load_limg_animation = function(data,bg)
+        log("Loading limg animation.. ",log.update)
+        local textures = graphic.load_limg_animation(data,bg)
+        return textures
     end
     log("")
     log("Starting creator..",log.info)

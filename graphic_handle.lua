@@ -5,6 +5,7 @@
 ]]
 
 local decode_ppm = require "a-tools.luappm"
+local decode_blbfor =  require "a-tools.blbfor".open
 local api = require "api"
 local expect = require "cc.expect"
 
@@ -138,6 +139,60 @@ local function load_cimg_texture(file_name)
         end
     end
     return load_texture(texture_raw)
+end
+
+
+local function load_blbfor_texture(file_name)
+    local ok,blit_file_handle = pcall(decode_blbfor,file_name,"r")
+    if not ok then error(blit_file_handle,3) end
+    local texture_raw = api.tables.createNDarray(2,{offset = {5, 13, 11, 4}})
+    for x=1,blit_file_handle.width do
+        for y=1,blit_file_handle.height do
+            _G.blit_file_handle = blit_file_handle
+            local char,fg,bg = blit_file_handle:read_pixel(x,y,true)
+            texture_raw[x+4][y+8] = {
+                s=char,
+                b=bg,
+                t=fg
+            }
+        end
+    end
+    return load_texture(texture_raw)
+end
+
+local function load_limg_animation(file_name,background)
+    background = background or colors.black
+    local file = fs.open(file_name,"r")
+    if not file then error("file doesnt exist",2) end
+    local data = textutils.unserialise(file.readAll())
+    file.close()
+    assert(data.type=="lImg","not an limg image")
+    local frames = {}
+    for frame,frame_data in pairs(data) do
+        if frame ~= "type" and frame_data ~= "lImg" then
+            local raw_texture = api.tables.createNDarray(2,{offset = {5, 13, 11, 4}}) 
+            for y,blit in pairs(frame_data) do
+                local bg,fg,char = blit[3]:gsub("T",saveCols[background]),blit[2]:gsub("T",saveCols[background]),blit[1]
+                local bg_arr = api.piece_string(bg)
+                local fg_arr = api.piece_string(fg)
+                local char_arr = api.piece_string(char)
+                for n,c in pairs(char_arr) do
+                    raw_texture[n+4][y+8] = {
+                        s=c,
+                        b=bg_arr[n],
+                        t=fg_arr[n]
+                    }
+                end
+            end
+            frames[frame] = load_texture(raw_texture)
+        end
+    end
+    return frames
+end
+
+local function load_limg_texture(file_name,background,image)
+    local anim = load_limg_animation(file_name,background)
+    return anim[image or 1],anim
 end
 
 --* finds the closest CC color to an RGB value
@@ -379,14 +434,18 @@ local function draw_box_tex(term,tex,x,y,width,height,bg,tg,offsetx,offsety,cach
 end
 
 return {
-    load_texture=load_texture,
+    load_nimg_texture=load_texture,
     load_ppm_texture=load_ppm_texture,
     load_cimg_texture=load_cimg_texture,
+    load_blbfor_texture=load_blbfor_texture,
+    load_limg_texture=load_limg_texture,
+    load_limg_animation=load_limg_animation,
     code={
         get_pixel=get_pixel,
         draw_box_tex=draw_box_tex,
         to_blit=saveCols,
         to_color=loadCols,
         build_drawing_char=build_drawing_char
-    }
+    },
+    load_texture=load_texture
 }

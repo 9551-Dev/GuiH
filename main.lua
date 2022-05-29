@@ -14,6 +14,7 @@ local log = logger.create_log()
 local apis = {
     algo=require("a-tools.algo"),
     luappm=require("a-tools.luappm"),
+    blbfor=require("a-tools.blbfor"),
     graphic=require("graphic_handle").code,
     general=require("api")
 }

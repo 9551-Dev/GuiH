@@ -153,6 +153,14 @@ local function precise_sleep(t)
     end
 end
 
+local function piece_string(str)
+    local out = {}
+    str:gsub(".",function(c)
+        table.insert(out,c)
+    end)
+    return out
+end
+
 return {
     is_within_field=is_within_field,
     tables={
@@ -172,5 +180,6 @@ return {
     },
     HSVToRGB=HSVToRGB,
     uuid4=uuid4,
-    precise_sleep=precise_sleep
+    precise_sleep=precise_sleep,
+    piece_string=piece_string
 }
