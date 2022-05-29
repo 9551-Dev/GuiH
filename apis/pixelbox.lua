@@ -26,6 +26,8 @@ function OBJECT:push_updates()
     PIXELBOX.ASSERT(type(self)=="table","Please use \":\" when running this function")
     self.symbols = api.tables.createNDarray(2)
     self.lines = api.create_blit_array(self.height)
+    getmetatable(self.symbols).__tostring=function() return "PixelBOX.SYMBOL_BUFFER" end
+    setmetatable(self.lines,{__tostring=function() return "PixelBOX.LINE_BUFFER" end})
     for y,x_list in pairs(self.CANVAS) do
         for x,block_color in pairs(x_list) do
             local RELATIVE_X = math.ceil(x/2)
@@ -219,7 +221,7 @@ function PIXELBOX.new(terminal,bg,existing)
     local bg = bg or terminal.getBackgroundColor() or colors.black
     local BOX = {}
     local w,h = terminal.getSize()
-    BOX.term = terminal
+    BOX.term = setmetatable(terminal,{__tostring=function() return "term_object" end})
     BOX.CANVAS = api.tables.createNDarray(2,existing)
     getmetatable(BOX.CANVAS).__tostring = function() return "PixelBOX_SCREEN_BUFFER" end
     BOX.width = w
