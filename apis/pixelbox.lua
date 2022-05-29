@@ -68,6 +68,7 @@ function OBJECT:clear(color)
             self.CANVAS[y][x] = color
         end
     end
+    getmetatable(self.CANVAS).__tostring = function() return "PixelBOX_SCREEN_BUFFER" end
 end
 
 function OBJECT:draw()
