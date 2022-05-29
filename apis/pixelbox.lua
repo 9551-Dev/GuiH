@@ -224,6 +224,7 @@ function PIXELBOX.new(terminal,bg,existing)
     local w,h = terminal.getSize()
     BOX.term = terminal
     BOX.CANVAS = api.tables.createNDarray(2,existing)
+    getmetatable(BOX.CANVAS).__tostring = function() return "PixelBOX_SCREEN_BUFFER" end
     BOX.width = w
     BOX.height = h
     for y=1,h*3 do
