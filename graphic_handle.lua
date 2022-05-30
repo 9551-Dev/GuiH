@@ -142,22 +142,25 @@ local function load_cimg_texture(file_name)
 end
 
 
-local function load_blbfor_texture(file_name)
+local function load_blbfor_animation(file_name)
     local ok,blit_file_handle = pcall(decode_blbfor,file_name,"r")
     if not ok then error(blit_file_handle,3) end
-    local texture_raw = api.tables.createNDarray(2,{offset = {5, 13, 11, 4}})
-    for x=1,blit_file_handle.width do
-        for y=1,blit_file_handle.height do
-            _G.blit_file_handle = blit_file_handle
-            local char,fg,bg = blit_file_handle:read_pixel(x,y,true)
-            texture_raw[x+4][y+8] = {
-                s=char,
-                b=bg,
-                t=fg
-            }
+    local layers = {}
+    for layer_index=1,blit_file_handle.layers do
+        local texture_raw = api.tables.createNDarray(2,{offset = {5, 13, 11, 4}})
+        for x=1,blit_file_handle.width do
+            for y=1,blit_file_handle.height do
+                local char,fg,bg = blit_file_handle:read_pixel(layer_index,x,y,true)
+                texture_raw[x+4][y+8] = {
+                    s=char,
+                    b=bg,
+                    t=fg
+                }
+            end
         end
+        layers[layer_index] = load_texture(texture_raw)
     end
-    return load_texture(texture_raw)
+    return layers
 end
 
 local function load_limg_animation(file_name,background)
@@ -193,6 +196,11 @@ end
 local function load_limg_texture(file_name,background,image)
     local anim = load_limg_animation(file_name,background)
     return anim[image or 1],anim
+end
+
+local function load_blbfor_texture(file_name)
+    local anim = load_blbfor_animation(file_name)
+    return anim[1],anim
 end
 
 --* finds the closest CC color to an RGB value
@@ -438,6 +446,7 @@ return {
     load_ppm_texture=load_ppm_texture,
     load_cimg_texture=load_cimg_texture,
     load_blbfor_texture=load_blbfor_texture,
+    load_blbfor_animation=load_blbfor_animation,
     load_limg_texture=load_limg_texture,
     load_limg_animation=load_limg_animation,
     code={

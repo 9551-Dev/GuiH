@@ -499,26 +499,32 @@ local function create_gui_object(term_object,orig,log)
             log("Failed to load texture: "..tex,log.error)
         end
     end
-    gui.load_cimg_texture = function(data)
+    gui.load_cimg_texture = function(file_data)
         log("Loading cimg texture.. ",log.update)
-        local tex = graphic.load_cimg_texture(data)
+        local tex = graphic.load_cimg_texture(file_data)
         return tex
     end
-    gui.load_blbfor_texture = function(data)
+    gui.load_blbfor_texture = function(file_data)
         log("Loading blbfor texture.. ",log.update)
-        local tex = graphic.load_blbfor_texture(data)
-        return tex
+        local tex,anim = graphic.load_blbfor_texture(file_data)
+        return tex,anim
     end
-    gui.load_limg_texture = function(data,bg,image)
+    gui.load_limg_texture = function(file_data,bg,image)
         log("Loading limg texture.. ",log.update)
-        local tex = graphic.load_limg_texture(data,bg,image)
-        return tex
+        local tex,anim = graphic.load_limg_texture(file_data,bg,image)
+        return tex,anim
     end
-    gui.load_limg_animation = function(data,bg)
+    gui.load_limg_animation = function(file_data,bg)
         log("Loading limg animation.. ",log.update)
-        local textures = graphic.load_limg_animation(data,bg)
+        local textures = graphic.load_limg_animation(file_data,bg)
         return textures
     end
+    gui.load_blbfor_animation = function(file_data)
+        log("Loading blbfor animation.. ",log.update)
+        local textures = graphic.load_blbfor_animation(file_data)
+        return textures
+    end
+    
     log("")
     log("Starting creator..",log.info)
     local creators = objects.main(gui,gui.gui,log)
