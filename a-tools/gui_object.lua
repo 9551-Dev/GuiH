@@ -458,6 +458,7 @@ local function create_gui_object(term_object,orig,log)
                     gui.term_object.reposition(1,1,w,h)
                     coroutine.resume(gui_coro,"mouse_click",math.huge,-math.huge,-math.huge)
                     gui.w,gui.h = w,h
+                    gui.width,gui.height = w,h
                 end
             end
         end
