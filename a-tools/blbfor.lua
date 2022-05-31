@@ -264,7 +264,7 @@ function BLBFOR.open(file, mode, width, height, layers, FG, BG, SYM, meta)
     EXPECT(1,file,"string")
     EXPECT(2,mode,"string")
     local EXT = file:match("%.%a+$")
-    BLBFOR.INTERNAL.ASSERT(EXT==".blbfor","file must be a .blbfor file")
+    BLBFOR.INTERNAL.ASSERT(EXT==".bbf","file must be a .bbf file")
     local image = {}
     if mode:sub(1,1):lower() == "w" then
         EXPECT(3,width,"number")
