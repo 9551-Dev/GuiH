@@ -126,14 +126,14 @@ return {main=function(i_self,guis,log)
                     local object = main(object,data)
 
                     --* make sure all the nessesary values exist in the object
-                    if not type(object.name) == "string" then object.name = api.uuid4() end
-                    if not type(object.order) == "number" then object.order = 1 end
-                    if not type(object.logic_order) == "number" then object.logic_order = 1 end
-                    if not type(object.graphic_order) == "number" then object.graphic_order = 1 end
-                    if not type(object.react_to_events) == "table" then object.react_to_events = {} end
-                    if not type(object.btn) == "table" then object.btn = {} end
-                    if not type(object.visible) == "boolean" then object.visible = true end
-                    if not type(object.reactive) == "boolean" then object.reactive = true end
+                    if not (type(object.name) == "string") then object.name = api.uuid4() end
+                    if not (type(object.order) == "number") then object.order = 1 end
+                    if not (type(object.logic_order) == "number") then object.logic_order = 1 end
+                    if not (type(object.graphic_order) == "number") then object.graphic_order = 1 end
+                    if not (type(object.react_to_events) == "table") then object.react_to_events = {} end
+                    if not (type(object.btn) == "table") then object.btn = {} end
+                    if not (type(object.visible) == "boolean") then object.visible = true end
+                    if not (type(object.reactive) == "boolean") then object.reactive = true end
 
                     --* insert the new object into  the gui
                     guis[v][object.name] = object

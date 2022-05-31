@@ -37,7 +37,7 @@ local valid_mouse_event = {
 }
 --* end of event definitions
 
-return function(self,timeout,visible,is_child,data_in)
+return function(self,timeout,visible,is_child,data_in,block_logic,block_graphic)
 
     --* set up some variables for use later and for placeholders
     if visible == nil then visible = true end
@@ -50,7 +50,7 @@ return function(self,timeout,visible,is_child,data_in)
     local updateD = true
 
     --* if there is a timeout and this isnt a child gui update then continue
-    if (timeout or math.huge) > 0 then
+    if ((timeout or math.huge) > 0) and not block_logic then
         if not data or not is_child then
 
             --* startinga timer that will stop the event waiting once done
@@ -97,13 +97,13 @@ return function(self,timeout,visible,is_child,data_in)
         local update_layers = {}
 
         --* if the monitor that we clicked matches the one the gui is set to respond to then we continue
-        if updateD and ev_data.monitor == self.monitor then
+        if updateD and ev_data.monitor == self.monitor and not block_graphic then
 
             --* iterate over all the elements in the gui
             for _k,_v in pairs(gui) do for k,v in pairs(_v) do
 
                 --* if the element is reactive and is set to respond to the current event then continue
-                if v.reactive and v.react_to_events[ev_data.name] then
+                if v.reactive and v.react_to_events[ev_data.name] or not next(v.react_to_events) then
 
                     --* build a function that updates this element and add it into update_layers
                     --* with its update logic_order or order as a key
@@ -151,7 +151,6 @@ return function(self,timeout,visible,is_child,data_in)
                     if v.visible and v.graphic then
                         v.graphic(v,self);
                         (v.gui or v.child).term_object.redraw()
-                        table.insert(frames,v)
                     end
                 end
             end)
@@ -159,7 +158,19 @@ return function(self,timeout,visible,is_child,data_in)
     end
 
     --* execute all of the objects functions in the right order using the iterate_order function
-    for k,v in api.tables.iterate_order(layers) do parallel.waitForAll(unpack(v)) end
+    for k,v in api.tables.iterate_order(layers) do parallel.waitForAll(table.unpack(v)) end
+
+    local child_layers = {}
+    for _k,_v in pairs(gui) do for k,v in pairs(_v) do
+        if not child_layers[v.graphic_order or v.order] then child_layers[v.graphic_order or v.order] = {} end
+        table.insert(child_layers[v.graphic_order or v.order],function()
+            if v.gui or v.child then
+                table.insert(frames,v)
+            end
+        end)
+    end end
+
+    for k,v in api.tables.iterate_order(child_layers) do for _k,_v in pairs(v) do _v() end end
 
     --* if we had caught an replica event then end the update here. else continue
     if not updateD then return ev_data,table.pack(ev_name,e1,e2,e3,id) end
@@ -198,11 +209,11 @@ return function(self,timeout,visible,is_child,data_in)
             --* if the event has happened within the gui object that update it like normal
             --* else update it with infinite event cordinates so nothing will most likely get triggered
             if api.is_within_field(data.x,data.y,x,y,x+w,y+h) then
-                (v.child or v.gui).update(math.huge,v.visible,true,dat)
+                (v.child or v.gui).update(math.huge,v.visible,true,dat,not v.reactive,not v.visible)
             else
                 dat.x = -math.huge
                 dat.y = -math.huge;
-                (v.child or v.gui).update(math.huge,v.visible,true,dat)
+                (v.child or v.gui).update(math.huge,v.visible,true,dat,not v.reactive,not v.visible)
             end
             if v.gui and v.gui.cls then 
                 v.gui.term_object.redraw()
