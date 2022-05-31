@@ -91,10 +91,12 @@ return function(object,event)
             if object.autoc.selected > #sorted then
                 object.autoc.selected = #sorted
             end
-            object.autoc.current = search_string
-            object.autoc.str_diff = object.autoc.sorted[object.autoc.selected]
-            if not object.autoc.str_diff then object.autoc.str_diff = "" end
-            object.autoc.current_likeness = likeness(search_string,object.autoc.str_diff)
+            if sorted[1] ~= search_string then
+                object.autoc.current = search_string
+                object.autoc.str_diff = object.autoc.sorted[object.autoc.selected]
+                if not object.autoc.str_diff then object.autoc.str_diff = "" end
+                object.autoc.current_likeness = likeness(search_string,object.autoc.str_diff)
+            end
         end
     end
     if event.name == "char" and object.selected and event.character:match(object.pattern) then

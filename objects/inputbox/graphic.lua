@@ -62,6 +62,12 @@ return function(object)
             local diff = str:gsub("^"..mid:gsub(" $",""),"")
             if object.cursor_pos >= #object.input then
                 local diff = diff:gsub("%%(.)", "%1")
+                local max_x = object.positioning.x+object.positioning.width+1
+                local autoc_x = object.cursor_x+object.shift+#diff
+                if autoc_x > max_x and not object.autoc.ignore_width then
+                    local ndiff = autoc_x-max_x
+                    diff = diff:sub(1,#diff-ndiff)
+                end
                 term.blit(
                     diff,
                     graphic.to_blit[object.autoc.fg]:rep(#diff),
