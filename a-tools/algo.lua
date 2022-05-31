@@ -135,7 +135,7 @@ end
 local function get_line_points(startX, startY, endX, endY)
     local points = {}
     startX,startY,endX,endY = math.floor(startX),math.floor(startY),math.floor(endX),math.floor(endY)
-    if startX == endX and startY == endY then table.insert(points,startX,startY) return end
+    if startX == endX and startY == endY then return {x=startX,y=startY} end
     local minX = math.min(startX, endX)
     local maxX, minY, maxY
     if minX == startX then minY,maxX,maxY = startY,endX,endY
