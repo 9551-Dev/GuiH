@@ -70,8 +70,6 @@ local textures = {
     on = gui.load_texture({[3]={[5]={t="d",s=" ",b="d",},},[4]={[5]={t="f",s="|",b="0",},},offset={3,9,11,4,},}),
 }
 
-_G.texturesss = {_next, textures}
-
 local function combine_path(...)
     local strings = {...}
     local path = ""
