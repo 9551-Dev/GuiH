@@ -4,8 +4,6 @@
     * and draws them
 ]]
 
-local debugger = peripheral.wrap("top")
-
 local decode_ppm = require "a-tools.luappm"
 local decode_blbfor =  require "a-tools.blbfor".open
 local api = require "api"
