@@ -418,7 +418,7 @@ local function draw_box_tex(term,tex,x,y,width,height,bg,tg,offsetx,offsety,cach
                 if pixel and next(pixel) then
                     bg_layers[yis] = (bg_layers[yis] or "")..saveCols[pixel.background_color]
                     fg_layers[yis] = (fg_layers[yis] or "")..saveCols[pixel.text_color]
-                    text_layers[yis] = (text_layers[yis] or "")..pixel.symbol
+                    text_layers[yis] = (text_layers[yis] or "")..pixel.symbol:match(".$")
                 else
                     bg_layers[yis] = (bg_layers[yis] or "")..saveCols[bg]
                     fg_layers[yis] = (fg_layers[yis] or "")..saveCols[tg]
@@ -440,8 +440,7 @@ local function draw_box_tex(term,tex,x,y,width,height,bg,tg,offsetx,offsety,cach
     --* then we draw the blit data to the screen
     for k,v in pairs(bg_layers) do
         term.setCursorPos(x,y+k-1)
-	local char = text_layers[k]:match(".$")
-        term.blit(char,fg_layers[k],bg_layers[k])
+        term.blit(text_layers[k],fg_layers[k],bg_layers[k])
     end
 end
 
