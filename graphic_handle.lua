@@ -169,7 +169,7 @@ local function load_limg_animation(file_name,background)
     if not file then error("file doesnt exist",2) end
     local data = textutils.unserialise(file.readAll())
     file.close()
-    assert(data.type=="lImg","not an limg image")
+    assert(data.type=="lImg" or data.type == nil,"not an limg image")
     local frames = {}
     for frame,frame_data in pairs(data) do
         if frame ~= "type" and frame_data ~= "lImg" then
