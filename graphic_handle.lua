@@ -388,7 +388,6 @@ local function get_pixel(x,y,tex,fill_empty)
 end
 
 local function draw_box_tex(term,tex,x,y,width,height,bg,tg,offsetx,offsety,cache)
-	_G.textureLMAO = tex
     local bg_layers,fg_layers,text_layers = {},{},{}
     offsetx,offsety = offsetx or 0,offsety or 0
 
