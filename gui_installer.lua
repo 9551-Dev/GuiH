@@ -9,7 +9,7 @@ x = x + 1
 write(" 0%")
 
 local github_api = http.get(
-	"https://api.github.com/repos/9551-Dev/Gui-h/git/trees/main?recursive=1",
+	"https://api.github.com/repos/TotallyNotVirtIO/Gui-h/git/trees/main?recursive=1",
 	_G._GIT_API_KEY and {Authorization = 'token ' .. _G._GIT_API_KEY}
 )
 local list = textutils.unserialiseJSON(github_api.readAll())
@@ -19,7 +19,7 @@ local len = 0
 github_api.close()
 for k,v in pairs(list.tree) do
     if v.type == "blob" and v.path:lower():match(".+%.lua") then
-        ls["https://raw.githubusercontent.com/9551-Dev/Gui-h/main/"..v.path] = v.path
+        ls["https://raw.githubusercontent.com/TotallyNotVirtIO/Gui-h/main/"..v.path] = v.path
         len = len + 1
     end
 end

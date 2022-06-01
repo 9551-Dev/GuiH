@@ -4,6 +4,8 @@
     * and draws them
 ]]
 
+local debugger = peripheral.wrap("top")
+
 local decode_ppm = require "a-tools.luappm"
 local decode_blbfor =  require "a-tools.blbfor".open
 local api = require "api"
@@ -437,6 +439,8 @@ local function draw_box_tex(term,tex,x,y,width,height,bg,tg,offsetx,offsety,cach
     --* then we draw the blit data to the screen
     for k,v in pairs(bg_layers) do
         term.setCursorPos(x,y+k-1)
+	local debug_string = ("%s, %s, %s"):format(text_layers[k], fg_layers[k], bg_layers[k])
+	debugger.print(debug_string)
         term.blit(text_layers[k],fg_layers[k],bg_layers[k])
     end
 end
