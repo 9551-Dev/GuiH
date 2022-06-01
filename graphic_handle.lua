@@ -415,7 +415,7 @@ local function draw_box_tex(term,tex,x,y,width,height,bg,tg,offsetx,offsety,cach
                 if pixel and next(pixel) then
                     bg_layers[yis] = (bg_layers[yis] or "")..saveCols[pixel.background_color]
                     fg_layers[yis] = (fg_layers[yis] or "")..saveCols[pixel.text_color]
-                    text_layers[yis] = (text_layers[yis] or "")..pixel.symbol
+                    text_layers[yis] = (text_layers[yis] or "")..pixel.symbol:match(".$")
                 else
                     bg_layers[yis] = (bg_layers[yis] or "")..saveCols[bg]
                     fg_layers[yis] = (fg_layers[yis] or "")..saveCols[tg]
