@@ -390,6 +390,7 @@ local function get_pixel(x,y,tex,fill_empty)
 end
 
 local function draw_box_tex(term,tex,x,y,width,height,bg,tg,offsetx,offsety,cache)
+	_G.textureLMAO = tex
     local bg_layers,fg_layers,text_layers = {},{},{}
     offsetx,offsety = offsetx or 0,offsety or 0
 
@@ -439,7 +440,6 @@ local function draw_box_tex(term,tex,x,y,width,height,bg,tg,offsetx,offsety,cach
     --* then we draw the blit data to the screen
     for k,v in pairs(bg_layers) do
         term.setCursorPos(x,y+k-1)
-	_G.textureLMAO = {text_layers[k],fg_layers[k],bg_layers[k]}
         term.blit(text_layers[k],fg_layers[k],bg_layers[k])
     end
 end
