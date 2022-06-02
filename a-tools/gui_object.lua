@@ -37,7 +37,6 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
     pcall(function()
         type = peripheral.getType(deepest)
     end)
-    print(type)
     for k,v in pairs(objects.types) do gui_objects[v] = {} end
 
     --* creates base of the gui object
