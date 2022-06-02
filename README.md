@@ -64,10 +64,10 @@ this is the APIs folder dont touch it ! running the files will have it crash any
 i will go over the object structure later..
 
 ### usage
-to use the api you have to require its main.lua  file	
+to use the api you have to require its folder  file	
 this will give you 2 functions. load_texture and create_gui. the usage of theese function is
 ```lua
-require("GuiH.main") -> API
+require("GuiH") -> API
 ```
 ```lua
 API.create_gui(terminal object: table) -> GUI_OBJECT
