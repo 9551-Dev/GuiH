@@ -11,15 +11,33 @@ local graphic = require("graphic_handle")
 local update = require("a-tools.update")
 local api = require("api")
 
-local function create_gui_object(term_object,orig,log)
+local function create_gui_object(term_object,orig,log,event_offset_x,event_offset_y)
     local gui_objects = {}
     --* checks if the term object is terminal or an monitor
     --* uses pcall cause peripheral.getType(term) errors
     local type = "term_object"
+    local deepest = orig
+    event_offset_x = event_offset_x or 0
+    event_offset_y = event_offset_y or 0
     pcall(function()
-        type = peripheral.getType(orig)
+        local function get_ev_offset(terminal)
+            local x,y = terminal.getPosition()
+            event_offset_x = event_offset_x + (x-1)
+            event_offset_y = event_offset_y + (y-1)
+            local _,parent = debug.getupvalue(terminal.reposition,5)
+            if parent.reposition and parent ~= term.current() then
+                deepest = parent
+                get_ev_offset(parent)
+            elseif parent ~= nil then
+                deepest = parent
+            end
+        end
+        get_ev_offset(term_object)
     end)
-
+    pcall(function()
+        type = peripheral.getType(deepest)
+    end)
+    print(type)
     for k,v in pairs(objects.types) do gui_objects[v] = {} end
 
     --* creates base of the gui object
@@ -45,7 +63,9 @@ local function create_gui_object(term_object,orig,log)
         cls=false,
         key={},
         texture_cache={},
-        debug=false
+        debug=false,
+        event_offset_x=event_offset_x,
+        event_offset_y=event_offset_y,
     }
     gui.elements = gui.gui
 
@@ -413,6 +433,10 @@ local function create_gui_object(term_object,orig,log)
         --* loops until either the gui or your custom function dies
         while ((coroutine.status(func_coro) ~= "dead" or not (_G.type(fnc) == "function")) and coroutine.status(gui_coro) ~= "dead" and err == nil) and running do
             local event = table.pack(os.pullEventRaw())
+            if api.events_with_cords[event[1]] then
+                event[3] = event[3] - (gui.event_offset_x)
+                event[4] = event[4] - (gui.event_offset_y)
+            end
 
             --* manual termination handling
             if event[1] == "terminate" then err = "Terminated" break end
@@ -478,7 +502,7 @@ local function create_gui_object(term_object,orig,log)
     --* if the term object happens to be an monitor then get its name
     if type == "monitor" then
         log("Display object: monitor",log.info)
-        gui.monitor = peripheral.getName(orig)
+        gui.monitor = peripheral.getName(deepest)
     else
         log("Display object: term",log.info)
         gui.monitor = "term_object"
@@ -524,6 +548,10 @@ local function create_gui_object(term_object,orig,log)
         log("Loading blbfor animation.. ",log.update)
         local textures = graphic.load_blbfor_animation(file_data)
         return textures
+    end
+
+    gui.set_event_offset = function(x,y)
+        gui.event_offset_x,gui.event_offset_y = x or gui.event_offset_x,y or gui.event_offset_y
     end
     
     log("")

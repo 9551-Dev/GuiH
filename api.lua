@@ -169,6 +169,14 @@ local function create_blit_array(count)
     return out
 end
 
+local events_with_cords = {
+    monitor_touch=true,
+    mouse_click=true,
+    mouse_drag=true,
+    mouse_scroll=true,
+    mouse_up=true
+}
+
 return {
     is_within_field=is_within_field,
     tables={
@@ -190,5 +198,6 @@ return {
     uuid4=uuid4,
     precise_sleep=precise_sleep,
     piece_string=piece_string,
-    create_blit_array=create_blit_array
+    create_blit_array=create_blit_array,
+    events_with_cords=events_with_cords
 }

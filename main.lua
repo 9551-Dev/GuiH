@@ -47,7 +47,7 @@ log("")
 log:dump()
 
 --* this function is used to build a new gui_object using the gui_object.lua file
-local function generate_ui(m)
+local function generate_ui(m,event_offset_x,event_offset_y)
     local old_path = package.path
     package.path = string.format(
         "%s;/%s/?.lua;/%s/?/init.lua",
@@ -56,7 +56,7 @@ local function generate_ui(m)
     local create = require("a-tools.gui_object")
     local win = window.create(m,1,1,m.getSize())
     log("creating gui object..",log.update)
-    local gui = create(win,m,log)
+    local gui = create(win,m,log,event_offset_x,event_offset_y)
     log("finished creating gui object!",log.success)
     log("",log.info)
     log:dump()

@@ -27,4 +27,4 @@ local GuiH = require "main"
 
 --* restores package path
 package.path = old_path
-return setmetatable(GuiH,{__tostring=function() return "GuiH_API" end})
+return setmetatable(GuiH,{__tostring=function() return "GuiH.API" end})
