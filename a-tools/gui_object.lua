@@ -17,23 +17,24 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
     --* uses pcall cause peripheral.getType(term) errors
     local type = "term_object"
     local deepest = orig
-    event_offset_x = event_offset_x or 0
-    event_offset_y = event_offset_y or 0
-    pcall(function()
-        local function get_ev_offset(terminal)
-            local x,y = terminal.getPosition()
-            event_offset_x = event_offset_x + (x-1)
-            event_offset_y = event_offset_y + (y-1)
-            local _,parent = debug.getupvalue(terminal.reposition,5)
-            if parent.reposition and parent ~= term.current() then
-                deepest = parent
-                get_ev_offset(parent)
-            elseif parent ~= nil then
-                deepest = parent
+    if not event_offset_x or not event_offset_y then
+        event_offset_x,event_offset_y = 0,0
+        pcall(function()
+            local function get_ev_offset(terminal)
+                local x,y = terminal.getPosition()
+                event_offset_x = event_offset_x + (x-1)
+                event_offset_y = event_offset_y + (y-1)
+                local _,parent = debug.getupvalue(terminal.reposition,5)
+                if parent.reposition and parent ~= term.current() then
+                    deepest = parent
+                    get_ev_offset(parent)
+                elseif parent ~= nil then
+                    deepest = parent
+                end
             end
-        end
-        get_ev_offset(term_object)
-    end)
+            get_ev_offset(term_object)
+        end)
+    end
     pcall(function()
         type = peripheral.getType(deepest)
     end)
