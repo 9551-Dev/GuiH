@@ -103,7 +103,7 @@ return function(self,timeout,visible,is_child,data_in,block_logic,block_graphic)
             for _k,_v in pairs(gui) do for k,v in pairs(_v) do
 
                 --* if the element is reactive and is set to respond to the current event then continue
-                if v.reactive and v.react_to_events[ev_data.name] or not next(v.react_to_events) then
+                if (v.reactive and v.react_to_events[ev_data.name]) or not next(v.react_to_events) then
 
                     --* build a function that updates this element and add it into update_layers
                     --* with its update logic_order or order as a key
