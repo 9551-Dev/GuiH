@@ -563,6 +563,18 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
     gui.update = updater
     log("loading text object...",log.update)
     log("")
+
+    gui.get_blit = function(y,sx,ex)
+        local line
+        pcall(function()
+            line = {gui.term_object.getLine(y)}
+        end)
+        if not line then return false end
+        return line[1]:sub(sx,ex),
+            line[2]:sub(sx,ex),
+            line[3]:sub(sx,ex)
+    end
+
     gui.text = function(data)
         data = data or {}
 
