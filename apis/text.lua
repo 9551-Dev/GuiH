@@ -48,7 +48,7 @@ end
 local function ensure_size(str,width)
     expect(1,str,"string")
     expect(2,width,"number")
-    local f_line = line:sub(1, width)
+    local f_line = str:sub(1, width)
     if #f_line < width then
         f_line = f_line .. (" "):rep(width-#f_line)
     end
