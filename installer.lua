@@ -8,7 +8,7 @@ fs.makeDir("GuiH/presets/rect")
 fs.makeDir("GuiH/presets/tex")
 
 local github_api = http.get(
-	"https://api.github.com/repos/9551-Dev/Gui-h/git/trees/main?recursive=1",
+	"https://api.github.com/repos/9551-Dev/GuiH/git/trees/main?recursive=1",
 	_G._GIT_API_KEY and {Authorization = 'token ' .. _G._GIT_API_KEY}
 )
 
@@ -18,7 +18,7 @@ local len = 0
 github_api.close()
 for k,v in pairs(list.tree) do
     if v.type == "blob" and v.path:lower():match(".+%.lua") then
-        ls["https://raw.githubusercontent.com/9551-Dev/Gui-h/main/"..v.path] = v.path
+        ls["https://raw.githubusercontent.com/9551-Dev/GuiH/main/"..v.path] = v.path
         len = len + 1
     end
 end
