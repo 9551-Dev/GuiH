@@ -1,42 +1,10 @@
-local pretty = require("cc.pretty")
-
-local function fuzzy_match(str, pattern)
-    local part = 100/math.max(#str,#pattern)
-    local str_len = string.len(str)
-    local pattern_len = string.len(pattern)
-    local dp = {}
-    for i = 0, str_len do
-        dp[i] = {}
-        dp[i][0] = i
-    end
-    for j = 0, pattern_len do
-        dp[0][j] = j
-    end
-    for i = 1, str_len do
-        for j = 1, pattern_len do
-            local cost = 0
-            if string.sub(str, i, i) ~= string.sub(pattern, j, j) then
-                cost = 1
-            end
-            dp[i][j] = math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost)
-        end
-    end
-    return 100-dp[str_len][pattern_len]*part
-end
-
-local function sort_strings(str_array, pattern)
-    local result,out = {},{}
-    for k, str in pairs(str_array) do
-        table.insert(result,{fuzzy_match(k, pattern),k,str})
-    end
-    table.sort(result, function(a, b) return a[1] > b[1] end)
-    for k,v in ipairs(result) do
-        out[k] = {match=v[1],str=v[2],data=v[3]}
-    end
-    return out
-end
-
-return {
-    fuzzy_match=fuzzy_match,
-    sort_strings=sort_strings,
-}
+local e=require("cc.pretty")local function t(a,o)local
+i=100/math.max(#a,#o)local n=string.len(a)local s=string.len(o)local h={}for
+r=0,n do h[r]={}h[r][0]=r end for d=0,s do h[0][d]=d end for l=1,n do for u=1,s
+do local c=0 if string.sub(a,l,l)~=string.sub(o,u,u)then c=1 end
+h[l][u]=math.min(h[l-1][u]+1,h[l][u-1]+1,h[l-1][u-1]+c)end end return
+100-h[n][s]*i end local function m(f,w)local y,p={},{}for v,b in pairs(f)do
+table.insert(y,{t(v,w),v,b})end table.sort(y,function(g,k)return
+g[1]>k[1]end)for q,j in ipairs(y)do p[q]={match=j[1],str=j[2],data=j[3]}end
+return p end
+return{fuzzy_match=t,sort_strings=m,}

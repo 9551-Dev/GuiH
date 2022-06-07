@@ -1,33 +1,11 @@
-local api = require("api")
-return function(object,event,self)
-    object.on_any(object,event)
-    local x,y = object.window.getPosition()
-    local dragger_x = object.dragger.x+x
-    local dragger_y = object.dragger.y+y
-    if event.name == "mouse_click" or event.name == "monitor_touch" then
-        if api.is_within_field(
-            event.x,
-            event.y,
-            dragger_x-1,
-            dragger_y-1,
-            object.dragger.width,
-            object.dragger.height
-        ) then
-            object.dragged = true
-            object.last_click = event
-            object.on_select(object,event)
-        end
-    elseif event.name == "mouse_up" then
-        object.dragged = false
-        object.on_select(object,event)
-    elseif event.name == "mouse_drag" and object.dragged and object.dragable then
-        local wx,wy = object.window.getPosition()
-        local ww,wh = object.window.getSize()
-        local change_x,change_y = event.x-object.last_click.x,event.y-object.last_click.y
-        object.last_click = event
-        local nx,ny = wx+change_x,wy+change_y
-        if not object.on_move(object,{x=nx,y=ny}) then
-            object.window.reposition(nx,ny)
-        end
-    end
+local e=require("api")return function(t,a,o)t.on_any(t,a)local
+i,n=t.window.getPosition()local s=t.dragger.x+i local h=t.dragger.y+n if
+a.name=="mouse_click"or a.name=="monitor_touch"then if
+e.is_within_field(a.x,a.y,s-1,h-1,t.dragger.width,t.dragger.height)then
+t.dragged=true t.last_click=a t.on_select(t,a)end elseif a.name=="mouse_up"then
+t.dragged=false t.on_select(t,a)elseif a.name=="mouse_drag"and t.dragged and
+t.dragable then local r,d=t.window.getPosition()local
+l,u=t.window.getSize()local c,m=a.x-t.last_click.x,a.y-t.last_click.y
+t.last_click=a local f,w=r+c,d+m if not t.on_move(t,{x=f,y=w})then
+t.window.reposition(f,w)end end
 end

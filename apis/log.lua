@@ -1,159 +1,37 @@
-local typeList = {
-    {colors.red},
-    {colors.yellow},
-    {colors.white,colors.red},
-    {colors.white,colors.lime},
-    {colors.white,colors.lime},
-    {colors.white},
-    {colors.green},
-    {colors.gray},
-}
-
-local index = {
-    error=1,
-    warn=2,
-    fatal=3,
-    success=4,
-    message=6,
-    update=7,
-    info=8
-}
-
-local revIndex = {}
-for k,v in pairs(index) do
-    revIndex[v] = k
-end
-
-local function remove_time(str)
-    local str = str:gsub("^%[%d-%:%d-% %a-]","")
-    return str
-end
-
-local function writeWrapped(termObj,str,bg,title)
-    local width,height = termObj.getSize()
-    local strings,maxLen = {},math.ceil(#str/width)
-    local last = 0
-    for i=1,maxLen do
-        local _,y = termObj.getCursorPos()
-        if y > height then
-            termObj.scroll(1)
-            termObj.setCursorPos(1,y-1)
-            y = y - 1
-        end
-        termObj.write(str:sub(last+1,i*width))
-        termObj.setCursorPos(1,y+1)
-        last=i*width
-    end
-    return maxLen
-end
-
-local function getLineLen(termObj,str)
-    local width = termObj.getSize()
-    local strings,maxLen = {},math.ceil(#str/width)
-    local last = 0
-    local strLen
-    for i=1,maxLen do
-        local strs = str:sub(last+1,i*width)
-        last=i*width
-        strLen = #strs
-    end
-    return strLen
-end
-
-function index:dump(path)
-    local lastLog = ""
-    local nstr = 1
-    local outputInternal = {}
-    local str = ""
-    for k,v in ipairs(self.history) do
-        if lastLog == remove_time(v.str)..v.type then
-            nstr = nstr + 1
-            table.remove(outputInternal,#outputInternal)
-        else
-            nstr = 1
-        end
-        outputInternal[#outputInternal+1] = v.str.."("..tostring(nstr)..") type: "..(revIndex[v.type] or "info")
-        lastLog = remove_time(v.str)..v.type
-    end
-    for k,v in ipairs(outputInternal) do
-        str = str .. v .. "\n"
-    end
-    if type(path) == "string" then
-        local file = fs.open(path..".log","w")
-        file.write(str)
-        file.close()
-    end
-    return str
-end
-
-local function write_to_log_internal(self,str,type)
-    local width,height = self.term.getSize()
-    local x,y = self.term.getCursorPos()
-    local str = tostring(str)
-    type = type or "info"
-    if self.lastLog == str..type then
-        self.nstr = self.nstr + 1
-        local yid = y-self.maxln
-        self.term.setCursorPos(x,yid)
-    else
-        self.nstr = 1
-    end
-    self.lastLog = str..type
-    local timeStr = "["..textutils.formatTime(os.time()).."] "
-    local tb,tt = self.term.getBackgroundColor(),self.term.getTextColor()
-    local lFg,lBg = unpack(typeList[type] or {})
-    self.term.setBackgroundColor(lBg or tb);self.term.setTextColor(lFg or colors.gray)
-    local strse = timeStr..str.."("..tostring(self.nstr)..")"
-    local len = #strse
-    if len < 1 then len = 1 end
-    local wlen = width-len
-    if wlen < 1 then wlen = 1 end
-    wlen = width-(getLineLen(self.term,strse))
-    local strWrt = timeStr..str..(" "):rep(wlen)
-    table.insert(self.history,{
-        str=strWrt,
-        type=type
-    })
-    self.maxln = writeWrapped(self.term,strWrt.."("..tostring(self.nstr)..")",tb,self.title)
-    local x,y = self.term.getCursorPos()
-    self.term.setBackgroundColor(self.sbg);self.term.setTextColor(self.sfg) 
-    if self.title then
-        self.term.setCursorPos(1,1)
-        self.term.write((self.tsym):rep(width))
-        self.term.setCursorPos(math.ceil((width / 2) - (#self.title / 2)), 1)
-        self.term.write(self.title)
-        self.term.setCursorPos(x,y)
-    end
-    self.term.setBackgroundColor(tb);self.term.setTextColor(tt) 
-end
-
-local function createLogInternal(termObj,title,titlesym,auto_dump,file)
-    titlesym = titlesym or "-"
-    local width,height = termObj.getSize()
-    local log = setmetatable({
-        lastLog="",
-        nstr=1,
-        maxln=1,
-        term=termObj,
-        history={},
-        title = title,
-        tsym=(#titlesym < 4) and titlesym or "-",
-        sbg=termObj.getBackgroundColor(),
-        sfg=termObj.getTextColor(),
-        auto_dump=auto_dump
-    },{
-        __index=index,
-        __call=write_to_log_internal
-    })
-    if log.title then
-        log.term.setCursorPos(1,1)
-        log.term.write((log.tsym):rep(width))
-        log.term.setCursorPos(math.ceil((width / 2) - (#log.title / 2)), 1)
-        log.term.write(log.title)
-        log.term.setCursorPos(1,2)
-    end
-    log.lastLog = nil
-    return log
-end
-
-return {create_log=createLogInternal}
+local
+e={{colors.red},{colors.yellow},{colors.white,colors.red},{colors.white,colors.lime},{colors.white,colors.lime},{colors.white},{colors.green},{colors.gray},}local
+t={error=1,warn=2,fatal=3,success=4,message=6,update=7,info=8}local a={}for o,i
+in pairs(t)do a[i]=o end local function n(s)local
+s=s:gsub("^%[%d-%:%d-% %a-]","")return s end local function h(r,d,l,u)local
+c,m=r.getSize()local f,w={},math.ceil(#d/c)local y=0 for p=1,w do local
+v,b=r.getCursorPos()if b>m then r.scroll(1)r.setCursorPos(1,b-1)b=b-1 end
+r.write(d:sub(y+1,p*c))r.setCursorPos(1,b+1)y=p*c end return w end local
+function g(k,q)local j=k.getSize()local x,z={},math.ceil(#q/j)local E=0 local T
+for A=1,z do local O=q:sub(E+1,A*j)E=A*j T=#O end return T end function
+t:dump(I)local N=""local S=1 local H={}local R=""for D,L in
+ipairs(self.history)do if N==n(L.str)..L.type then S=S+1 table.remove(H,#H)else
+S=1 end
+H[#H+1]=L.str.."("..tostring(S)..") type: "..(a[L.type]or"info")N=n(L.str)..L.type
+end for U,C in ipairs(H)do R=R..C.."\n"end if type(I)=="string"then local
+M=fs.open(I..".log","w")M.write(R)M.close()end return R end local function
+F(W,Y,P)local V,B=W.term.getSize()local G,K=W.term.getCursorPos()local
+Y=tostring(Y)P=P or"info"if W.lastLog==Y..P then W.nstr=W.nstr+1 local
+Q=K-W.maxln W.term.setCursorPos(G,Q)else W.nstr=1 end W.lastLog=Y..P local
+J="["..textutils.formatTime(os.time()).."] "local
+X,Z=W.term.getBackgroundColor(),W.term.getTextColor()local
+et,tt=unpack(e[P]or{})W.term.setBackgroundColor(tt or X);W.term.setTextColor(et
+or colors.gray)local at=J..Y.."("..tostring(W.nstr)..")"local ot=#at if ot<1
+then ot=1 end local it=V-ot if it<1 then it=1 end it=V-(g(W.term,at))local
+nt=J..Y..(" "):rep(it)table.insert(W.history,{str=nt,type=P})W.maxln=h(W.term,nt.."("..tostring(W.nstr)..")",X,W.title)local
+G,K=W.term.getCursorPos()W.term.setBackgroundColor(W.sbg);W.term.setTextColor(W.sfg)if
+W.title then
+W.term.setCursorPos(1,1)W.term.write((W.tsym):rep(V))W.term.setCursorPos(math.ceil((V/2)-(#W.title/2)),1)W.term.write(W.title)W.term.setCursorPos(G,K)end
+W.term.setBackgroundColor(X);W.term.setTextColor(Z)end local function
+st(ht,rt,dt,lt,ut)dt=dt or"-"local ct,mt=ht.getSize()local
+ft=setmetatable({lastLog="",nstr=1,maxln=1,term=ht,history={},title=rt,tsym=(#dt<4)and
+dt
+or"-",sbg=ht.getBackgroundColor(),sfg=ht.getTextColor(),auto_dump=lt},{__index=t,__call=F})if
+ft.title then
+ft.term.setCursorPos(1,1)ft.term.write((ft.tsym):rep(ct))ft.term.setCursorPos(math.ceil((ct/2)-(#ft.title/2)),1)ft.term.write(ft.title)ft.term.setCursorPos(1,2)end
+ft.lastLog=nil return ft end
+return{create_log=st}

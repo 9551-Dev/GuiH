@@ -1,27 +1,7 @@
-local graphics = require("graphic_handle").code
-
-return function(object)
-    local term = object.canvas.term_object
-    local x,y = object.positioning.x,object.positioning.y
-    local w,h = object.positioning.width,object.positioning.height
-    term.setCursorPos(x,y)
-    term.blit(
-        object.symbols.top_left.sym..object.symbols.side_top.sym:rep(w-2)..object.symbols.top_right.sym,
-        graphics.to_blit[object.symbols.top_left.fg]..graphics.to_blit[object.symbols.side_top.fg]:rep(w-2)..graphics.to_blit[object.symbols.top_right.fg],
-        graphics.to_blit[object.symbols.top_left.bg]..graphics.to_blit[object.symbols.side_top.bg]:rep(w-2)..graphics.to_blit[object.symbols.top_right.bg]
-    )
-    for i=1,h-2 do
-        term.setCursorPos(x,y+i)
-        term.blit(
-            object.symbols.side_left.sym..object.symbols.inside.sym:rep(w-2)..object.symbols.side_right.sym,
-            graphics.to_blit[object.symbols.side_left.fg]..graphics.to_blit[object.symbols.inside.fg]:rep(w-2)..graphics.to_blit[object.symbols.side_right.fg],
-            graphics.to_blit[object.symbols.side_left.bg]..graphics.to_blit[object.symbols.inside.bg]:rep(w-2)..graphics.to_blit[object.symbols.side_right.bg]
-        )
-    end
-    term.setCursorPos(x,y+h-1)
-    term.blit(
-        object.symbols.bottom_left.sym..object.symbols.side_bottom.sym:rep(w-2)..object.symbols.bottom_right.sym,
-        graphics.to_blit[object.symbols.bottom_left.fg]..graphics.to_blit[object.symbols.side_bottom.fg]:rep(w-2)..graphics.to_blit[object.symbols.bottom_right.fg],
-        graphics.to_blit[object.symbols.bottom_left.bg]..graphics.to_blit[object.symbols.side_bottom.bg]:rep(w-2)..graphics.to_blit[object.symbols.bottom_right.bg]
-    )
-end
+local e=require("graphic_handle").code return function(t)local
+a=t.canvas.term_object local o,i=t.positioning.x,t.positioning.y local
+n,s=t.positioning.width,t.positioning.height
+a.setCursorPos(o,i)a.blit(t.symbols.top_left.sym..t.symbols.side_top.sym:rep(n-2)..t.symbols.top_right.sym,e.to_blit[t.symbols.top_left.fg]..e.to_blit[t.symbols.side_top.fg]:rep(n-2)..e.to_blit[t.symbols.top_right.fg],e.to_blit[t.symbols.top_left.bg]..e.to_blit[t.symbols.side_top.bg]:rep(n-2)..e.to_blit[t.symbols.top_right.bg])for
+h=1,s-2 do
+a.setCursorPos(o,i+h)a.blit(t.symbols.side_left.sym..t.symbols.inside.sym:rep(n-2)..t.symbols.side_right.sym,e.to_blit[t.symbols.side_left.fg]..e.to_blit[t.symbols.inside.fg]:rep(n-2)..e.to_blit[t.symbols.side_right.fg],e.to_blit[t.symbols.side_left.bg]..e.to_blit[t.symbols.inside.bg]:rep(n-2)..e.to_blit[t.symbols.side_right.bg])end
+a.setCursorPos(o,i+s-1)a.blit(t.symbols.bottom_left.sym..t.symbols.side_bottom.sym:rep(n-2)..t.symbols.bottom_right.sym,e.to_blit[t.symbols.bottom_left.fg]..e.to_blit[t.symbols.side_bottom.fg]:rep(n-2)..e.to_blit[t.symbols.bottom_right.fg],e.to_blit[t.symbols.bottom_left.bg]..e.to_blit[t.symbols.side_bottom.bg]:rep(n-2)..e.to_blit[t.symbols.bottom_right.bg])end

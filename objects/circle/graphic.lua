@@ -1,49 +1,13 @@
-local algo = require("a-tools.algo")
-local graphic = require("graphic_handle").code
-local api = require("api")
-
-return function(object)
-    local term = object.canvas.term_object
-    local draw_map = {}
-    local x_map = {}
-    local visited = api.tables.createNDarray(2)
-    if object.filled then
-        local points = algo.get_elipse_points(
-            object.positioning.radius,
-            math.ceil(object.positioning.radius-object.positioning.radius/3)+0.5,
-            object.positioning.x,
-            object.positioning.y,
-            true
-        )
-        for k,v in ipairs(points) do
-            if visited[v.x][v.y] ~= true then
-                draw_map[v.y] = (draw_map[v.y] or "").."*"
-                x_map[v.y] = math.min(x_map[v.y] or math.huge,v.x)
-                visited[v.x][v.y] = true
-            end
-        end
-        for y,data in pairs(draw_map) do
-            term.setCursorPos(x_map[y],y)
-            term.blit(
-                data:gsub("%*",object.symbol),
-                data:gsub("%*",graphic.to_blit[object.fg]),
-                data:gsub("%*",graphic.to_blit[object.bg])
-            )
-        end
-    else
-        local points = algo.get_elipse_points(
-            object.positioning.radius,
-            math.ceil(object.positioning.radius-object.positioning.radius/3)+0.5,
-            object.positioning.x,
-            object.positioning.y
-        )
-        for k,v in pairs(points) do
-            term.setCursorPos(v.x,v.y)
-            term.blit(
-                object.symbol,
-                graphic.to_blit[object.fg],
-                graphic.to_blit[object.bg]
-            )
-        end
-    end
+local e=require("a-tools.algo")local t=require("graphic_handle").code local
+a=require("api")return function(o)local i=o.canvas.term_object local n={}local
+s={}local h=a.tables.createNDarray(2)if o.filled then local
+r=e.get_elipse_points(o.positioning.radius,math.ceil(o.positioning.radius-o.positioning.radius/3)+0.5,o.positioning.x,o.positioning.y,true)for
+d,l in ipairs(r)do if h[l.x][l.y]~=true then
+n[l.y]=(n[l.y]or"").."*"s[l.y]=math.min(s[l.y]or math.huge,l.x)h[l.x][l.y]=true
+end end for u,c in pairs(n)do
+i.setCursorPos(s[u],u)i.blit(c:gsub("%*",o.symbol),c:gsub("%*",t.to_blit[o.fg]),c:gsub("%*",t.to_blit[o.bg]))end
+else local
+m=e.get_elipse_points(o.positioning.radius,math.ceil(o.positioning.radius-o.positioning.radius/3)+0.5,o.positioning.x,o.positioning.y)for
+f,w in pairs(m)do
+i.setCursorPos(w.x,w.y)i.blit(o.symbol,t.to_blit[o.fg],t.to_blit[o.bg])end end
 end

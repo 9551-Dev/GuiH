@@ -1,79 +1,33 @@
-local graphic = require("graphic_handle").code
-
-local function depattern(str)
-    return str:gsub("[%[%]%(%)%.%+%-%%%$%^%*%?]", "%%%1")
+local e=require("graphic_handle").code local function t(a)return
+a:gsub("[%[%]%(%)%.%+%-%%%$%^%*%?]","%%%1")end return function(o)local
+i=o.canvas.term_object local n,s=o.input,0 if#o.input>=o.positioning.width-1
+then
+n=o.input:sub(#o.input-o.positioning.width+1-o.shift,#o.input-o.shift)s=#o.input-#n
+end local h=(o.positioning.x+o.cursor_pos)-s
+i.setCursorPos(o.positioning.x,o.positioning.y)local r=n
+n=n:gsub(" ",o.space_symbol)..o.background_symbol:rep(o.positioning.width-#n+1)local
+d if o.replace_char then
+d=o.replace_char:rep(#r)..o.background_symbol:rep(o.positioning.width-#r+1)end
+i.blit(d or
+n,e.to_blit[o.text_color]:rep(#n),e.to_blit[o.background_color]:rep(#n))if
+o.selected and(o.char_limit>o.cursor_pos)then
+i.setCursorPos(math.max(h+o.shift,o.positioning.x),o.positioning.y)if
+h+o.shift<o.positioning.x then o.shift=o.shift+1 end if
+h+o.shift>o.positioning.x+o.positioning.width then o.shift=o.shift-1 end local
+l if o.cursor_pos<o.positioning.width then
+l=o.input:sub(o.cursor_pos+1,o.cursor_pos+1)o.cursor_x=o.cursor_pos+1 else
+l=o.input:sub(o.cursor_pos+1,o.cursor_pos+1)i.setCursorPos(h+o.shift,o.positioning.y)end
+o.cursor_x=h+o.shift i.blit((l)~=""and(o.replace_char or l)or"_",l~=""and
+e.to_blit[o.background_color]or e.to_blit[o.text_color],l~=""and
+e.to_blit[o.text_color]or e.to_blit[o.background_color])else
+i.setCursorPos(o.positioning.x+o.positioning.width,o.positioning.y)i.blit("\127",e.to_blit[o.text_color],e.to_blit[o.background_color])end
+if o.autoc.str_diff then
+i.setCursorPos(o.cursor_x+o.shift,o.positioning.y)local
+u=o.autoc.sorted[o.autoc.selected]if u then local
+c=o.input:match("%S+$")or""local m=u:gsub("^"..c:gsub(" $",""),"")if
+o.cursor_pos>=#o.input then local m=m:gsub("%%(.)","%1")local
+f=o.positioning.x+o.positioning.width+1 local w=o.cursor_x+o.shift+#m if w>f
+and not o.autoc.ignore_width then local y=w-f m=m:sub(1,#m-y)end
+i.blit(m,e.to_blit[o.autoc.fg]:rep(#m),e.to_blit[o.autoc.bg]:rep(#m))end end
 end
-
-return function(object)
-    local term = object.canvas.term_object
-    local text,mv = object.input,0
-    if #object.input >= object.positioning.width-1 then
-        text = object.input:sub(#object.input-object.positioning.width+1-object.shift,#object.input-object.shift)
-        mv = #object.input-#text
-    end
-    local cursor_x = (object.positioning.x+object.cursor_pos)-mv
-    term.setCursorPos(object.positioning.x,object.positioning.y)
-    local or_text = text
-    text = text:gsub(" ",object.space_symbol)..object.background_symbol:rep(object.positioning.width-#text+1)
-    local rChar
-    if object.replace_char then
-        rChar = object.replace_char:rep(#or_text)..object.background_symbol:rep(object.positioning.width-#or_text+1)
-    end
-    term.blit(
-        rChar or text,
-        graphic.to_blit[object.text_color]:rep(#text),
-        graphic.to_blit[object.background_color]:rep(#text)
-    )
-    if object.selected and (object.char_limit > object.cursor_pos) then
-        term.setCursorPos(math.max(cursor_x+object.shift,object.positioning.x),object.positioning.y)
-        if cursor_x+object.shift < object.positioning.x then
-            object.shift = object.shift + 1
-        end
-        if cursor_x+object.shift > object.positioning.x+object.positioning.width then
-            object.shift = object.shift - 1
-        end
-        local cursor
-        if object.cursor_pos < object.positioning.width then
-            cursor = object.input:sub(object.cursor_pos+1,object.cursor_pos+1)
-            object.cursor_x = object.cursor_pos+1
-        else
-            cursor = object.input:sub(object.cursor_pos+1,object.cursor_pos+1)
-            term.setCursorPos(cursor_x+object.shift,object.positioning.y)
-        end
-        object.cursor_x = cursor_x+object.shift
-        term.blit(
-            (cursor) ~= "" and (object.replace_char or cursor) or "_",
-            cursor ~= "" and graphic.to_blit[object.background_color] or graphic.to_blit[object.text_color],
-            cursor ~= "" and graphic.to_blit[object.text_color] or graphic.to_blit[object.background_color]
-        )
-    else
-        term.setCursorPos(object.positioning.x+object.positioning.width,object.positioning.y)
-        term.blit(
-            "\127",
-            graphic.to_blit[object.text_color],
-            graphic.to_blit[object.background_color]
-        )
-    end
-    if object.autoc.str_diff then
-        term.setCursorPos(object.cursor_x+object.shift,object.positioning.y)
-        local str = object.autoc.sorted[object.autoc.selected]
-        if str then
-            local mid = object.input:match("%S+$") or ""
-            local diff = str:gsub("^"..mid:gsub(" $",""),"")
-            if object.cursor_pos >= #object.input then
-                local diff = diff:gsub("%%(.)", "%1")
-                local max_x = object.positioning.x+object.positioning.width+1
-                local autoc_x = object.cursor_x+object.shift+#diff
-                if autoc_x > max_x and not object.autoc.ignore_width then
-                    local ndiff = autoc_x-max_x
-                    diff = diff:sub(1,#diff-ndiff)
-                end
-                term.blit(
-                    diff,
-                    graphic.to_blit[object.autoc.fg]:rep(#diff),
-                    graphic.to_blit[object.autoc.bg]:rep(#diff)
-                )
-            end
-        end
-    end
 end

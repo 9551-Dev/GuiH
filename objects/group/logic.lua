@@ -1,3 +1,2 @@
-return function(object,event)
-    object.bef_draw(object,event)
-end
+return
+function(e,t)e.bef_draw(e,t)end

@@ -1,43 +1,12 @@
-fs.makeDir("GuiH")
-fs.makeDir("GuiH/a-tools")
-fs.makeDir("GuiH/objects")
-fs.makeDir("GuiH/apis/")
-fs.makeDir("GuiH/apis/fonts.7sh")
-fs.makeDir("GuiH/presets")
-fs.makeDir("GuiH/presets/rect")
-fs.makeDir("GuiH/presets/tex")
-
-local github_api = http.get(
-	"https://api.github.com/repos/9551-Dev/GuiH/git/trees/main?recursive=1",
-	_G._GIT_API_KEY and {Authorization = 'token ' .. _G._GIT_API_KEY}
-)
-
-local list = textutils.unserialiseJSON(github_api.readAll())
-local ls = {}
-local len = 0
-github_api.close()
-for k,v in pairs(list.tree) do
-    if v.type == "blob" and v.path:lower():match(".+%.lua") then
-        ls["https://raw.githubusercontent.com/9551-Dev/GuiH/main/"..v.path] = v.path
-        len = len + 1
-    end
-end
-local percent = 100/len
-local finished = 0
-local size_gained = 0
-local downloads = {}
-for k,v in pairs(ls) do
-    table.insert(downloads,function()
-        local web = http.get(k)
-        local file = fs.open("./GuiH/"..v,"w")
-        file.write(web.readAll())
-        file.close()
-        web.close()
-        finished = finished + 1
-        local file_size = fs.getSize("./GuiH/"..v)
-        size_gained = size_gained + file_size
-        print("downloading "..v.."  "..tostring(math.ceil(finished*percent)).."% "..tostring(math.ceil(file_size/1024*10)/10).."kB total: "..math.ceil(size_gained/1024).."kB")
-    end)
-end
-parallel.waitForAll(table.unpack(downloads))
-print("Finished downloading GuiH")
+fs.makeDir("GuiH")fs.makeDir("GuiH/a-tools")fs.makeDir("GuiH/objects")fs.makeDir("GuiH/apis/")fs.makeDir("GuiH/apis/fonts.7sh")fs.makeDir("GuiH/presets")fs.makeDir("GuiH/presets/rect")fs.makeDir("GuiH/presets/tex")local
+e=http.get("https://api.github.com/repos/9551-Dev/GuiH/git/trees/minified?recursive=1",_G._GIT_API_KEY
+and{Authorization='token '.._G._GIT_API_KEY})local
+t=textutils.unserialiseJSON(e.readAll())local a={}local o=0 e.close()for i,n in
+pairs(t.tree)do if n.type=="blob"and n.path:lower():match(".+%.lua")then
+a["https://raw.githubusercontent.com/9551-Dev/GuiH/minified/"..n.path]=n.path o=o+1
+end end local s=100/o local h=0 local r=0 local d={}for l,u in pairs(a)do
+table.insert(d,function()local c=http.get(l)local
+m=fs.open("./GuiH/"..u,"w")m.write(c.readAll())m.close()c.close()h=h+1 local
+f=fs.getSize("./GuiH/"..u)r=r+f
+print("downloading "..u.."  "..tostring(math.ceil(h*s)).."% "..tostring(math.ceil(f/1024*10)/10).."kB total: "..math.ceil(r/1024).."kB")end)end
+parallel.waitForAll(table.unpack(d))print("Finished downloading GuiH")

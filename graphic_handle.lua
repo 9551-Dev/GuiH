@@ -1,460 +1,92 @@
---[[
-    * this file is used for drawing and texturing
-    * it loads textures. converts into nimg,
-    * and draws them
-]]
-
-local decode_ppm = require "a-tools.luappm"
-local decode_blbfor =  require "a-tools.blbfor".open
-local api = require "api"
-local expect = require "cc.expect"
-
-local chars = "0123456789abcdef"
-local saveCols, loadCols = {}, {}
-
---* create 2 table used for decoding and encoding blit
-for i = 0, 15 do
-    saveCols[2^i] = chars:sub(i + 1, i + 1)
-    loadCols[chars:sub(i + 1, i + 1)] = 2^i
-end
-
---* this function is used for decoding .nimg files
---* its actually just converting blit to numbers.
-local decode = function(tbl)
-    local output = api.tables.createNDarray(2)
-    output["offset"] = tbl["offset"]
-    for k,v in pairs(tbl) do
-        for ko,vo in pairs(v) do
-            if type(vo) == "table" then
-                output[k][ko] = {}
-                if vo then
-                    output[k][ko].t = loadCols[vo.t]
-                    output[k][ko].b = loadCols[vo.b]
-                    output[k][ko].s = vo.s 
-                end
-            end
-        end
-    end
-    return setmetatable(output,getmetatable(tbl))
-end
-
---* this function will get width and height of an 2D array;;
-local function get2DarraySquareWH(array)
-    local minx, maxx = math.huge, -math.huge
-    local miny,maxy = math.huge, -math.huge
-    for x,yList in pairs(array) do
-        minx, maxx = math.min(minx, x), math.max(maxx, x)
-        for y,_ in pairs(yList) do
-            miny, maxy = math.min(miny, y), math.max(maxy, y)
-        end
-    end
-    return math.abs(minx)+maxx,math.abs(miny)+maxy
-end
-
---* theese to functions are for finding closest key to an non existent key in a table
-local function index_proximal_small(list,num)
-    local diffirences = {}
-    local outs = {}
-    for k,v in pairs(list) do
-        local diff = math.abs(k-num)
-        diffirences[#diffirences+1],outs[diff] = diff,k
-    end
-    local proximal = math.min(table.unpack(diffirences))
-    return list[outs[proximal]]
-end
-local function index_proximal_big(list,num) --! credit to wojbie
-    if not next(list) then return nil end
-    if list[num] then return list[num] end
-    local cur = math.floor(num+0.5)
-    if list[cur] then return list[cur] end
-    for i=1,math.huge do
-        if list[cur+i] then return list[cur+i] end
-        if list[cur-i] then return list[cur-i] end
-    end
-end
-
---* a function used to convert .nimg images into GuiH textures
-local function load_texture(file_name)
-
-    --* loads input/string file
-    local file,data
-    if not (type(file_name) == "table") and (file_name:match(".nimg$") and fs.exists(file_name)) then
-        file = fs.open(file_name,"r")
-        if not file then error("file doesnt exist",2) end
-        data = textutils.unserialise(file.readAll())
-    else
-        data = file_name
-    end
-
-    --* decodes the nimg and converts it into a 2D map
-    --* creates an empty new 2D map
-    local nimg = api.tables.createNDarray(2,decode(data))
-    local temp = api.tables.createNDarray(2)
-
-    --* shifts the textur into the enw 2D map
-    for x,dat in pairs(nimg) do
-        if type(x) ~= "string" then
-            for y,data in pairs(dat) do
-                temp[x-nimg.offset[1]+1][y-nimg.offset[2]+5] = {
-                    text_color=data.t,
-                    background_color=data.b,
-                    symbol=data.s
-                }
-            end
-        end
-    end
-
-    --* gets the size of the new texture
-    temp.scale = {get2DarraySquareWH(temp)}
-
-    --* returns the new texture with its
-    --* dimensions,data,offset
-    return setmetatable({
-        tex=temp,
-        offset=nimg.offset,
-        id=api.uuid4()
-    },{__tostring=function() return "GuiH.texture" end})
-end
-
---* a function so compec can shut up.
-local function load_cimg_texture(file_name)
-    local data
-    expect(1,file_name,"string","table")
-    if type(file_name) == "table" then
-        data = file_name
-    else
-        local file = fs.open(file_name,"r")
-        assert(file,"file doesnt exist")
-        data = textutils.unserialise(file.readAll())
-        file.close()
-    end
-    local texture_raw = api.tables.createNDarray(2,{offset = {5, 13, 11, 4}})
-    for x,y_list in pairs(data) do
-        for y,c in pairs(y_list) do
-            texture_raw[x+4][y+7] = {
-                s=" ",
-                b=c,
-                t="0"
-            }
-        end
-    end
-    return load_texture(texture_raw)
-end
-
-
-local function load_blbfor_animation(file_name)
-    local ok,blit_file_handle = pcall(decode_blbfor,file_name,"r")
-    if not ok then error(blit_file_handle,3) end
-    local layers = {}
-    for layer_index=1,blit_file_handle.layers do
-        local texture_raw = api.tables.createNDarray(2,{offset = {5, 13, 11, 4}})
-        for x=1,blit_file_handle.width do
-            for y=1,blit_file_handle.height do
-                local char,fg,bg = blit_file_handle:read_pixel(layer_index,x,y,true)
-                texture_raw[x+4][y+8] = {
-                    s=char,
-                    b=bg,
-                    t=fg
-                }
-            end
-        end
-        layers[layer_index] = load_texture(texture_raw)
-    end
-    return layers
-end
-
-local function load_limg_animation(file_name,background)
-    background = background or colors.black
-    local file = fs.open(file_name,"r")
-    if not file then error("file doesnt exist",2) end
-    local data = textutils.unserialise(file.readAll())
-    file.close()
-    assert(data.type=="lImg" or data.type == nil,"not an limg image")
-    local frames = {}
-    for frame,frame_data in pairs(data) do
-        if frame ~= "type" and frame_data ~= "lImg" then
-            local raw_texture = api.tables.createNDarray(2,{offset = {5, 13, 11, 4}}) 
-            for y,blit in pairs(frame_data) do
-                local bg,fg,char = blit[3]:gsub("T",saveCols[background]),blit[2]:gsub("T",saveCols[background]),blit[1]
-                local bg_arr = api.piece_string(bg)
-                local fg_arr = api.piece_string(fg)
-                local char_arr = api.piece_string(char)
-                for n,c in pairs(char_arr) do
-                    raw_texture[n+4][y+8] = {
-                        s=c,
-                        b=bg_arr[n],
-                        t=fg_arr[n]
-                    }
-                end
-            end
-            frames[frame] = load_texture(raw_texture)
-        end
-    end
-    return frames
-end
-
-local function load_limg_texture(file_name,background,image)
-    local anim = load_limg_animation(file_name,background)
-    return anim[image or 1],anim
-end
-
-local function load_blbfor_texture(file_name)
-    local anim = load_blbfor_animation(file_name)
-    return anim[1],anim
-end
-
---* finds the closest CC color to an RGB value
---* with the current palette
-local function get_color(terminal,c)
-    local palette = {}
-
-    --* iterate over all the 16 colors in CC
-    for i=0,15 do
-
-        --* get the RGB values for the current CC color
-        local r,g,b = terminal.getPaletteColor(2^i)
-
-        --* use the distance formula to insert the current color
-        --* and its distance from desired color into the palette table
-        table.insert(palette,{
-            dist=math.sqrt((r-c.r)^2 + (g-c.g)^2 + (b-c.b)^2),
-            color=2^i
-        })
-    end
-
-    --* sort the palette table by distance
-    table.sort(palette,function(a,b) return a.dist < b.dist end)
-
-    --* return the closet color
-    return palette[1].color,palette[1].dist,palette
-end
-
---* this function builds a CC drawing chracter from a list of 6 colors
-local function build_drawing_char(arr,mode)
-    local cols,fin,char,visited = {},{},{},{}
-    local entries = 0
-    
-    --* iterate over all the colors in the list
-    --* and figure out how many of each color there is
-    for k,v in pairs(arr) do
-        cols[v] = cols[v] ~= nil and
-            {count=cols[v].count+1,c=cols[v].c}
-            or (function() entries = entries + 1 return {count=1,c=v} end)()
-    end
-
-    --* we convert the colors into a format where they can be sorted.
-    --* we also make sure there are no duplicate entries.
-    --* if there is just one color in the entire list
-    --* we make a duplicate entry on purpose
-    for k,v in pairs(cols) do
-        if not visited[v.c] then
-            visited[v.c] = true
-            if entries == 1 then table.insert(fin,v) end
-            table.insert(fin,v)
-        end
-    end
-
-    --* sort the colors by count to find 2 most
-    --* common colors
-    table.sort(fin,function(a,b) return a.count > b.count end)
-
-    --* iterate over the 6 colors and if the colors in that spot
-    --* are same as in the array we keep them
-    --* if there is a color we cant fit then we make that pixel
-    --* be the most common color in that character
-    for k=1,6 do
-        if arr[k] == fin[1].c then char[k] = 1
-        elseif arr[k] == fin[2].c then char[k] = 0
-        else char[k] = mode and 0 or 1 end
-    end
-
-    --* then we just convert the list of 1s and 0s into a character with some magic
-    if char[6] == 1 then for i = 1, 5 do char[i] = 1-char[i] end end
-    local n = 128
-    for i = 0, 4 do n = n + char[i+1]*2^i end
-
-    --* return the resulting data
-    return string.char(n),char[6] == 1 and fin[2].c or fin[1].c,char[6] == 1 and fin[1].c or fin[2].c
-end
-
---* used for indexing 1D 2x3 table with x y cordinates
-local function set_symbols_xy(tbl,x,y,val)
-    tbl[x+y*2-2] = val
-    return tbl
-end
-
---* uses the previous functions and the LuaPPM lib to load .ppm textures
-local function load_ppm_texture(terminal,file,mode,log)
-    local _current = term.current()
-    log("loading ppm texture.. ",log.update)
-    log("decoding ppm.. ",log.update)
-
-    --* we load the image file and also decode it using LuaPPM
-    local img = decode_ppm(file)
-    log("decoding finished. ",log.success)
-    
-    --* if this image is valid then we continue
-    if img then
-        local char_arrays = {}
-        log("transforming pixels to characters..",log.update)
-        
-        --* iterate over the imag pixels using its width and height
-        for x=1,img.width do
-            for y=1,img.height do
-
-                --* converts the pixels color into an CC color
-                local c = get_color(terminal or _current,img.get_pixel(x,y))
-
-                --* finds what character on the screen the pixel belongs to
-                local rel_x,rel_y = math.ceil(x/2),math.ceil(y/3)
-
-                --* finds where in that character will the pixel be placed
-                local sym_x,sym_y = (x-1)%2+1,(y-1)%3+1
-                
-                --* we use set_symbols_xy to add that pixel into our character at its cordiantes saved
-                --* in char_arrays, which is a table of character color data
-                if not char_arrays[rel_x] then char_arrays[rel_x] = {} end
-                char_arrays[rel_x][rel_y] = set_symbols_xy(char_arrays[rel_x][rel_y] or {},sym_x,sym_y,c)
-
-                --* pullEvent to prevent too long wihnout yielding error
-                os.queueEvent("")
-                os.pullEvent("")
-            end
-        end
-        log("transformation finished. "..tostring((img.width/2)*(img.height/3)).." characters",log.success)
-
-        --* we create a new empty .nimg texture
-        local texture_raw = api.tables.createNDarray(2,{
-            offset = {5, 13, 11, 4}
-        })
-
-        log("building nimg format..",log.update)
-
-        --* iterate over the char_arrays table and build the nimg texture
-        for x,yList in pairs(char_arrays) do
-            for y,sym_data in pairs(yList) do
-                local char,fg,bg = build_drawing_char(sym_data,mode)
-                texture_raw[x+4][y+8] = {
-                    s=char,
-                    t=saveCols[fg],
-                    b=saveCols[bg]
-                }
-            end
-        end
-        log("building finished. texture loaded.",log.success)
-        log("")
-        log:dump()
-
-        --* at last we use load_texture to convert it to GuiH texture
-        --* and then we return it along with the decoded PPM image
-        return setmetatable(load_texture(texture_raw),{__tostring=function() return "GuiH.texture" end}),img
-    end
-end
-
---* function used to get a single character in an GuiH texture
-local function get_pixel(x,y,tex,fill_empty)
-    local texture = tex.tex
-
-    --* calculate the width and height of the texture
-    local w,h = math.floor(texture.scale[1]-0.5),math.floor(texture.scale[2]-0.5)
-
-    --* modulo the x,y by the width,height in case the x,y goes of the texture
-    x = ((x-1)%w)+1
-    y = ((y-1)%h)+1
-
-    --* read that pixel from the texture
-    local pixel = texture[x][y]
-
-    --* then we move the scale data into a termorary placed
-    --* so we can use index_proximal_ small/big
-    local scale = texture.scale
-    texture.scale = nil
-
-    --* we can use index_proximal to fill in empty gaps in the texture if we want to.
-    if not pixel and fill_empty then
-        --* we find pixel with the closest x cordinate to our
-        local x_proximal = index_proximal_small(texture,x)
-
-        --* we find pixel with the closest y cordinate to our in x_proximal
-        --* and save that pixel
-        pixel = index_proximal_big(x_proximal or {},y)
-    end
-
-    --* we put the scale data back
-    texture.scale = scale
-
-    --* and return our desired pixel
-    return pixel
-end
-
-local function draw_box_tex(term,tex,x,y,width,height,bg,tg,offsetx,offsety,cache)
-    local bg_layers,fg_layers,text_layers = {},{},{}
-    offsetx,offsety = offsetx or 0,offsety or 0
-
-    --* we first iterate over the texture to loada it into blit data
-    local same_args = false
-    if type(cache) == "table" and cache[tex.id] then
-        local c = cache[tex.id].args
-        same_args = c.x == x
-                and c.y == y
-                and c.width == width
-                and c.height == height
-                and c.bg == bg
-                and c.tg == tg
-                and c.offsetx == offsetx
-                and c.offsety == offsety
-    end
-    if type(cache) == "table" and cache[tex.id] and same_args then
-        bg_layers = cache[tex.id].bg_layers
-        fg_layers = cache[tex.id].fg_layers
-        text_layers = cache[tex.id].text_layers
-    else
-        for yis=1,height do
-            for xis=1,width do
-                local pixel = get_pixel(xis+offsetx,yis+offsety,tex)
-                if pixel and next(pixel) then
-                    bg_layers[yis] = (bg_layers[yis] or "")..saveCols[pixel.background_color]
-                    fg_layers[yis] = (fg_layers[yis] or "")..saveCols[pixel.text_color]
-                    text_layers[yis] = (text_layers[yis] or "")..pixel.symbol:match(".$")
-                else
-                    bg_layers[yis] = (bg_layers[yis] or "")..saveCols[bg]
-                    fg_layers[yis] = (fg_layers[yis] or "")..saveCols[tg]
-                    text_layers[yis] = (text_layers[yis] or "").." "
-                end
-            end
-        end
-        if type(cache) == "table" then
-            cache[tex.id] = {
-                bg_layers = bg_layers,
-                fg_layers = fg_layers,
-                text_layers = text_layers,
-                args={
-                    term=term,x=x,y=y,width=width,height=height,bg=bg,tg=tg,offsetx=offsetx,offsety=offsety
-                }
-            }
-        end
-    end
-    --* then we draw the blit data to the screen
-    for k,v in pairs(bg_layers) do
-        term.setCursorPos(x,y+k-1)
-        term.blit(text_layers[k],fg_layers[k],bg_layers[k])
-    end
-end
-
-return {
-    load_nimg_texture=load_texture,
-    load_ppm_texture=load_ppm_texture,
-    load_cimg_texture=load_cimg_texture,
-    load_blbfor_texture=load_blbfor_texture,
-    load_blbfor_animation=load_blbfor_animation,
-    load_limg_texture=load_limg_texture,
-    load_limg_animation=load_limg_animation,
-    code={
-        get_pixel=get_pixel,
-        draw_box_tex=draw_box_tex,
-        to_blit=saveCols,
-        to_color=loadCols,
-        build_drawing_char=build_drawing_char
-    },
-    load_texture=load_texture
-}
+local e=require"a-tools.luappm"local t=require"a-tools.blbfor".open local
+a=require"api"local o=require"cc.expect"local i="0123456789abcdef"local
+n,s={},{}for h=0,15 do n[2^h]=i:sub(h+1,h+1)s[i:sub(h+1,h+1)]=2^h end local
+r=function(d)local l=a.tables.createNDarray(2)l["offset"]=d["offset"]for u,c in
+pairs(d)do for m,f in pairs(c)do if type(f)=="table"then l[u][m]={}if f then
+l[u][m].t=s[f.t]l[u][m].b=s[f.b]l[u][m].s=f.s end end end end return
+setmetatable(l,getmetatable(d))end local function w(y)local
+p,v=math.huge,-math.huge local b,g=math.huge,-math.huge for k,q in pairs(y)do
+p,v=math.min(p,k),math.max(v,k)for j,x in pairs(q)do
+b,g=math.min(b,j),math.max(g,j)end end return math.abs(p)+v,math.abs(b)+g end
+local function z(E,T)local A={}local O={}for I,N in pairs(E)do local
+S=math.abs(I-T)A[#A+1],O[S]=S,I end local H=math.min(table.unpack(A))return
+E[O[H]]end local function R(D,L)if not next(D)then return nil end if D[L]then
+return D[L]end local U=math.floor(L+0.5)if D[U]then return D[U]end for
+C=1,math.huge do if D[U+C]then return D[U+C]end if D[U-C]then return D[U-C]end
+end end local function M(F)local W,Y if
+not(type(F)=="table")and(F:match(".nimg$")and fs.exists(F))then
+W=fs.open(F,"r")if not W then error("file doesnt exist",2)end
+Y=textutils.unserialise(W.readAll())else Y=F end local
+P=a.tables.createNDarray(2,r(Y))local V=a.tables.createNDarray(2)for B,G in
+pairs(P)do if type(B)~="string"then for K,Y in pairs(G)do
+V[B-P.offset[1]+1][K-P.offset[2]+5]={text_color=Y.t,background_color=Y.b,symbol=Y.s}end
+end end V.scale={w(V)}return
+setmetatable({tex=V,offset=P.offset,id=a.uuid4()},{__tostring=function()return"GuiH.texture"end})end
+local function Q(J)local X o(1,J,"string","table")if type(J)=="table"then X=J
+else local
+Z=fs.open(J,"r")assert(Z,"file doesnt exist")X=textutils.unserialise(Z.readAll())Z.close()end
+local et=a.tables.createNDarray(2,{offset={5,13,11,4}})for tt,at in pairs(X)do
+for ot,it in pairs(at)do et[tt+4][ot+7]={s=" ",b=it,t="0"}end end return
+M(et)end local function nt(st)local ht,rt=pcall(t,st,"r")if not ht then
+error(rt,3)end local dt={}for lt=1,rt.layers do local
+ut=a.tables.createNDarray(2,{offset={5,13,11,4}})for ct=1,rt.width do for
+mt=1,rt.height do local
+ft,wt,yt=rt:read_pixel(lt,ct,mt,true)ut[ct+4][mt+8]={s=ft,b=yt,t=wt}end end
+dt[lt]=M(ut)end return dt end local function pt(vt,bt)bt=bt or colors.black
+local gt=fs.open(vt,"r")if not gt then error("file doesnt exist",2)end local
+kt=textutils.unserialise(gt.readAll())gt.close()assert(kt.type=="lImg"or
+kt.type==nil,"not an limg image")local qt={}for jt,xt in pairs(kt)do if
+jt~="type"and xt~="lImg"then local
+zt=a.tables.createNDarray(2,{offset={5,13,11,4}})for Et,Tt in pairs(xt)do local
+At,Ot,It=Tt[3]:gsub("T",n[bt]),Tt[2]:gsub("T",n[bt]),Tt[1]local
+Nt=a.piece_string(At)local St=a.piece_string(Ot)local Ht=a.piece_string(It)for
+Rt,Dt in pairs(Ht)do zt[Rt+4][Et+8]={s=Dt,b=Nt[Rt],t=St[Rt]}end end
+qt[jt]=M(zt)end end return qt end local function Lt(Ut,Ct,Mt)local
+Ft=pt(Ut,Ct)return Ft[Mt or 1],Ft end local function Wt(Yt)local
+Pt=nt(Yt)return Pt[1],Pt end local function Vt(Bt,Gt)local Kt={}for Qt=0,15 do
+local
+Jt,Xt,Zt=Bt.getPaletteColor(2^Qt)table.insert(Kt,{dist=math.sqrt((Jt-Gt.r)^2+(Xt-Gt.g)^2+(Zt-Gt.b)^2),color=2^Qt})end
+table.sort(Kt,function(ea,ta)return ea.dist<ta.dist end)return
+Kt[1].color,Kt[1].dist,Kt end local function aa(oa,ia)local
+na,sa,ha,ra={},{},{},{}local da=0 for la,ua in pairs(oa)do na[ua]=na[ua]~=nil
+and{count=na[ua].count+1,c=na[ua].c}or(function()da=da+1
+return{count=1,c=ua}end)()end for ca,ma in pairs(na)do if not ra[ma.c]then
+ra[ma.c]=true if da==1 then table.insert(sa,ma)end table.insert(sa,ma)end end
+table.sort(sa,function(fa,wa)return fa.count>wa.count end)for ya=1,6 do if
+oa[ya]==sa[1].c then ha[ya]=1 elseif oa[ya]==sa[2].c then ha[ya]=0 else
+ha[ya]=ia and 0 or 1 end end if ha[6]==1 then for pa=1,5 do ha[pa]=1-ha[pa]end
+end local va=128 for ba=0,4 do va=va+ha[ba+1]*2^ba end return
+string.char(va),ha[6]==1 and sa[2].c or sa[1].c,ha[6]==1 and sa[1].c or sa[2].c
+end local function ga(ka,qa,ja,xa)ka[qa+ja*2-2]=xa return ka end local function
+za(Ea,Ta,Aa,Oa)local
+Ia=term.current()Oa("loading ppm texture.. ",Oa.update)Oa("decoding ppm.. ",Oa.update)local
+Na=e(Ta)Oa("decoding finished. ",Oa.success)if Na then local
+Sa={}Oa("transforming pixels to characters..",Oa.update)for Ha=1,Na.width do
+for Ra=1,Na.height do local Da=Vt(Ea or Ia,Na.get_pixel(Ha,Ra))local
+La,Ua=math.ceil(Ha/2),math.ceil(Ra/3)local Ca,Ma=(Ha-1)%2+1,(Ra-1)%3+1 if not
+Sa[La]then Sa[La]={}end
+Sa[La][Ua]=ga(Sa[La][Ua]or{},Ca,Ma,Da)os.queueEvent("")os.pullEvent("")end end
+Oa("transformation finished. "..tostring((Na.width/2)*(Na.height/3)).." characters",Oa.success)local
+Fa=a.tables.createNDarray(2,{offset={5,13,11,4}})Oa("building nimg format..",Oa.update)for
+Wa,Ya in pairs(Sa)do for Pa,Va in pairs(Ya)do local
+Ba,Ga,Ka=aa(Va,Aa)Fa[Wa+4][Pa+8]={s=Ba,t=n[Ga],b=n[Ka]}end end
+Oa("building finished. texture loaded.",Oa.success)Oa("")Oa:dump()return
+setmetatable(M(Fa),{__tostring=function()return"GuiH.texture"end}),Na end end
+local function Qa(Ja,Xa,Za,eo)local to=Za.tex local
+ao,oo=math.floor(to.scale[1]-0.5),math.floor(to.scale[2]-0.5)Ja=((Ja-1)%ao)+1
+Xa=((Xa-1)%oo)+1 local io=to[Ja][Xa]local no=to.scale to.scale=nil if not io
+and eo then local so=z(to,Ja)io=R(so or{},Xa)end to.scale=no return io end
+local function ho(ro,lo,uo,co,mo,fo,wo,yo,po,vo,bo)local
+go,ko,qo={},{},{}po,vo=po or 0,vo or 0 local jo=false if type(bo)=="table"and
+bo[lo.id]then local xo=bo[lo.id].args jo=xo.x==uo and xo.y==co and xo.width==mo
+and xo.height==fo and xo.bg==wo and xo.tg==yo and xo.offsetx==po and
+xo.offsety==vo end if type(bo)=="table"and bo[lo.id]and jo then
+go=bo[lo.id].bg_layers ko=bo[lo.id].fg_layers qo=bo[lo.id].text_layers else for
+zo=1,fo do for Eo=1,mo do local To=Qa(Eo+po,zo+vo,lo)if To and next(To)then
+go[zo]=(go[zo]or"")..n[To.background_color]ko[zo]=(ko[zo]or"")..n[To.text_color]qo[zo]=(qo[zo]or"")..To.symbol:match(".$")else
+go[zo]=(go[zo]or"")..n[wo]ko[zo]=(ko[zo]or"")..n[yo]qo[zo]=(qo[zo]or"").." "end
+end end if type(bo)=="table"then
+bo[lo.id]={bg_layers=go,fg_layers=ko,text_layers=qo,args={term=ro,x=uo,y=co,width=mo,height=fo,bg=wo,tg=yo,offsetx=po,offsety=vo}}end
+end for Ao,Oo in pairs(go)do
+ro.setCursorPos(uo,co+Ao-1)ro.blit(qo[Ao],ko[Ao],go[Ao])end end
+return{load_nimg_texture=M,load_ppm_texture=za,load_cimg_texture=Q,load_blbfor_texture=Wt,load_blbfor_animation=nt,load_limg_texture=Lt,load_limg_animation=pt,code={get_pixel=Qa,draw_box_tex=ho,to_blit=n,to_color=s,build_drawing_char=aa},load_texture=M}

@@ -1,39 +1,15 @@
-local api = require("api")
-
-return function(object,data)
-    data = data or {}
-    if type(data.visible) ~= "boolean" then data.visible = true end
-    if type(data.reactive) ~= "boolean" then data.reactive = true end
-    local btn = {
-        name=data.name or api.uuid4(),
-        positioning = {
-            x=data.x or 1,
-            y=data.y or 1,
-            width=data.width or 0,
-            height=data.height or 0
-        },
-        on_change_state=data.on_change_state or function() end,
-        background_color = data.background_color or object.term_object.getBackgroundColor(),
-        background_color_on = data.background_color_on or object.term_object.getBackgroundColor(),
-        text_color = data.text_color or object.term_object.getTextColor(),
-        text_color_on = data.text_color_on or object.term_object.getTextColor(),
-        symbol=data.symbol or " ",
-        texture = data.tex,
-        texture_on = data.tex_on,
-        text=data.text,
-        text_on=data.text_on,
-        visible=data.visible,
-        reactive=data.reactive,
-        react_to_events={
-            mouse_click=true,
-            monitor_touch=true
-        },
-        btn=data.btn,
-        order=data.order or 1,
-        logic_order=data.logic_order,
-        graphic_order=data.graphic_order,
-        tags={},
-        value=(data.value ~= nil) and data.value or false
-    }
-    return btn
+local e=require("api")return function(t,a)a=a or{}if
+type(a.visible)~="boolean"then a.visible=true end if
+type(a.reactive)~="boolean"then a.reactive=true end local o={name=a.name or
+e.uuid4(),positioning={x=a.x or 1,y=a.y or 1,width=a.width or 0,height=a.height
+or 0},on_change_state=a.on_change_state or
+function()end,background_color=a.background_color or
+t.term_object.getBackgroundColor(),background_color_on=a.background_color_on or
+t.term_object.getBackgroundColor(),text_color=a.text_color or
+t.term_object.getTextColor(),text_color_on=a.text_color_on or
+t.term_object.getTextColor(),symbol=a.symbol
+or" ",texture=a.tex,texture_on=a.tex_on,text=a.text,text_on=a.text_on,visible=a.visible,reactive=a.reactive,react_to_events={mouse_click=true,monitor_touch=true},btn=a.btn,order=a.order
+or
+1,logic_order=a.logic_order,graphic_order=a.graphic_order,tags={},value=(a.value~=nil)and
+a.value or false}return o
 end

@@ -1,15 +1,4 @@
-local api = require("api")
-return function(object,event)
-    --* if a click happens on the buttons area
-    --* run on_click function
-    if api.is_within_field(
-        event.x,
-        event.y,
-        object.positioning.x,
-        object.positioning.y,
-        object.positioning.width,
-        object.positioning.height
-    ) then
-        object.on_click(object,event)
-    end
+local e=require("api")return function(t,a)if
+e.is_within_field(a.x,a.y,t.positioning.x,t.positioning.y,t.positioning.width,t.positioning.height)then
+t.on_click(t,a)end
 end

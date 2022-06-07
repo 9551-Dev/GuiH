@@ -1,3 +1,2 @@
-return function(object)
-    object.window.redraw()
-end
+return
+function(e)e.window.redraw()end

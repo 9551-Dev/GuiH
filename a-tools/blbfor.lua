@@ -1,315 +1,90 @@
---[[
-    * BLBFOR - BLIT BYTE FORMAT
-    * a format used for storing blit data
-    * in a compact way
-    * 1 pixel == 2 bytes
-]]
-
-local EXPECT = require("cc.expect").expect
-
-local SEPARATION_CHAR = 0x0A
-local INT_BYTE_OFFSET = 0x30
-local BLBFOR = {INTERNAL={STRING={}}}
-local BLBFOR_WRITE_HANDLE = {}
-local BLBFOR_READ_HANDLE = {}
-
-function BLBFOR.INTERNAL.STRING.FORMAT_BLIT(n)
-    return ("%x"):format(n)
-end
-
-function BLBFOR.INTERNAL.STRING.TO_BLIT(c,mode)
-    local res = (not mode) and (BLBFOR.INTERNAL.STRING.FORMAT_BLIT(select(2, math.frexp(c))-1)) or (select(2, math.frexp(c))-1)
-    return res
-end
-
-function BLBFOR.INTERNAL.STRING.FROM_HEX(hex)
-    return tonumber(hex,16)
-end
-
-function BLBFOR.INTERNAL.READ_BYTES_STREAM(stream,start,byte_count)
-    local bytes = {}
-    stream.seek("set",start)
-    for i=start,start+byte_count-1 do
-        local read = stream.read()
-        table.insert(bytes,read)
-    end
-    return table.unpack(bytes)
-end
-
-function BLBFOR.INTERNAL.STRING_TO_BYTES(str)
-    local bytes = {}
-    for i=1,#str do
-        bytes[i] = str:byte(i)
-    end
-    return table.unpack(bytes)
-end
-
-function BLBFOR.INTERNAL.WRITE_BYTES_STREAM(stream,pos,...)
-    local bytes = {...}
-    for i=1,#bytes do
-        stream.seek("set",pos+i-1)
-        stream.write(bytes[i])
-    end
-end
-
-function BLBFOR.INTERNAL.READ_STRING_UNTIL_SEP(stream,pos)
-    local str = ""
-    stream.seek("set",pos)
-    local byte = stream.read()
-    if not byte then return false end
-    while byte ~= SEPARATION_CHAR do
-        str = str .. string.char(byte)
-        byte = stream.read()
-    end
-    return str
-end
-
-function BLBFOR.INTERNAL.READ_INT(stream,pos)
-    local num = 0
-    stream.seek("set",pos)
-    local byte = stream.read()
-    while byte ~= SEPARATION_CHAR do
-        num = num * 10 + (byte-INT_BYTE_OFFSET)
-        byte = stream.read()
-    end
-    return num
-end
-
-function BLBFOR.INTERNAL.COLORS_TO_BYTE(fg,bg)
-    local log_fg = select(2, math.frexp(fg))-1
-    local log_bg = select(2, math.frexp(bg))-1
-    return log_fg*16 + log_bg
-end
-
-function BLBFOR.INTERNAL.BYTE_TO_COLORS(byte)
-    return bit32.rshift(bit32.band(0xF0,byte),4),bit32.band(0x0F,byte)
-end
-
-function BLBFOR.INTERNAL.WRITE_HEADER(image)
-    image.stream.seek("set",0)
-    local meta = textutils.serialiseJSON(image.meta):gsub("\n","NEWLINE")
-    BLBFOR.INTERNAL.WRITE_BYTES_STREAM(
-        image.stream,0,
-        BLBFOR.INTERNAL.STRING_TO_BYTES(
-            ("BLBFOR1\n%d\n%d\n%d\n%d\n%s\n"):format(
-                image.width,image.height,image.layers,
-                os.epoch("utc"),meta
-            )
-        )
-    )
-end
-
-function BLBFOR.INTERNAL.ASSERT(bool,msg)
-    if not bool then error(msg,3)
-    else return bool end
-end
-
-function BLBFOR.INTERNAL.createNDarray(n, tbl)
-    tbl = tbl or {}
-    if n == 0 then return tbl end
-    setmetatable(tbl, {__index = function(t, k)
-        local new =  BLBFOR.INTERNAL.createNDarray(n - 1)
-        t[k] = new
-        return new
-    end})
-    return tbl
-end
-
-function BLBFOR.INTERNAL.ENCODE(self)
-    BLBFOR.INTERNAL.WRITE_HEADER(self)
-    for layer_index,layer in ipairs(self.data) do
-        for y,xlist in ipairs(layer) do
-            local bytes = {}
-            for x,pixel in ipairs(xlist) do
-                table.insert(bytes,pixel[1])
-                table.insert(bytes,BLBFOR.INTERNAL.COLORS_TO_BYTE(2^pixel[2],2^pixel[3]))
-            end
-            BLBFOR.INTERNAL.WRITE_BYTES_STREAM(
-                self.stream,
-                self.stream.seek("cur"),
-                table.unpack(bytes)
-            )
-        end
-    end
-end
-
-function BLBFOR.INTERNAL.DECODE(image)
-    image.stream.seek("set",0)
-    local header = BLBFOR.INTERNAL.READ_STRING_UNTIL_SEP(image.stream,0)
-    local lines = BLBFOR.INTERNAL.createNDarray(2)
-    BLBFOR.INTERNAL.ASSERT(header == "BLBFOR1", "Invalid header",2)
-    local width =  BLBFOR.INTERNAL.READ_INT(image.stream,image.stream.seek("cur"))
-    local height = BLBFOR.INTERNAL.READ_INT(image.stream,image.stream.seek("cur"))
-    local layers = BLBFOR.INTERNAL.READ_INT(image.stream,image.stream.seek("cur"))
-    local flushed = BLBFOR.INTERNAL.READ_INT(image.stream,image.stream.seek("cur"))
-    local meta = textutils.unserializeJSON(BLBFOR.INTERNAL.READ_STRING_UNTIL_SEP(image.stream,image.stream.seek("cur")))
-    image.width = width
-    image.height = height
-    image.layers = layers
-    image.meta = meta
-    image.last_flushed = flushed
-    image.data = BLBFOR.INTERNAL.createNDarray(3,image.data)
-    for layer=1,image.layers do
-        for y=1,height do
-            if not next(lines[layer][y]) then lines[layer][y] = {"","",""} end
-            local xlist = {}
-            for x=1,width do
-                local pixel = {}
-                local char,color =  BLBFOR.INTERNAL.READ_BYTES_STREAM(image.stream,image.stream.seek("cur"),2)
-                pixel[1] = char
-                pixel[2],pixel[3] = BLBFOR.INTERNAL.BYTE_TO_COLORS(color)
-                xlist[x] = pixel
-                lines[layer][y] = {
-                    lines[layer][y][1]..string.char(pixel[1]),
-                    lines[layer][y][2]..BLBFOR.INTERNAL.STRING.FORMAT_BLIT(pixel[2]),
-                    lines[layer][y][3]..BLBFOR.INTERNAL.STRING.FORMAT_BLIT(pixel[3])
-                }
-            end
-            image.data[layer][y] = xlist
-        end
-    end
-    image.lines = lines
-end
-
-function BLBFOR_WRITE_HANDLE:set_pixel(layer,x,y,char,fg,bg)
-    BLBFOR.INTERNAL.ASSERT(type(self)=="table","Please use \":\" when running this function")
-    BLBFOR.INTERNAL.ASSERT(not self.closed,"Image handle closed")
-    EXPECT(1,layer,"number")
-    EXPECT(2,x,"number")
-    EXPECT(3,y,"number")
-    EXPECT(4,char,"string")
-    EXPECT(5,fg,"number")
-    EXPECT(6,bg,"number")
-    BLBFOR.INTERNAL.ASSERT(not (x<1 or y<1 or x>self.width or y>self.height),"pixel out of range")
-    self.data[layer][y][x] = {
-        char:byte(),
-        BLBFOR.INTERNAL.STRING.TO_BLIT(fg,true),
-        BLBFOR.INTERNAL.STRING.TO_BLIT(bg,true)
-    }
-end
-
-function BLBFOR_READ_HANDLE:get_pixel(layer,x,y,return_blit)
-    BLBFOR.INTERNAL.ASSERT(type(self)=="table","Please use \":\" when running this function")
-    EXPECT(1,layer,"number")
-    EXPECT(2,x,"number")
-    EXPECT(3,y,"number")
-    EXPECT(4,return_blit,"boolean","nil")
-    BLBFOR.INTERNAL.ASSERT(not (x<1 or y<1 or x>self.width or y>self.height),"pixel out of range")
-    local pixel = self.data[layer][y][x]
-    local standard = {
-        string.char(pixel[1]),
-        2^pixel[2],
-        2^pixel[3]
-    }
-    local blit = {
-        string.char(pixel[1]),
-        BLBFOR.INTERNAL.STRING.FORMAT_BLIT(pixel[2]),
-        BLBFOR.INTERNAL.STRING.FORMAT_BLIT(pixel[3])
-    }
-    return table.unpack(return_blit and blit or standard)
-end
-
-function BLBFOR_READ_HANDLE:get_line(layer,y)
-    BLBFOR.INTERNAL.ASSERT(type(self)=="table","Please use \":\" when running this function")
-    EXPECT(1,layer,"number")
-    EXPECT(2,y,"number")
-    BLBFOR.INTERNAL.ASSERT(not (y<1 or y>self.height),"line out of range")
-    return self.lines[layer][y][1],
-        self.lines[layer][y][2],
-        self.lines[layer][y][3]
-end
-
-function BLBFOR_WRITE_HANDLE:set_line(layer,y,char,fg,bg)
-    BLBFOR.INTERNAL.ASSERT(type(self)=="table","Please use \":\" when running this function")
-    BLBFOR.INTERNAL.ASSERT(not self.closed,"Image handle closed")
-    EXPECT(1,layer,"number")
-    EXPECT(2,y,"number")
-    EXPECT(3,char,"string")
-    EXPECT(4,fg,"string")
-    EXPECT(5,bg,"string")
-    BLBFOR.INTERNAL.ASSERT(#fg == #char and #bg == #char,"line length mismatch")
-    BLBFOR.INTERNAL.ASSERT(#char <= self.width,"line too long")
-    BLBFOR.INTERNAL.ASSERT(y <= self.height and y > 0,"line out of range")
-    for x=1,#char do
-        self:set_pixel(
-            layer,x,y,
-            char:sub(x,x),
-            2^BLBFOR.INTERNAL.STRING.FROM_HEX(fg:sub(x,x)),
-            2^BLBFOR.INTERNAL.STRING.FROM_HEX(bg:sub(x,x))
-        )
-    end
-end
-
-function BLBFOR_WRITE_HANDLE:close()
-    BLBFOR.INTERNAL.ASSERT(type(self)=="table","Please use \":\" when running this function")
-    BLBFOR.INTERNAL.ASSERT(not self.closed,"Image handle closed")
-    BLBFOR.INTERNAL.ENCODE(self)
-    self.stream.close()
-    self.closed = true
-end
-
-function BLBFOR_WRITE_HANDLE:flush()
-    BLBFOR.INTERNAL.ASSERT(type(self)=="table","Please use \":\" when running this function")
-    BLBFOR.INTERNAL.ASSERT(not self.closed,"Image handle closed")
-    BLBFOR.INTERNAL.ENCODE(self)
-    self.stream.flush()
-end
-
-BLBFOR_WRITE_HANDLE.write_pixel = BLBFOR_WRITE_HANDLE.set_pixel
-BLBFOR_WRITE_HANDLE.write_line = BLBFOR_WRITE_HANDLE.set_line
-BLBFOR_READ_HANDLE.read_pixel = BLBFOR_READ_HANDLE.get_pixel
-BLBFOR_READ_HANDLE.read_line = BLBFOR_READ_HANDLE.get_line
-
-function BLBFOR.open(file, mode, width, height, layers, FG, BG, SYM, meta)
-    EXPECT(1,file,"string")
-    EXPECT(2,mode,"string")
-    local EXT = file:match("%.%a+$")
-    BLBFOR.INTERNAL.ASSERT(EXT==".bbf","file must be a .bbf file")
-    local image = {}
-    if mode:sub(1,1):lower() == "w" then
-        EXPECT(3,width,"number")
-        EXPECT(4,height,"number")
-        EXPECT(5,layers,"number","nil")
-        EXPECT(6,FG,"string","nil")
-        EXPECT(7,BG,"string","nil")
-        EXPECT(8,SYM,"string","nil")
-        EXPECT(9,meta,"table","nil")
-        layers = layers or 1
-        local stream = fs.open(file,"wb")
-        if not stream then error("Could not open file",2) end
-        image.meta = meta or {}
-        image.width = width
-        image.height = height
-        image.layers = layers
-        image.data = BLBFOR.INTERNAL.createNDarray(3)
-        image.stream = stream
-        for layer_index=1,layers do
-            for x=1,width do
-                for y=1,height do
-                    image.data[layer_index][y][x] = {
-                        (SYM or string.char(0)):byte(),
-                        BLBFOR.INTERNAL.STRING.TO_BLIT(FG or colors.black,true),
-                        BLBFOR.INTERNAL.STRING.TO_BLIT(BG or colors.black,true)
-                    }
-                end
-            end
-        end
-        return setmetatable(image,{__index=BLBFOR_WRITE_HANDLE})
-    elseif mode:sub(1,1):lower() == "r" then
-        local stream = fs.open(file,"rb")
-        if not stream then error("Could not open file",2) end
-        local pos = stream.seek("cur")
-        image.raw = stream.readAll()
-        stream.seek("set",pos)
-        image.stream = stream
-        BLBFOR.INTERNAL.DECODE(image)
-        image.closed = true
-        stream.close()
-        return setmetatable(image,{__index=BLBFOR_READ_HANDLE})
-    else
-        stream.close()
-        error("invalid mode. please use \"w\" or \"r\" (Write/Read)",2)
-    end
-end
-
-return BLBFOR
+local e=require("cc.expect").expect local t=0x0A local a=0x30 local
+o={INTERNAL={STRING={}}}local i={}local n={}function
+o.INTERNAL.STRING.FORMAT_BLIT(s)return("%x"):format(s)end function
+o.INTERNAL.STRING.TO_BLIT(h,r)local d=(not
+r)and(o.INTERNAL.STRING.FORMAT_BLIT(select(2,math.frexp(h))-1))or(select(2,math.frexp(h))-1)return
+d end function o.INTERNAL.STRING.FROM_HEX(l)return tonumber(l,16)end function
+o.INTERNAL.READ_BYTES_STREAM(u,c,m)local f={}u.seek("set",c)for w=c,c+m-1 do
+local y=u.read()table.insert(f,y)end return table.unpack(f)end function
+o.INTERNAL.STRING_TO_BYTES(p)local v={}for b=1,#p do v[b]=p:byte(b)end return
+table.unpack(v)end function o.INTERNAL.WRITE_BYTES_STREAM(g,k,...)local
+q={...}for j=1,#q do g.seek("set",k+j-1)g.write(q[j])end end function
+o.INTERNAL.READ_STRING_UNTIL_SEP(x,z)local E=""x.seek("set",z)local
+T=x.read()if not T then return false end while T~=t do
+E=E..string.char(T)T=x.read()end return E end function
+o.INTERNAL.READ_INT(A,O)local I=0 A.seek("set",O)local N=A.read()while N~=t do
+I=I*10+(N-a)N=A.read()end return I end function
+o.INTERNAL.COLORS_TO_BYTE(S,H)local R=select(2,math.frexp(S))-1 local
+D=select(2,math.frexp(H))-1 return R*16+D end function
+o.INTERNAL.BYTE_TO_COLORS(L)return
+bit32.rshift(bit32.band(0xF0,L),4),bit32.band(0x0F,L)end function
+o.INTERNAL.WRITE_HEADER(U)U.stream.seek("set",0)local
+C=textutils.serialiseJSON(U.meta):gsub("\n","NEWLINE")o.INTERNAL.WRITE_BYTES_STREAM(U.stream,0,o.INTERNAL.STRING_TO_BYTES(("BLBFOR1\n%d\n%d\n%d\n%d\n%s\n"):format(U.width,U.height,U.layers,os.epoch("utc"),C)))end
+function o.INTERNAL.ASSERT(M,F)if not M then error(F,3)else return M end end
+function o.INTERNAL.createNDarray(W,Y)Y=Y or{}if W==0 then return Y end
+setmetatable(Y,{__index=function(P,V)local
+B=o.INTERNAL.createNDarray(W-1)P[V]=B return B end})return Y end function
+o.INTERNAL.ENCODE(G)o.INTERNAL.WRITE_HEADER(G)for K,Q in ipairs(G.data)do for
+J,X in ipairs(Q)do local Z={}for et,tt in ipairs(X)do
+table.insert(Z,tt[1])table.insert(Z,o.INTERNAL.COLORS_TO_BYTE(2^tt[2],2^tt[3]))end
+o.INTERNAL.WRITE_BYTES_STREAM(G.stream,G.stream.seek("cur"),table.unpack(Z))end
+end end function o.INTERNAL.DECODE(at)at.stream.seek("set",0)local
+ot=o.INTERNAL.READ_STRING_UNTIL_SEP(at.stream,0)local
+it=o.INTERNAL.createNDarray(2)o.INTERNAL.ASSERT(ot=="BLBFOR1","Invalid header",2)local
+nt=o.INTERNAL.READ_INT(at.stream,at.stream.seek("cur"))local
+st=o.INTERNAL.READ_INT(at.stream,at.stream.seek("cur"))local
+ht=o.INTERNAL.READ_INT(at.stream,at.stream.seek("cur"))local
+rt=o.INTERNAL.READ_INT(at.stream,at.stream.seek("cur"))local
+dt=textutils.unserializeJSON(o.INTERNAL.READ_STRING_UNTIL_SEP(at.stream,at.stream.seek("cur")))at.width=nt
+at.height=st at.layers=ht at.meta=dt at.last_flushed=rt
+at.data=o.INTERNAL.createNDarray(3,at.data)for lt=1,at.layers do for ut=1,st do
+if not next(it[lt][ut])then it[lt][ut]={"","",""}end local ct={}for mt=1,nt do
+local ft={}local
+wt,yt=o.INTERNAL.READ_BYTES_STREAM(at.stream,at.stream.seek("cur"),2)ft[1]=wt
+ft[2],ft[3]=o.INTERNAL.BYTE_TO_COLORS(yt)ct[mt]=ft
+it[lt][ut]={it[lt][ut][1]..string.char(ft[1]),it[lt][ut][2]..o.INTERNAL.STRING.FORMAT_BLIT(ft[2]),it[lt][ut][3]..o.INTERNAL.STRING.FORMAT_BLIT(ft[3])}end
+at.data[lt][ut]=ct end end at.lines=it end function
+i:set_pixel(pt,vt,bt,gt,kt,qt)o.INTERNAL.ASSERT(type(self)=="table","Please use \":\" when running this function")o.INTERNAL.ASSERT(not
+self.closed,"Image handle closed")e(1,pt,"number")e(2,vt,"number")e(3,bt,"number")e(4,gt,"string")e(5,kt,"number")e(6,qt,"number")o.INTERNAL.ASSERT(not(vt<1
+or bt<1 or vt>self.width or
+bt>self.height),"pixel out of range")self.data[pt][bt][vt]={gt:byte(),o.INTERNAL.STRING.TO_BLIT(kt,true),o.INTERNAL.STRING.TO_BLIT(qt,true)}end
+function
+n:get_pixel(jt,xt,zt,Et)o.INTERNAL.ASSERT(type(self)=="table","Please use \":\" when running this function")e(1,jt,"number")e(2,xt,"number")e(3,zt,"number")e(4,Et,"boolean","nil")o.INTERNAL.ASSERT(not(xt<1
+or zt<1 or xt>self.width or zt>self.height),"pixel out of range")local
+Tt=self.data[jt][zt][xt]local At={string.char(Tt[1]),2^Tt[2],2^Tt[3]}local
+Ot={string.char(Tt[1]),o.INTERNAL.STRING.FORMAT_BLIT(Tt[2]),o.INTERNAL.STRING.FORMAT_BLIT(Tt[3])}return
+table.unpack(Et and Ot or At)end function
+n:get_line(It,Nt)o.INTERNAL.ASSERT(type(self)=="table","Please use \":\" when running this function")e(1,It,"number")e(2,Nt,"number")o.INTERNAL.ASSERT(not(Nt<1
+or Nt>self.height),"line out of range")return
+self.lines[It][Nt][1],self.lines[It][Nt][2],self.lines[It][Nt][3]end function
+i:set_line(St,Ht,Rt,Dt,Lt)o.INTERNAL.ASSERT(type(self)=="table","Please use \":\" when running this function")o.INTERNAL.ASSERT(not
+self.closed,"Image handle closed")e(1,St,"number")e(2,Ht,"number")e(3,Rt,"string")e(4,Dt,"string")e(5,Lt,"string")o.INTERNAL.ASSERT(#Dt==#Rt
+and#Lt==#Rt,"line length mismatch")o.INTERNAL.ASSERT(#Rt<=self.width,"line too long")o.INTERNAL.ASSERT(Ht<=self.height
+and Ht>0,"line out of range")for Ut=1,#Rt do
+self:set_pixel(St,Ut,Ht,Rt:sub(Ut,Ut),2^o.INTERNAL.STRING.FROM_HEX(Dt:sub(Ut,Ut)),2^o.INTERNAL.STRING.FROM_HEX(Lt:sub(Ut,Ut)))end
+end function
+i:close()o.INTERNAL.ASSERT(type(self)=="table","Please use \":\" when running this function")o.INTERNAL.ASSERT(not
+self.closed,"Image handle closed")o.INTERNAL.ENCODE(self)self.stream.close()self.closed=true
+end function
+i:flush()o.INTERNAL.ASSERT(type(self)=="table","Please use \":\" when running this function")o.INTERNAL.ASSERT(not
+self.closed,"Image handle closed")o.INTERNAL.ENCODE(self)self.stream.flush()end
+i.write_pixel=i.set_pixel i.write_line=i.set_line n.read_pixel=n.get_pixel
+n.read_line=n.get_line function
+o.open(Ct,Mt,Ft,Wt,Yt,Pt,Vt,Bt,Gt)e(1,Ct,"string")e(2,Mt,"string")local
+Kt=Ct:match("%.%a+$")o.INTERNAL.ASSERT(Kt==".bbf","file must be a .bbf file")local
+Qt={}if Mt:sub(1,1):lower()=="w"then
+e(3,Ft,"number")e(4,Wt,"number")e(5,Yt,"number","nil")e(6,Pt,"string","nil")e(7,Vt,"string","nil")e(8,Bt,"string","nil")e(9,Gt,"table","nil")Yt=Yt
+or 1 local Jt=fs.open(Ct,"wb")if not Jt then error("Could not open file",2)end
+Qt.meta=Gt or{}Qt.width=Ft Qt.height=Wt Qt.layers=Yt
+Qt.data=o.INTERNAL.createNDarray(3)Qt.stream=Jt for Xt=1,Yt do for Zt=1,Ft do
+for ea=1,Wt do Qt.data[Xt][ea][Zt]={(Bt or
+string.char(0)):byte(),o.INTERNAL.STRING.TO_BLIT(Pt or
+colors.black,true),o.INTERNAL.STRING.TO_BLIT(Vt or colors.black,true)}end end
+end return setmetatable(Qt,{__index=i})elseif Mt:sub(1,1):lower()=="r"then
+local ta=fs.open(Ct,"rb")if not ta then error("Could not open file",2)end local
+aa=ta.seek("cur")Qt.raw=ta.readAll()ta.seek("set",aa)Qt.stream=ta
+o.INTERNAL.DECODE(Qt)Qt.closed=true ta.close()return
+setmetatable(Qt,{__index=n})else
+stream.close()error("invalid mode. please use \"w\" or \"r\" (Write/Read)",2)end
+end return
+o

@@ -1,13 +1,2 @@
-return function(side,bg)
-    return {
-        top_left={sym=" ",bg=side,fg=bg},
-        top_right={sym=" ",bg=side,fg=bg},
-        bottom_left={sym=" ",bg=side,fg=bg},
-        bottom_right={sym=" ",bg=side,fg=bg},
-        side_left={sym=" ",bg=side,fg=bg},
-        side_right={sym=" ",bg=side,fg=bg},
-        side_top={sym=" ",bg=side,fg=bg},
-        side_bottom={sym=" ",bg=side,fg=bg},
-        inside={sym=" ",bg=bg,fg=bg},
-    }
-end
+return
+function(e,t)return{top_left={sym=" ",bg=e,fg=t},top_right={sym=" ",bg=e,fg=t},bottom_left={sym=" ",bg=e,fg=t},bottom_right={sym=" ",bg=e,fg=t},side_left={sym=" ",bg=e,fg=t},side_right={sym=" ",bg=e,fg=t},side_top={sym=" ",bg=e,fg=t},side_bottom={sym=" ",bg=e,fg=t},inside={sym=" ",bg=t,fg=t},}end

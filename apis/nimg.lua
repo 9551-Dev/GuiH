@@ -1,451 +1,98 @@
---------------------NIMG LOADER API--------------------
----------------API FOR LOADING NIMG IMAGES-------------
---------------------by 9551 DEV------------------------
----Copyright (c) 2021-2022 9551------------9551#0001---
----using this code in your project is fine!------------
----as long as you dont claim you made it---------------
----im cool with it, feel free to include---------------
----in your projects!   discord: 9551#0001--------------
----you dont have to but giving credits is nice :)------
--------------------------------------------------------
--------------------------------------------------------
-local expect = require("cc.expect").expect
-local index = {}
-local indexAnimate = {}
-local indexBuffer = {}
-local chars = "0123456789abcdef"
-local saveCols, loadCols = {}, {}
-for i = 0, 15 do
-  saveCols[2^i] = chars:sub(i + 1, i + 1)
-  loadCols[chars:sub(i + 1, i + 1)] = 2^i
-end
-local decode = function(tbl)
-  local output = setmetatable({},{
-      __index=function(t,k)
-      local new = {}
-      t[k]=new
-      return new
-    end
-  })
-  output["offset"] = tbl["offset"]
-  for k,v in pairs(tbl) do
-     for ko,vo in pairs(v) do
-        if type(vo) == "table" then
-            output[k][ko] = {}
-            if vo then
-                output[k][ko].t = loadCols[vo.t]
-                output[k][ko].b = loadCols[vo.b]
-                output[k][ko].s = vo.s 
-            end
-        end
-     end
-  end
-  return setmetatable(output,getmetatable(tbl))
-end
-local encode = function(tbl)
-  local output = setmetatable({},{
-      __index=function(t,k)
-      local new = {}
-      t[k]=new
-      return new
-    end
-  })
-  output["offset"] = tbl["offset"]
-  for k,v in pairs(tbl) do
-    for ko,vo in pairs(v) do
-        if type(vo) == "table" then
-            output[k][ko] = {}
-            if vo then
-                output[k][ko].t = saveCols[vo.t]
-                output[k][ko].b = saveCols[vo.b]
-                output[k][ko].s = vo.s 
-            end
-        end
-     end
-  end
-  return setmetatable(output,getmetatable(tbl))
-end
-local function strech(tbl, x, y)
-    if type(x) == "number" and type(y) == "number" then
-        local strechmap = {}
-        local strechmapy = {}
-        local final
-        local mulx = 1
-        local muly = 1
-        strechmap["offset"] = tbl.offset
-        strechmapy["offset"] = tbl.offset
-        for k, v in pairs(tbl) do
-            if type(k) == "number" then
-                for k2, v2 in pairs(v) do
-                    for i = 1, x do
-                        if x > 1 then
-                            mulx = x
-                        end
-                        if not strechmap[k * mulx + i] then
-                            strechmap[k * mulx + i] = {}
-                        end
-                        if not strechmap[k * mulx + i][k2] then
-                            strechmap[k * mulx + i][k2] = {}
-                        end
-                        strechmap[k * mulx + i][k2] = tbl[k][k2]
-                    end
-                end
-            end
-        end
-        if y > 1 then
-            for k, v in pairs(strechmap) do
-                if type(k) == "number" then
-                    for k2, v2 in pairs(v) do
-                        for i = 1, y do
-                            if y > 1 then
-                                muly = y
-                            end
-                            if not strechmapy[k] then
-                                strechmapy[k] = {}
-                            end
-                            if not strechmapy[k][k2 * muly + i] then
-                                strechmapy[k][k2 * muly + i] = {}
-                            end
-                            strechmapy[k][k2 * muly + i] = strechmap[k][k2]
-                        end
-                    end
-                end
-            end
-        end
-        if not next(strechmap) then
-            strechmap = tbl
-        end
-        if y > 1 then
-            final = strechmapy
-        else
-            final = strechmap
-        end
-        return setmetatable(final, getmetatable(tbl))
-    else
-        return tbl
-    end
-end
-function index:strech(x, y)
-    local tbl = self
-    if not self then
-        error("try using : instead of .", 0)
-    end
-    if type(x) == "number" and type(y) == "number" then
-        local strechmap = {}
-        local strechmapy = {}
-        local final
-        local mulx = 1
-        local muly = 1
-        strechmap["offset"] = tbl.offset
-        strechmapy["offset"] = tbl.offset
-        for k, v in pairs(tbl) do
-            if type(k) == "number" then
-                for k2, v2 in pairs(v) do
-                    for i = 1, x do
-                        if x > 1 then
-                            mulx = x
-                        end
-                        if not strechmap[k * mulx + i] then
-                            strechmap[k * mulx + i] = {}
-                        end
-                        if not strechmap[k * mulx + i][k2] then
-                            strechmap[k * mulx + i][k2] = {}
-                        end
-                        strechmap[k * mulx + i][k2] = tbl[k][k2]
-                    end
-                end
-            end
-        end
-        if y > 1 then
-            for k, v in pairs(strechmap) do
-                if type(k) == "number" then
-                    for k2, v2 in pairs(v) do
-                        for i = 1, y do
-                            if y > 1 then
-                                muly = y
-                            end
-                            if not strechmapy[k] then
-                                strechmapy[k] = {}
-                            end
-                            if not strechmapy[k][k2 * muly + i] then
-                                strechmapy[k][k2 * muly + i] = {}
-                            end
-                            strechmapy[k][k2 * muly + i] = strechmap[k][k2]
-                        end
-                    end
-                end
-            end
-        end
-        if not next(strechmap) then
-            strechmap = tbl
-        end
-        if y > 1 then
-            final = strechmapy
-        else
-            final = strechmap
-        end
-        return setmetatable(final, getmetatable(tbl))
-    else
-        return tbl
-    end
-end
-function index:draw(termobj, x, y, ix, iy)
-    expect(1, termobj, "table", "nil")
-    expect(2, x, "number", "nil")
-    expect(3, y, "number", "nil")
-    local self = strech(self, ix, iy)
-    local terms = termobj or term
-    local x = x or 0
-    local y = y or 0
-    local obc = terms.getBackgroundColor()
-    local otc = terms.getTextColor()
-    for k, v in pairs(self) do
-        if type(k) == "number" then
-            for k2, v2 in pairs(v) do
-                terms.setCursorPos(k - (self.offset[1]) + x, k2 - (self.offset[2] / 2) + y)
-                terms.setBackgroundColor(v2.b)
-                terms.setTextColor(v2.t)
-                terms.write(v2.s)
-            end
-        end
-    end
-    terms.setBackgroundColor(obc)
-    terms.setTextColor(otc)
-end
-function indexAnimate:drawImage(termobj, frame, x, y, ix, iy)
-    expect(1, termobj, "table", "nil")
-    expect(2, frame, "number")
-    expect(3, x, "number", "nil")
-    expect(4, y, "number", "nil")
-    if not self then
-        return false
-    end
-    local frame = frame or 1
-    local frameToLoad = self[1][math.min(frame, #self[1])]
-    local frameToLoad = strech(frameToLoad, ix, iy)
-    if frameToLoad then
-        local terms = termobj or term
-        if not x then
-            x = 0
-        end
-        if not y then
-            y = 0
-        end
-        local obc = terms.getBackgroundColor()
-        local otc = terms.getTextColor()
-        for k, v in pairs(frameToLoad) do
-            if type(k) == "number" then
-                for k2, v2 in pairs(v) do
-                    terms.setCursorPos(k - (frameToLoad.offset[1]) + x, k2 - (frameToLoad.offset[2] / 2) + y)
-                    terms.setBackgroundColor(v2.b)
-                    terms.setTextColor(v2.t)
-                    terms.write(v2.s)
-                end
-            end
-        end
-        terms.setBackgroundColor(obc)
-        terms.setTextColor(otc)
-    end
-end
-function indexAnimate:animate(termobj, x, y, speed, buffer, clears, ix, iy)
-    expect(1, termobj, "table")
-    expect(2, x, "number")
-    expect(3, y, "number")
-    expect(4, speed, "number")
-    expect(5, buffer, "boolean")
-    expect(6, clears, "boolean")
-    local terms = termobj or term.current()
-    local tx, ty = terms.getSize()
-    if buffer then
-        terms = window.create(terms, 1, 1, tx, ty)
-    end
-    local x = x or 0
-    local y = y or 0
-    if not speed then
-        speed = 1
-    end
-    if clears == nil then
-        clears = false
-    end
-    if buffer == nil then
-        buffer = false
-    end
-    local obc = terms.getBackgroundColor()
-    local otc = terms.getTextColor()
-    for k1, v1 in ipairs(self[1]) do
-        local v1 = strech(v1, ix, iy)
-        if buffer then
-            terms.setVisible(false)
-        end
-        terms.setBackgroundColor(obc)
-        terms.setTextColor(otc)
-        if clears then
-            terms.clear()
-        end
-        local count = 0
-        local curcount = 0
-        for k, v in pairs(v1) do
-            count = count + 1
-        end
-        for k, v in pairs(v1) do
-            if type(k) == "number" then
-                for k2, v2 in pairs(v) do
-                    terms.setCursorPos(k - (v1.offset[1]) + x, k2 - (v1.offset[2] / 2) + y)
-                    terms.setBackgroundColor(v2.b)
-                    terms.setTextColor(v2.t)
-                    terms.write(v2.s)
-                end
-            end
-        end
-        if buffer then
-            terms.setVisible(true)
-        end
-        curcount = curcount + 1
-        if curcount < #self[1] then
-            sleep(speed)
-        end
-    end
-    terms.setBackgroundColor(obc)
-    terms.setTextColor(otc)
-end
-function indexAnimate:slide(termobj, x, y, ix, iy)
-    expect(1, termobj, "table")
-    expect(2, x, "number")
-    expect(3, y, "number")
-    local animation = self[1]
-    local loadFrame = self[2] + 1
-    if not animation[loadFrame] then
-        return setmetatable({animation, 0, false}, {__index = indexAnimate})
-    end
-    local terms = termobj or term
-    local x = x or 0
-    local y = y or 0
-    local obc = terms.getBackgroundColor()
-    local otc = terms.getTextColor()
-    animation[loadFrame] = strech(animation[loadFrame], ix, iy)
-    for k, v in pairs(animation[loadFrame]) do
-        if type(k) == "number" then
-            for k2, v2 in pairs(v) do
-                terms.setCursorPos(
-                    k - (animation[loadFrame].offset[1]) + x,
-                    k2 - (animation[loadFrame].offset[2] / 2) + y
-                )
-                terms.setBackgroundColor(v2.b)
-                terms.setTextColor(v2.t)
-                terms.write(v2.s)
-            end
-        end
-    end
-    terms.setBackgroundColor(obc)
-    terms.setTextColor(otc)
-    return setmetatable({animation, loadFrame, true}, {__index = indexAnimate})
-end
-function indexAnimate:iterate()
-    local currentImage = 0
-    local allFramesRaw = self[1]
-    return function()
-        currentImage = currentImage + 1
-        if allFramesRaw[currentImage] then
-            return setmetatable(allFramesRaw[currentImage], {__index = index}), allFramesRaw, currentImage
-        end
-    end
-end
-local function loadImage(name)
-    expect(1, name, "string")
-    local name = name or ""
-    if not fs.exists(name .. ".nimg") then
-        error("not found. try using file name wihnout .nimg note that all files need to have .nimg extension to work", 2)
-    end
-    local file = fs.open(name .. ".nimg", "r")
-    local image = textutils.unserialize(file.readAll())
-	local decoded = decode(image)
-    file.close()
-    return setmetatable(decoded, {__index = index})
-end
-local function loadImageSet(name)
-    local frames = {}
-    expect(1, name, "string")
-    local name = name or ""
-    if not fs.isDir(name .. ".animg") then
-        error("not found. try using file name wihnout .animg note that all image sets need to have .animg as extension to work!", 2)
-    end
-    for k, v in pairs(fs.list(name .. ".animg")) do
-        local fn, ext = v:match("^(%d+).+(%..-)$")
-        if ext == ".nimg" then
-            local file = fs.open(name .. ".animg/" .. v, "r")
-            frames[tonumber(fn)] = textutils.unserialise(file.readAll())
-			frames[tonumber(fn)] = decode(frames[tonumber(fn)])
-            file.close()
-        end
-    end
-    return setmetatable({frames, 0}, {__index = indexAnimate})
-end
-function indexBuffer:startBuffer(noclear)
-    expect(1, noclear, "boolean", "nil")
-    self.setVisible(false)
-    if not noclear then
-        buffer.clear()
-    end
-end
-function indexBuffer:endBuffer()
-    self.setVisible(true)
-end
-local function createBuffer(termObj)
-    expect(1, termObj, "table")
-    local terms = termObj or term.current()
-    local xs, ys = terms.getSize()
-    return setmetatable(window.create(terms, 1, 1, xs, ys), {__index = indexBuffer})
-end
-local function getButtonH()
-    return require("ButtonH")
-end
-local function downloadPastekage(pasteCode)
-    --pasteges are packages for pastes:
-    --they allow downloading a set of images by putting into an paste
-    --pastekage format:
-    --l1: **PASTEKAGE**
-    --l2: [NAME]:PASTEBINCODE
-    --l3: [NAME]:PASTEBINCODE
-    --l4: etc...
-    local pastecage, err = http.get("https://pastebin.com/raw/" .. pasteCode)
-    if err then
-        error(err, 0)
-    end
-    local rand = tostring(math.random(1, 1000000))
-    local temp = fs.open("9551_NIMG_MAIN_API_TEMP_PASTKAGE_" .. rand, "w")
-    temp.write(pastecage.readAll())
-    temp.close()
-    pastecage.close()
-    local lc = 0
-    for l in io.lines("9551_NIMG_MAIN_API_TEMP_PASTKAGE_" .. rand) do
-        lc = lc + 1
-        if lc == 1 then
-            if l ~= "**PASTEKAGE**" then
-                error("not an pastekage!", 0)
-            end
-        end
-        if lc > 1 then
-            local name, code = l:match("^%[(.+)%]:(.+)")
-            local web, err = http.get("https://pastebin.com/raw/" .. code)
-            if err then
-                error(err, 0)
-            end
-            local file = fs.open(name, "w")
-            file.write(web.readAll())
-            file.close()
-            web.close()
-        end
-    end
-    fs.delete("9551_NIMG_MAIN_API_TEMP_PASTKAGE_" .. rand)
-end
-return {
-    loadImage = loadImage,
-    loadImageSet = loadImageSet,
-    getButtonH = getButtonH,
-    createBuffer = createBuffer,
-    stretch2DMap = strech,
-    downloadPastekage = downloadPastekage,
-    encode = encode,
-	decode = decode
-}
-
+local e=require("cc.expect").expect local t={}local a={}local o={}local
+i="0123456789abcdef"local n,s={},{}for h=0,15 do
+n[2^h]=i:sub(h+1,h+1)s[i:sub(h+1,h+1)]=2^h end local r=function(d)local
+l=setmetatable({},{__index=function(u,c)local m={}u[c]=m return m
+end})l["offset"]=d["offset"]for f,w in pairs(d)do for y,p in pairs(w)do if
+type(p)=="table"then l[f][y]={}if p then
+l[f][y].t=s[p.t]l[f][y].b=s[p.b]l[f][y].s=p.s end end end end return
+setmetatable(l,getmetatable(d))end local v=function(b)local
+g=setmetatable({},{__index=function(k,q)local j={}k[q]=j return j
+end})g["offset"]=b["offset"]for x,z in pairs(b)do for E,T in pairs(z)do if
+type(T)=="table"then g[x][E]={}if T then
+g[x][E].t=n[T.t]g[x][E].b=n[T.b]g[x][E].s=T.s end end end end return
+setmetatable(g,getmetatable(b))end local function A(O,I,N)if
+type(I)=="number"and type(N)=="number"then local S={}local H={}local R local
+D=1 local L=1 S["offset"]=O.offset H["offset"]=O.offset for U,C in pairs(O)do
+if type(U)=="number"then for M,F in pairs(C)do for W=1,I do if I>1 then D=I end
+if not S[U*D+W]then S[U*D+W]={}end if not S[U*D+W][M]then S[U*D+W][M]={}end
+S[U*D+W][M]=O[U][M]end end end end if N>1 then for Y,P in pairs(S)do if
+type(Y)=="number"then for V,B in pairs(P)do for G=1,N do if N>1 then L=N end if
+not H[Y]then H[Y]={}end if not H[Y][V*L+G]then H[Y][V*L+G]={}end
+H[Y][V*L+G]=S[Y][V]end end end end end if not next(S)then S=O end if N>1 then
+R=H else R=S end return setmetatable(R,getmetatable(O))else return O end end
+function t:strech(K,Q)local J=self if not self then
+error("try using : instead of .",0)end if type(K)=="number"and
+type(Q)=="number"then local X={}local Z={}local et local tt=1 local at=1
+X["offset"]=J.offset Z["offset"]=J.offset for ot,it in pairs(J)do if
+type(ot)=="number"then for nt,st in pairs(it)do for ht=1,K do if K>1 then tt=K
+end if not X[ot*tt+ht]then X[ot*tt+ht]={}end if not X[ot*tt+ht][nt]then
+X[ot*tt+ht][nt]={}end X[ot*tt+ht][nt]=J[ot][nt]end end end end if Q>1 then for
+rt,dt in pairs(X)do if type(rt)=="number"then for lt,ut in pairs(dt)do for
+ct=1,Q do if Q>1 then at=Q end if not Z[rt]then Z[rt]={}end if not
+Z[rt][lt*at+ct]then Z[rt][lt*at+ct]={}end Z[rt][lt*at+ct]=X[rt][lt]end end end
+end end if not next(X)then X=J end if Q>1 then et=Z else et=X end return
+setmetatable(et,getmetatable(J))else return J end end function
+t:draw(mt,ft,wt,yt,pt)e(1,mt,"table","nil")e(2,ft,"number","nil")e(3,wt,"number","nil")local
+self=A(self,yt,pt)local vt=mt or term local ft=ft or 0 local wt=wt or 0 local
+bt=vt.getBackgroundColor()local gt=vt.getTextColor()for kt,qt in pairs(self)do
+if type(kt)=="number"then for jt,xt in pairs(qt)do
+vt.setCursorPos(kt-(self.offset[1])+ft,jt-(self.offset[2]/2)+wt)vt.setBackgroundColor(xt.b)vt.setTextColor(xt.t)vt.write(xt.s)end
+end end vt.setBackgroundColor(bt)vt.setTextColor(gt)end function
+a:drawImage(zt,Et,Tt,At,Ot,It)e(1,zt,"table","nil")e(2,Et,"number")e(3,Tt,"number","nil")e(4,At,"number","nil")if
+not self then return false end local Et=Et or 1 local
+Nt=self[1][math.min(Et,#self[1])]local Nt=A(Nt,Ot,It)if Nt then local St=zt or
+term if not Tt then Tt=0 end if not At then At=0 end local
+Ht=St.getBackgroundColor()local Rt=St.getTextColor()for Dt,Lt in pairs(Nt)do if
+type(Dt)=="number"then for Ut,Ct in pairs(Lt)do
+St.setCursorPos(Dt-(Nt.offset[1])+Tt,Ut-(Nt.offset[2]/2)+At)St.setBackgroundColor(Ct.b)St.setTextColor(Ct.t)St.write(Ct.s)end
+end end St.setBackgroundColor(Ht)St.setTextColor(Rt)end end function
+a:animate(Mt,Ft,Wt,Yt,Pt,Vt,Bt,Gt)e(1,Mt,"table")e(2,Ft,"number")e(3,Wt,"number")e(4,Yt,"number")e(5,Pt,"boolean")e(6,Vt,"boolean")local
+Kt=Mt or term.current()local Qt,Jt=Kt.getSize()if Pt then
+Kt=window.create(Kt,1,1,Qt,Jt)end local Ft=Ft or 0 local Wt=Wt or 0 if not Yt
+then Yt=1 end if Vt==nil then Vt=false end if Pt==nil then Pt=false end local
+Xt=Kt.getBackgroundColor()local Zt=Kt.getTextColor()for ea,ta in
+ipairs(self[1])do local ta=A(ta,Bt,Gt)if Pt then Kt.setVisible(false)end
+Kt.setBackgroundColor(Xt)Kt.setTextColor(Zt)if Vt then Kt.clear()end local aa=0
+local oa=0 for ia,na in pairs(ta)do aa=aa+1 end for sa,ha in pairs(ta)do if
+type(sa)=="number"then for ra,da in pairs(ha)do
+Kt.setCursorPos(sa-(ta.offset[1])+Ft,ra-(ta.offset[2]/2)+Wt)Kt.setBackgroundColor(da.b)Kt.setTextColor(da.t)Kt.write(da.s)end
+end end if Pt then Kt.setVisible(true)end oa=oa+1 if oa<#self[1]then
+sleep(Yt)end end Kt.setBackgroundColor(Xt)Kt.setTextColor(Zt)end function
+a:slide(la,ua,ca,ma,fa)e(1,la,"table")e(2,ua,"number")e(3,ca,"number")local
+wa=self[1]local ya=self[2]+1 if not wa[ya]then return
+setmetatable({wa,0,false},{__index=a})end local pa=la or term local ua=ua or 0
+local ca=ca or 0 local va=pa.getBackgroundColor()local
+ba=pa.getTextColor()wa[ya]=A(wa[ya],ma,fa)for ga,ka in pairs(wa[ya])do if
+type(ga)=="number"then for qa,ja in pairs(ka)do
+pa.setCursorPos(ga-(wa[ya].offset[1])+ua,qa-(wa[ya].offset[2]/2)+ca)pa.setBackgroundColor(ja.b)pa.setTextColor(ja.t)pa.write(ja.s)end
+end end pa.setBackgroundColor(va)pa.setTextColor(ba)return
+setmetatable({wa,ya,true},{__index=a})end function a:iterate()local xa=0 local
+za=self[1]return function()xa=xa+1 if za[xa]then return
+setmetatable(za[xa],{__index=t}),za,xa end end end local function
+Ea(Ta)e(1,Ta,"string")local Ta=Ta or""if not fs.exists(Ta..".nimg")then
+error("not found. try using file name wihnout .nimg note that all files need to have .nimg extension to work",2)end
+local Aa=fs.open(Ta..".nimg","r")local
+Oa=textutils.unserialize(Aa.readAll())local Ia=r(Oa)Aa.close()return
+setmetatable(Ia,{__index=t})end local function Na(Sa)local
+Ha={}e(1,Sa,"string")local Sa=Sa or""if not fs.isDir(Sa..".animg")then
+error("not found. try using file name wihnout .animg note that all image sets need to have .animg as extension to work!",2)end
+for Ra,Da in pairs(fs.list(Sa..".animg"))do local
+La,Ua=Da:match("^(%d+).+(%..-)$")if Ua==".nimg"then local
+Ca=fs.open(Sa..".animg/"..Da,"r")Ha[tonumber(La)]=textutils.unserialise(Ca.readAll())Ha[tonumber(La)]=r(Ha[tonumber(La)])Ca.close()end
+end return setmetatable({Ha,0},{__index=a})end function
+o:startBuffer(Ma)e(1,Ma,"boolean","nil")self.setVisible(false)if not Ma then
+buffer.clear()end end function o:endBuffer()self.setVisible(true)end local
+function Fa(Wa)e(1,Wa,"table")local Ya=Wa or term.current()local
+Pa,Va=Ya.getSize()return
+setmetatable(window.create(Ya,1,1,Pa,Va),{__index=o})end local function
+Ba()return require("ButtonH")end local function Ga(Ka)local
+Qa,Ja=http.get("https://pastebin.com/raw/"..Ka)if Ja then error(Ja,0)end local
+Xa=tostring(math.random(1,1000000))local
+Za=fs.open("9551_NIMG_MAIN_API_TEMP_PASTKAGE_"..Xa,"w")Za.write(Qa.readAll())Za.close()Qa.close()local
+eo=0 for to in io.lines("9551_NIMG_MAIN_API_TEMP_PASTKAGE_"..Xa)do eo=eo+1 if
+eo==1 then if to~="**PASTEKAGE**"then error("not an pastekage!",0)end end if
+eo>1 then local ao,oo=to:match("^%[(.+)%]:(.+)")local
+no,Ja=http.get("https://pastebin.com/raw/"..oo)if Ja then error(Ja,0)end local
+so=fs.open(ao,"w")so.write(no.readAll())so.close()no.close()end end
+fs.delete("9551_NIMG_MAIN_API_TEMP_PASTKAGE_"..Xa)end
+return{loadImage=Ea,loadImageSet=Na,getButtonH=Ba,createBuffer=Fa,stretch2DMap=A,downloadPastekage=Ga,encode=v,decode=r}

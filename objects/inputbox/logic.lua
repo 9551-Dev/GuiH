@@ -1,185 +1,64 @@
-local api = require("api")
-
-local function depattern(str)
-    return str:gsub("[%[%]%(%)%.%+%-%%%$%^%*%?]", "%%%1")
-end
-
-
-local function likeness(str1,str2,give_default)
-    local likeness = 0
-    local len1 = string.len(str1)
-    local len2 = string.len(str2)
-    local minlen = math.min(len1, len2)
-    if str1 == str2 then return 0 end
-    if len1 == 0 and give_default then return 0.4 end
-    for i = 1, minlen do
-        if str1:sub(i, i) == str2:sub(i, i) then
-            likeness = likeness + 1
-        end
-    end
-    return likeness
-end
-
-local function get_keys(array)
-    local temp = {}
-    for k,v in pairs(array) do
-        temp[#temp+1] = {key=k,value=v}
-    end
-    return temp
-end
-
-local function sort_strings_likeness(input,string_array)
-    local strings_likeness = {}
-    local out = {}
-    local give_default = string_array.show_default
-    local zero_likeness = {}
-    for k,v in ipairs(string_array) do
-        local likeness = likeness(input,v,give_default)
-        if likeness > 0 and type(k) == "number" then
-            if strings_likeness[likeness] then table.insert(strings_likeness[likeness],v)
-            else strings_likeness[likeness] = {v} end
-        else table.insert(zero_likeness,v) end
-    end
-    local keys = get_keys(strings_likeness)
-    table.sort(keys,function(a,b) return a.key > b.key end)
-    for k,v in ipairs(keys) do
-        for _k,_v in ipairs(v.value) do
-            table.insert(out,_v)
-        end
-    end
-    local out_len = table.getn(out)
-    for k,v in pairs(zero_likeness) do out[1+out_len+k] = v end
-    return out
-end
-
-return function(object,event)
-    local term = object.canvas.term_object
-    if event.name == "mouse_click" then
-        if api.is_within_field(
-            event.x,
-            event.y,
-            object.positioning.x,
-            object.positioning.y,
-            object.positioning.width+1,
-            1
-        ) then
-            if object.selected then
-                object.cursor_pos = math.min(object.cursor_pos + (event.x-object.cursor_x),#object.input)
-            else
-                object.cursor_pos = object.old_cursor or 0
-                object.on_change_select(object,event,true)
-            end
-            object.selected = true
-        else
-            if object.selected then
-                object.on_change_select(object,event,false)
-                object.old_cursor = object.cursor_pos
-                object.cursor_pos = -math.huge
-            end
-            object.selected = false
-        end
-    end
-    local a = object.input:sub(1,object.cursor_pos)
-    local b = object.input:sub(object.cursor_pos+1,#object.input)
-    if next(object.autoc.strings) or next(object.autoc.spec_strings) and object.selected then
-        local search_string = depattern(a):match("%S+$") or ""
-        local search_string = search_string:gsub("%%(.)", "%1")
-        local array = object.autoc.spec_strings[select(2,a:gsub("%W+",""))+1] or object.autoc.strings
-        if array then
-            local sorted = sort_strings_likeness(search_string,array)
-            object.autoc.sorted = sorted
-            if object.autoc.selected > #sorted then
-                object.autoc.selected = #sorted
-            end
-            if sorted[1] ~= search_string then
-                object.autoc.current = search_string
-                object.autoc.str_diff = object.autoc.sorted[object.autoc.selected]
-                if not object.autoc.str_diff then object.autoc.str_diff = "" end
-                object.autoc.current_likeness = likeness(search_string,object.autoc.str_diff)
-            end
-        end
-    end
-    if event.name == "char" and object.selected and event.character:match(object.pattern) then
-        if #object.input < object.char_limit then
-            if not object.insert then
-                object.input = a..event.character..b
-                object.cursor_pos = object.cursor_pos + 1
-            else
-                object.input = a..event.character..b:gsub("^.","")
-                object.cursor_pos = object.cursor_pos + 1
-            end
-            object.autoc.selected = 1
-            object.on_change_input(object,event,object.input)
-        end
-    end
-    if event.name == "key_up" and object.selected then
-        if event.key == keys.leftCtrl or event.key == keys.rightCtrl then
-            object.ctrl = false
-        end
-    end
-    if event.name == "key" and object.selected then
-        if event.key == keys.leftCtrl or event.key == keys.rightCtrl then
-            object.ctrl = true
-        elseif event.key == keys.backspace then
-            object.input = a:gsub(".$","")..b
-            object.autoc.selected = 1
-            object.cursor_pos = math.max(object.cursor_pos-1,0)
-            object.on_change_input(object,event,object.input)
-        elseif event.key == keys.left then
-            if not object.ctrl then object.cursor_pos = math.max(object.cursor_pos-1,0)
-            else
-                local diff = a:reverse():find(" ")
-                object.cursor_pos = diff and #a-diff or 0
-            end
-        elseif  event.key == keys.right then
-            if not object.ctrl then object.cursor_pos = math.min(math.max(object.cursor_pos+1,0),#object.input)
-            else
-                local diff = b:sub(2,#b):find(" ")
-                object.cursor_pos = diff and diff+#a or #object.input
-            end
-        elseif event.key == keys.tab and not object.ignore_tab and not event.held and (next(object.autoc.strings) or next(object.autoc.spec_strings) and object.selected) then
-            local diff = #object.autoc.str_diff-#object.autoc.current
-            local res = object.input:gsub(object.autoc.current.."$",object.autoc.str_diff)
-            if #res <= object.char_limit and object.cursor_pos >= #object.input then
-                if object.autoc.put_space then
-                    object.input = res.." "
-                    object.cursor_pos = object.cursor_pos + diff + 1
-                else
-                    object.input = res
-                    object.cursor_pos = object.cursor_pos + diff
-                end
-                object.autoc.sorted = {}
-                object.autoc.str_diff = ""
-                object.on_change_input(object,event,object.input)
-            end
-        elseif event.key == keys.home then
-            object.cursor_pos = 0
-        elseif event.key == keys["end"] then
-            object.cursor_pos = #object.input
-        elseif event.key == keys.delete then
-            object.input = a..b:gsub("^.","")
-            object.autoc.selected = 1
-            object.on_change_input(object,event,object.input)
-        elseif event.key == keys.insert and not event.held then
-            object.insert = not object.insert
-        elseif event.key == keys.down then
-            if object.autoc.selected+1 <= #object.autoc.sorted then
-                object.autoc.selected = object.autoc.selected + 1
-            end
-        elseif event.key == keys.up then
-            if object.autoc.selected > 1 then
-                object.autoc.selected = object.autoc.selected - 1
-            end
-        elseif event.key == keys.enter and object.selected then
-            local arguments = {}
-            object.input:gsub("%S+",function(str) table.insert(arguments,str) end)
-            object.on_enter(object,event,arguments)
-        end
-    end
-    if event.name == "paste" then
-        object.autoc.selected = 1
-        object.input = a..event.text..b
-        object.cursor_pos = object.cursor_pos+#event.text
-        object.on_change_input(object,event,object.input)
-    end
+local e=require("api")local function t(a)return
+a:gsub("[%[%]%(%)%.%+%-%%%$%^%*%?]","%%%1")end local function o(i,n,s)local o=0
+local h=string.len(i)local r=string.len(n)local d=math.min(h,r)if i==n then
+return 0 end if h==0 and s then return 0.4 end for l=1,d do if
+i:sub(l,l)==n:sub(l,l)then o=o+1 end end return o end local function u(c)local
+m={}for f,w in pairs(c)do m[#m+1]={key=f,value=w}end return m end local
+function y(p,v)local b={}local g={}local k=v.show_default local q={}for j,x in
+ipairs(v)do local o=o(p,x,k)if o>0 and type(j)=="number"then if b[o]then
+table.insert(b[o],x)else b[o]={x}end else table.insert(q,x)end end local
+z=u(b)table.sort(z,function(E,T)return E.key>T.key end)for A,O in ipairs(z)do
+for I,N in ipairs(O.value)do table.insert(g,N)end end local S=table.getn(g)for
+H,R in pairs(q)do g[1+S+H]=R end return g end return function(D,L)local
+U=D.canvas.term_object if L.name=="mouse_click"then if
+e.is_within_field(L.x,L.y,D.positioning.x,D.positioning.y,D.positioning.width+1,1)then
+if D.selected then
+D.cursor_pos=math.min(D.cursor_pos+(L.x-D.cursor_x),#D.input)else
+D.cursor_pos=D.old_cursor or 0 D.on_change_select(D,L,true)end D.selected=true
+else if D.selected then D.on_change_select(D,L,false)D.old_cursor=D.cursor_pos
+D.cursor_pos=-math.huge end D.selected=false end end local
+C=D.input:sub(1,D.cursor_pos)local M=D.input:sub(D.cursor_pos+1,#D.input)if
+next(D.autoc.strings)or next(D.autoc.spec_strings)and D.selected then local
+F=t(C):match("%S+$")or""local F=F:gsub("%%(.)","%1")local
+W=D.autoc.spec_strings[select(2,C:gsub("%W+",""))+1]or D.autoc.strings if W
+then local Y=y(F,W)D.autoc.sorted=Y if D.autoc.selected>#Y then
+D.autoc.selected=#Y end if Y[1]~=F then D.autoc.current=F
+D.autoc.str_diff=D.autoc.sorted[D.autoc.selected]if not D.autoc.str_diff then
+D.autoc.str_diff=""end D.autoc.current_likeness=o(F,D.autoc.str_diff)end end
+end if L.name=="char"and D.selected and L.character:match(D.pattern)then
+if#D.input<D.char_limit then if not D.insert then D.input=C..L.character..M
+D.cursor_pos=D.cursor_pos+1 else
+D.input=C..L.character..M:gsub("^.","")D.cursor_pos=D.cursor_pos+1 end
+D.autoc.selected=1 D.on_change_input(D,L,D.input)end end if L.name=="key_up"and
+D.selected then if L.key==keys.leftCtrl or L.key==keys.rightCtrl then
+D.ctrl=false end end if L.name=="key"and D.selected then if
+L.key==keys.leftCtrl or L.key==keys.rightCtrl then D.ctrl=true elseif
+L.key==keys.backspace then D.input=C:gsub(".$","")..M D.autoc.selected=1
+D.cursor_pos=math.max(D.cursor_pos-1,0)D.on_change_input(D,L,D.input)elseif
+L.key==keys.left then if not D.ctrl then
+D.cursor_pos=math.max(D.cursor_pos-1,0)else local
+P=C:reverse():find(" ")D.cursor_pos=P and#C-P or 0 end elseif L.key==keys.right
+then if not D.ctrl then
+D.cursor_pos=math.min(math.max(D.cursor_pos+1,0),#D.input)else local
+V=M:sub(2,#M):find(" ")D.cursor_pos=V and V+#C or#D.input end elseif
+L.key==keys.tab and not D.ignore_tab and not L.held and(next(D.autoc.strings)or
+next(D.autoc.spec_strings)and D.selected)then local
+B=#D.autoc.str_diff-#D.autoc.current local
+G=D.input:gsub(D.autoc.current.."$",D.autoc.str_diff)if#G<=D.char_limit and
+D.cursor_pos>=#D.input then if D.autoc.put_space then
+D.input=G.." "D.cursor_pos=D.cursor_pos+B+1 else D.input=G
+D.cursor_pos=D.cursor_pos+B end
+D.autoc.sorted={}D.autoc.str_diff=""D.on_change_input(D,L,D.input)end elseif
+L.key==keys.home then D.cursor_pos=0 elseif L.key==keys["end"]then
+D.cursor_pos=#D.input elseif L.key==keys.delete then
+D.input=C..M:gsub("^.","")D.autoc.selected=1
+D.on_change_input(D,L,D.input)elseif L.key==keys.insert and not L.held then
+D.insert=not D.insert elseif L.key==keys.down then if
+D.autoc.selected+1<=#D.autoc.sorted then D.autoc.selected=D.autoc.selected+1
+end elseif L.key==keys.up then if D.autoc.selected>1 then
+D.autoc.selected=D.autoc.selected-1 end elseif L.key==keys.enter and D.selected
+then local
+K={}D.input:gsub("%S+",function(Q)table.insert(K,Q)end)D.on_enter(D,L,K)end end
+if L.name=="paste"then D.autoc.selected=1 D.input=C..L.text..M
+D.cursor_pos=D.cursor_pos+#L.text D.on_change_input(D,L,D.input)end
 end

@@ -1,14 +1,4 @@
-local api = require("api")
-return function(object,event)
-    if api.is_within_field(
-        event.x,
-        event.y,
-        object.positioning.x,
-        object.positioning.y,
-        object.positioning.width,
-        object.positioning.height
-    ) then
-        object.value = not object.value
-        object.on_change_state(object,event)
-    end
-end 
+local e=require("api")return function(t,a)if
+e.is_within_field(a.x,a.y,t.positioning.x,t.positioning.y,t.positioning.width,t.positioning.height)then
+t.value=not t.value t.on_change_state(t,a)end
+end

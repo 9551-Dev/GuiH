@@ -1,2 +1,2 @@
-return function(object)
-end
+return
+function(e)end

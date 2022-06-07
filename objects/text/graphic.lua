@@ -1,5 +1,2 @@
-return function(object)
-    if object.text then
-        object.text()
-    end
+return function(e)if e.text then e.text()end
 end

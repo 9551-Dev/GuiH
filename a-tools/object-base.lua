@@ -1,23 +1,6 @@
---[[
-    ! this file doesnt do anything !
-    * it shows how to make a propper new object.lua
-    * for your own custom elements
-]]
-
-local api = require("api")
-return function(object,data)
-    data = data or {}
-    if type(data.visible) ~= "boolean" then data.visible = true end
-    if type(data.reactive) ~= "boolean" then data.reactive = true end
-    local base = {
-        name=data.name or api.uuid4(),
-        visible=data.visible,
-        reactive=data.reactive,
-        react_to_events={}, --*events that the object should run logic.lua on. LUT
-        btn={}, --*buttons that the object should run logic.lua on. LUT
-        order=data.order or 1,
-        logic_order=data.logic_order,
-        graphic_order=data.graphic_order,
-    }
-    return base
+local e=require("api")return function(t,a)a=a or{}if
+type(a.visible)~="boolean"then a.visible=true end if
+type(a.reactive)~="boolean"then a.reactive=true end local o={name=a.name or
+e.uuid4(),visible=a.visible,reactive=a.reactive,react_to_events={},btn={},order=a.order
+or 1,logic_order=a.logic_order,graphic_order=a.graphic_order,}return o
 end

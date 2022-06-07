@@ -1,3 +1,2 @@
-return function(object,event)
-    object.graphic(object,event)
-end
+return
+function(e,t)e.graphic(e,t)end

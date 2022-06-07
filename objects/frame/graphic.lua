@@ -1,3 +1,2 @@
-return function(object)
-    object.on_graphic(object)
-end
+return
+function(e)e.on_graphic(e)end
