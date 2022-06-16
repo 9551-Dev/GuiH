@@ -3,7 +3,7 @@
     * and utilities for working with term objects
 ]]
 
-local function mirror_monitors(base,...)
+local function mirror(base,...)
     local mons = {...}
     local out = {}
     for fname,_ in pairs(mons[1]) do
@@ -18,7 +18,7 @@ local function mirror_monitors(base,...)
     return out
 end
 
-local function make_shared_terminal(...)
+local function make_shared(...)
     local mons = {...}
     local out = {}
     for fname,_ in pairs(mons[1]) do
@@ -34,6 +34,6 @@ local function make_shared_terminal(...)
 end
 
 return {
-    mirror_monitors=mirror_monitors,
-    make_shared_terminal=make_shared_terminal
+    mirror=mirror,
+    make_shared=make_shared
 }
