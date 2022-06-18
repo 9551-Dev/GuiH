@@ -173,9 +173,9 @@ Aa=t.code.to_blit[Ia.fg]:rep(#Wa)end local Ba
 pcall(function()_,_,Ba=Ra.getLine(math.floor(Ha))end)if not Ba then return end
 local Ga=Ba:sub(Sa,math.min(Sa+#Wa-1,z.w))local Ka=#Wa-#Ga-1 if#Aa~=#Wa then
 Aa=("0"):rep(#Wa)end
-Ra.blit(Wa,Aa:sub(math.min(Sa,1)),Ga..Oa:sub(#Oa-Ka,#Oa))else local
+pcall(Ra.blit,Wa,Aa:sub(math.min(Sa,1)),Ga..Oa:sub(#Oa-Ka,#Oa))else local
 Aa,Oa=table.unpack(Ia.blit)if Ia.bg then Oa=t.code.to_blit[Ia.bg]:rep(#Wa)end
 if Ia.fg then Aa=t.code.to_blit[Ia.fg]:rep(#Wa)end if#Aa~=#Wa then
-Aa=("0"):rep(#Wa)end if#Oa~=#Wa then Oa=("f"):rep(#Wa)end Ra.blit(Wa,Aa,Oa)end
+Aa=("0"):rep(#Wa)end if#Oa~=#Wa then Oa=("f"):rep(#Wa)end pcall(Ra.blit,Wa,Aa,Oa)end
 end end,__tostring=function()return"GuiH.primitive.text"end})end return z end
 return i
