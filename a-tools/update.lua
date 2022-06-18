@@ -201,9 +201,9 @@ return function(self,timeout,visible,is_child,data_in,block_logic,block_graphic)
             }
 
             --* if the element has an gui (for example group) then clear it with its background color
-            if (v.gui or v.child) and v.gui.cls then
-                v.gui.term_object.setBackgroundColor(v.gui.background)
-                v.gui.term_object.clear()
+            if (v.gui or v.child) and (v.gui or v.child).cls then
+                (v.gui or v.child).term_object.setBackgroundColor(v.gui.background);
+                (v.gui or v.child).term_object.clear();
             end
 
             --* if the event has happened within the gui object that update it like normal
@@ -215,8 +215,8 @@ return function(self,timeout,visible,is_child,data_in,block_logic,block_graphic)
                 dat.y = -math.huge;
                 (v.child or v.gui).update(math.huge,v.visible,true,dat,not v.reactive,not v.visible)
             end
-            if (v.gui or v.child) and v.gui.cls then 
-                v.gui.term_object.redraw()
+            if (v.gui or v.child) and (v.gui or v.child).cls then 
+                (v.gui or v.child).term_object.redraw()
             end
         end
     end
