@@ -140,14 +140,14 @@ return {main=function(i_self,guis,log)
 
                     --* attach custom manipulatos to the object
                     --* also attach the core functions
-                    local index = custom_manipulators or {}
+                    local index = deepcopy(custom_manipulators) or {}
                     index.logic=adat
                     index.graphic=bdat
 
                     --* we attach default manipulators to the object
                     index.kill=function()
 
-                        --* if the object exists
+                        --* if the object existst   
                         if guis[v][object.name] then
 
                             --* we remove it from the GUI
