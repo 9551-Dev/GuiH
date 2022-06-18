@@ -17,7 +17,7 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
     --* uses pcall cause peripheral.getType(term) errors
     local type = "term_object"
     local deepest = orig
-    if not event_offset_x or not event_offset_y then
+    local function calibrate()
         event_offset_x,event_offset_y = 0,0
         pcall(function()
             local function get_ev_offset(terminal)
@@ -34,6 +34,9 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
             end
             get_ev_offset(term_object)
         end)
+    end
+    if not event_offset_x or not event_offset_y then
+        calibrate()
     end
     pcall(function()
         type = peripheral.getType(deepest)
@@ -66,6 +69,7 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
         debug=false,
         event_offset_x=event_offset_x,
         event_offset_y=event_offset_y,
+        calibrate()
     }
     gui.elements = gui.gui
 
@@ -265,7 +269,7 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
     end
 
     gui.cause_exeption = function(e)
-        err = e
+        err = tostring(e)
     end
 
     gui.stop = function()
