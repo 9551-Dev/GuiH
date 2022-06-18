@@ -69,7 +69,7 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
         debug=false,
         event_offset_x=event_offset_x,
         event_offset_y=event_offset_y,
-        calibrate()
+        calibrate=calibrate
     }
     gui.elements = gui.gui
 
