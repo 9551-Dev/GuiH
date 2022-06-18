@@ -34,6 +34,7 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
             end
             get_ev_offset(term_object)
         end)
+        return event_offset_x,event_offset_y
     end
     if not event_offset_x or not event_offset_y then
         calibrate()
