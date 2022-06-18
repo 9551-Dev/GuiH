@@ -682,7 +682,7 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
                         --* draw the final text subed by b_val in case
                         --* its off the screen to the left
                         if #fg ~= #text then fg = ("0"):rep(#text) end
-                        term.blit(text,fg:sub(math.min(x,1)),sc_bg..bg:sub(#bg-diff,#bg))
+                        pcall(term.blit,text,fg:sub(math.min(x,1)),sc_bg..bg:sub(#bg-diff,#bg))
                     else
                         --* draw text with provided blit
                         local fg,bg = table.unpack(self.blit)
@@ -690,7 +690,7 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
                         if self.fg then fg = graphic.code.to_blit[self.fg]:rep(#text) end
                         if #fg ~= #text then fg = ("0"):rep(#text) end
                         if #bg ~= #text then bg = ("f"):rep(#text) end
-                        term.blit(text,fg,bg)
+                        pcall(term.blit,text,fg,bg)
                     end
                 end
             end,
