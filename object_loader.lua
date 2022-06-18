@@ -1,83 +1,82 @@
-local e=require("api")local t=fs.getDir(select(2,...))local function a(o)local
-i=type(o)local n if i=="table"then n={}for s,h in next,o,nil do if
-s=="canvas"then n.canvas=h else n[a(s)]=a(h)end end
-setmetatable(n,a(getmetatable(o)))else n=o end return n end
-return{main=function(r,d,l)local u=r local c={}local
-m=fs.list(fs.combine(t,"objects"))for f,w in pairs(m)do
-l("loading object: "..w,l.update)local
-y,p=pcall(require,"objects."..w..".object")if y and type(p)=="function"then
-local v,b=pcall(require,"objects."..w..".logic")local
-g,k=pcall(require,"objects."..w..".graphic")if v and g
-and(type(b)=="function")and(type(k)=="function")then local
-q=fs.list(fs.combine(t.."/objects/",w))local j={}local x={}for z,E in
-pairs(q)do local T=E:match("(.*)%.")or E if not(T=="logic"or T=="graphic"or
-T=="object")and(not fs.isDir(t.."/objects/"..w.."/"..T))then
-l("objects."..w.."."..T)local A,O=pcall(require,"objects."..w.."."..T)if A then
-l("found custom object flag \""..T.."\" for: "..w,l.update)j[T]=require("objects."..w.."."..T)else
-l("bad object flag "..O)end else if T=="manipulators"then
-l("found custom object manipulators for: "..w,l.update)local
-I=fs.list(t.."/objects/"..w.."/manipulators")for z,E in pairs(I)do local
-N,S=pcall(require,"objects."..w..".manipulators."..E:match("(.*)%.")or E)if N
+local e=require("api")local function t(a)local o=type(a)local i if
+o=="table"then i={}for n,s in next,a,nil do if n=="canvas"then i.canvas=s else
+i[t(n)]=t(s)end end setmetatable(i,t(getmetatable(a)))else i=a end return i end
+return{main=function(h,r,d)local l=h local u={}local c=fs.list("objects")for
+m,f in pairs(c)do d("loading object: "..f,d.update)local
+w,y=pcall(require,"objects."..f..".object")if w and type(y)=="function"then
+local p,v=pcall(require,"objects."..f..".logic")local
+b,g=pcall(require,"objects."..f..".graphic")if p and b
+and(type(v)=="function")and(type(g)=="function")then local
+k=fs.list(fs.combine("objects",f))local q={}local j={}for x,z in pairs(k)do
+local E=z:match("(.*)%.")or z if not(E=="logic"or E=="graphic"or
+E=="object")and(not fs.isDir("objects/"..f.."/"..E))then
+d("objects."..f.."."..E)local T,A=pcall(require,"objects."..f.."."..E)if T then
+d("found custom object flag \""..E.."\" for: "..f,d.update)q[E]=require("objects."..f.."."..E)else
+d("bad object flag "..A)end else if E=="manipulators"then
+d("found custom object manipulators for: "..f,d.update)local
+O=fs.list("objects/"..f.."/manipulators")for x,z in pairs(O)do local
+I,N=pcall(require,"objects."..f..".manipulators."..z:match("(.*)%.")or z)if I
 then
-l("found custom object manipulator \""..E.."\" for: "..w,l.update)x[E:match("(.*)%.")or
-E]=setmetatable({},{__call=function(H,...)return
-S(...)end,__index=S,__tostring=function()return"GuiH."..w..".manipulator"end})else
-l("bad object manipulator "..S)end end end end end
-c[w]=setmetatable({},{__index=j,__tostring=function()return"GuiH.element_builder."..w
-end,__call=function(R,D)local u=p(u,D)if not(type(u.name)=="string")then
-u.name=e.uuid4()end if not(type(u.order)=="number")then u.order=1 end if
-not(type(u.logic_order)=="number")then u.logic_order=1 end if
-not(type(u.graphic_order)=="number")then u.graphic_order=1 end if
-not(type(u.react_to_events)=="table")then u.react_to_events={}end if
-not(type(u.btn)=="table")then u.btn={}end if
-not(type(u.visible)=="boolean")then u.visible=true end if
-not(type(u.reactive)=="boolean")then u.reactive=true end d[w][u.name]=u local
-L=x or{}L.logic=b L.graphic=k L.kill=function()if d[w][u.name]then
-d[w][u.name]=nil l("killed "..w.." > "..u.name,l.warn)return true else
-l("tried to manipulate dead object.",l.error)return
-false,"object no longer exist"end end L.get_position=function()if
-d[w][u.name]then if u.positioning then return u.positioning else return
+d("found custom object manipulator \""..z.."\" for: "..f,d.update)j[z:match("(.*)%.")or
+z]=setmetatable({},{__call=function(S,...)return
+N(...)end,__index=N,__tostring=function()return"GuiH."..f..".manipulator"end})else
+d("bad object manipulator "..N)end end end end end
+u[f]=setmetatable({},{__index=q,__tostring=function()return"GuiH.element_builder."..f
+end,__call=function(H,R)local l=y(l,R)if not(type(l.name)=="string")then
+l.name=e.uuid4()end if not(type(l.order)=="number")then l.order=1 end if
+not(type(l.logic_order)=="number")then l.logic_order=1 end if
+not(type(l.graphic_order)=="number")then l.graphic_order=1 end if
+not(type(l.react_to_events)=="table")then l.react_to_events={}end if
+not(type(l.btn)=="table")then l.btn={}end if
+not(type(l.visible)=="boolean")then l.visible=true end if
+not(type(l.reactive)=="boolean")then l.reactive=true end r[f][l.name]=l local
+D=t(j)or{}D.logic=v D.graphic=g D.kill=function()if r[f][l.name]then
+r[f][l.name]=nil d("killed "..f.." > "..l.name,d.warn)return true else
+d("tried to manipulate dead object.",d.error)return
+false,"object no longer exist"end end D.get_position=function()if
+r[f][l.name]then if l.positioning then return l.positioning else return
 false,"object doesnt have positioning information"end else
-l("tried to manipulate dead object.",l.error)return
-false,"object no longer exist"end end L.replicate=function(U)U=U or e.uuid4()if
-d[w][u.name]then if U==u.name then return"name of copy cannot be the same!"else
-l("Replicated "..w.." > "..u.name.." as "..w.." > "..U,l.info)local
-C=a(d[w][u.name])d[w][U or""]=C C.name=U return C,true end else
-l("tried to manipulate dead object.",l.error)return
-false,"object no longer exist"end end L.isolate=function()if d[w][u.name]then
+d("tried to manipulate dead object.",d.error)return
+false,"object no longer exist"end end D.replicate=function(L)L=L or e.uuid4()if
+r[f][l.name]then if L==l.name then return"name of copy cannot be the same!"else
+d("Replicated "..f.." > "..l.name.." as "..f.." > "..L,d.info)local
+U=t(r[f][l.name])r[f][L or""]=U U.name=L return U,true end else
+d("tried to manipulate dead object.",d.error)return
+false,"object no longer exist"end end D.isolate=function()if r[f][l.name]then
 local
-u=a(d[w][u.name])l("isolated "..w.." > "..u.name,l.info)return{parse=function(M)l("parsed "..w.." > "..u.name,l.info)if
-u then local M=M or u.name if d[w][M]then d[w][M]=nil end d[w][M]=u return
-d[w][M]else return false,"object no longer exist"end end,get=function()if u
-then l("returned "..w.." > "..u.name,l.info)return u else return
+l=t(r[f][l.name])d("isolated "..f.." > "..l.name,d.info)return{parse=function(C)d("parsed "..f.." > "..l.name,d.info)if
+l then local C=C or l.name if r[f][C]then r[f][C]=nil end r[f][C]=l return
+r[f][C]else return false,"object no longer exist"end end,get=function()if l
+then d("returned "..f.." > "..l.name,d.info)return l else return
 false,"object no longer exist"end
-end,clear=function()l("Removed copied object "..w.." > "..u.name,l.info)u=nil
-end,}else l("tried to manipulate dead object.",l.error)return
-false,"object no longer exist"end end L.cut=function()if d[w][u.name]then local
-u=a(d[w][u.name])d[w][u.name]=nil
-l("cut "..w.." > "..u.name,l.info)return{parse=function()if u then
-l("parsed "..w.." > "..u.name,l.info)if d[w][u.name]then d[w][u.name]=nil end
-d[w][u.name]=u return d[w][u.name]else return false,"object no longer exist"end
-end,get=function()l("returned "..w.." > "..u.name,l.info)return u
-end,clear=function()l("Removed copied object "..w.." > "..u.name,l.info)u=nil
-end}else l("tried to manipulate dead object.",l.error)return
-false,"object no longer exist"end end L.destroy=L.kill L.murder=L.destroy
-L.copy=L.isolate if not type(L.logic)=="function"then
-l("object "..w.." has invalid logic.lua",l.error)return false end if not
-type(L.graphic)=="function"then
-l("object "..w.." has invalid graphic.lua",l.error)return false end
-setmetatable(u,{__index=L,__tostring=function()return"GuiH.element."..w.."."..u.name
-end})if u.positioning then
-setmetatable(u.positioning,{__tostring=function()return"GuiH.element.position"end})end
-u.canvas=r l("created new "..w.." > "..u.name,l.info)l:dump()return u end})else
-if not v and g then l(w.." is missing an logic file !",l.error)end if not g and
-v then l(w.." is missing an graphic file !",l.error)end if not v and not g then
-l(w.." is missing logic and graphic file !",l.error)end if v
-and(type(b)~="function")then l(w.." has an invalid logic file !",l.error)end if
-g and(type(k)~="function")then
-l(w.." has an invalid graphic file !",l.error)end if g and v
-and(type(k)~="function")and(type(b)~="function")then
-l(w.." has an invalid logic and graphic file !",l.error)end end else if y and
-not(type(p)=="function")then l(w.." has invalid object file!",l.error)else
-l(w.." is missing an object file !",l.error)end end end return c
-end,types=fs.list(fs.combine(t,"objects"))}
+end,clear=function()d("Removed copied object "..f.." > "..l.name,d.info)l=nil
+end,}else d("tried to manipulate dead object.",d.error)return
+false,"object no longer exist"end end D.cut=function()if r[f][l.name]then local
+l=t(r[f][l.name])r[f][l.name]=nil
+d("cut "..f.." > "..l.name,d.info)return{parse=function()if l then
+d("parsed "..f.." > "..l.name,d.info)if r[f][l.name]then r[f][l.name]=nil end
+r[f][l.name]=l return r[f][l.name]else return false,"object no longer exist"end
+end,get=function()d("returned "..f.." > "..l.name,d.info)return l
+end,clear=function()d("Removed copied object "..f.." > "..l.name,d.info)l=nil
+end}else d("tried to manipulate dead object.",d.error)return
+false,"object no longer exist"end end D.destroy=D.kill D.murder=D.destroy
+D.copy=D.isolate if not type(D.logic)=="function"then
+d("object "..f.." has invalid logic.lua",d.error)return false end if not
+type(D.graphic)=="function"then
+d("object "..f.." has invalid graphic.lua",d.error)return false end
+setmetatable(l,{__index=D,__tostring=function()return"GuiH.element."..f.."."..l.name
+end})if l.positioning then
+setmetatable(l.positioning,{__tostring=function()return"GuiH.element.position"end})end
+l.canvas=h d("created new "..f.." > "..l.name,d.info)d:dump()return l end})else
+if not p and b then d(f.." is missing an logic file !",d.error)end if not b and
+p then d(f.." is missing an graphic file !",d.error)end if not p and not b then
+d(f.." is missing logic and graphic file !",d.error)end if p
+and(type(v)~="function")then d(f.." has an invalid logic file !",d.error)end if
+b and(type(g)~="function")then
+d(f.." has an invalid graphic file !",d.error)end if b and p
+and(type(g)~="function")and(type(v)~="function")then
+d(f.." has an invalid logic and graphic file !",d.error)end end else if w and
+not(type(y)=="function")then d(f.." has invalid object file!",d.error)else
+d(f.." is missing an object file !",d.error)end end end
+return u
+end,types=fs.list("objects")}
