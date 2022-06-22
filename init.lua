@@ -14,7 +14,7 @@ if config then
 end
 
 --* sets the package path to GuiH's path
-local selfDir = fs.getDir(select(2,...)) or ""
+local selfDir = fs.getDir(select(2,...) or "")
 
 local old_path = package.path
 
