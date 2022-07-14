@@ -202,7 +202,7 @@ return function(self,timeout,visible,is_child,data_in,block_logic,block_graphic)
 
             --* if the element has an gui (for example group) then clear it with its background color
             if (v.gui or v.child) and (v.gui or v.child).cls then
-                (v.gui or v.child).term_object.setBackgroundColor(v.gui.background);
+                (v.gui or v.child).term_object.setBackgroundColor((v.gui or v.child).background);
                 (v.gui or v.child).term_object.clear();
             end
 
