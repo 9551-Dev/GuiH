@@ -42,7 +42,7 @@ X,Z=J.window.getPosition()local et,tt=J.window.getSize()local f=f or d or m if
 f then local
 at={x=(f.x-X)+1,y=(f.y-Z)+1,name=f.name,monitor=f.monitor,button=f.button,direction=f.direction,held=f.held,key=f.key,character=f.character,text=f.text}if
 (J.gui or J.child) and J.gui.cls then
-J.gui.term_object.setBackgroundColor(J.gui.background)J.gui.term_object.clear()end
+J.gui.term_object.setBackgroundColor((J.gui or J.child).background)J.gui.term_object.clear()end
 if e.is_within_field(f.x,f.y,X,Z,X+et,Z+tt)then(J.child or
 J.gui).update(math.huge,J.visible,true,at,not J.reactive,not J.visible)else
 at.x=-math.huge at.y=-math.huge;(J.child or
