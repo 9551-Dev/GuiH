@@ -10,7 +10,7 @@ table.insert(b[o],x)else b[o]={x}end else table.insert(q,x)end end local
 z=u(b)table.sort(z,function(E,T)return E.key>T.key end)for A,O in ipairs(z)do
 for I,N in ipairs(O.value)do table.insert(g,N)end end local S=table.getn(g)for
 H,R in pairs(q)do g[1+S+H]=R end return g end return function(D,L)local
-U=D.canvas.term_object if L.name=="mouse_click"then if
+U=D.canvas.term_object if L.name=="mouse_click" or L.name=="monitor_touch" then if
 e.is_within_field(L.x,L.y,D.positioning.x,D.positioning.y,D.positioning.width+1,1)then
 if D.selected then
 D.cursor_pos=math.min(D.cursor_pos+(L.x-D.cursor_x),#D.input)else
