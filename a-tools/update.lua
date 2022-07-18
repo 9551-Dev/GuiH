@@ -97,7 +97,7 @@ return function(self,timeout,visible,is_child,data_in,block_logic,block_graphic)
         local update_layers = {}
 
         --* if the monitor that we clicked matches the one the gui is set to respond to then we continue
-        if updateD and ev_data.monitor == self.monitor and not block_graphic then
+        if updateD and ((ev_data.monitor == self.monitor) or keyboard_events[ev_data.name]) and not block_graphic then
 
             --* iterate over all the elements in the gui
             for _k,_v in pairs(gui) do for k,v in pairs(_v) do
