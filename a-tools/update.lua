@@ -18,7 +18,7 @@ m={name=c,text=y,x=math.huge,y=math.huge}end if c=="char"then
 m={name=c,character=y,x=math.huge,y=math.huge}end if c=="guih_data_event"then
 m=y end if not m.monitor then m.monitor="term_object"end if p~=n.id and
 c~="guih_data_event"then os.queueEvent("guih_data_event",m,n.id)else q=false
-end end local x={}if q and m.monitor==n.monitor and not u then for z,E in
+end end local x={}if q and ((m.monitor==n.monitor) or a[m.name]) and not u then for z,E in
 pairs(w)do for T,A in pairs(E)do if(A.reactive and A.react_to_events[m.name])or
 not next(A.react_to_events)then if not x[A.logic_order or A.order]then
 x[A.logic_order or A.order]={}end table.insert(x[A.logic_order or
