@@ -54,7 +54,7 @@ end
 
 return function(object,event)
     local term = object.canvas.term_object
-    if event.name == "mouse_click" then
+    if event.name == "mouse_click" or event.name == "monitor_touch" then
         if api.is_within_field(
             event.x,
             event.y,
