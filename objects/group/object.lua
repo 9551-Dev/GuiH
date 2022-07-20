@@ -17,7 +17,6 @@ return function(object,data)
         order=data.order or 1,
         logic_order=data.logic_order,
         graphic_order=data.graphic_order,
-        dragable=data.draggable,
         bef_draw=data.bef_draw or function() end
     }
     local window = window.create(
@@ -29,5 +28,6 @@ return function(object,data)
     )
     btn.gui = main(window,object.term_object,object.log)
     btn.window = window
+    btn.gui.inherit(object,btn)
     return btn
 end

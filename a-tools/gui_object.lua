@@ -74,6 +74,16 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
         event_offset_x=event_offset_x,
         event_offset_y=event_offset_y,
     }
+
+    gui.inherit = function(from, group)
+        gui.api          = from.api
+        gui.preset       = from.preset
+        gui.async        = from.async
+        gui.schedule     = from.schedule
+        gui.add_listener = from.add_listener
+        gui.parent       = group
+    end
+
     gui.elements = gui.gui
 
     gui.calibrate = function()

@@ -135,14 +135,67 @@ return {main=function(i_self,guis,log)
                     if not (type(object.visible) == "boolean") then object.visible = true end
                     if not (type(object.reactive) == "boolean") then object.reactive = true end
 
+                    if type(object.positioning) == "table" then
+                        if not object.positioning.width and object.positioning.w then
+                            object.positioning.width = object.positioning.w
+                        end
+                        if not object.positioning.height and object.positioning.h then
+                            object.positioning.height = object.positioning.h
+                        end
+                    end
+
                     --* insert the new object into  the gui
                     guis[v][object.name] = object
 
+                    local __setters = {}
+                    local __getters = {}
+
+                    local function make_setters_and_getters(setters,getters,object,include_child)
+                        local function build_setter(array,name,tp)
+                            array[name] = setmetatable({},{__call=function(_,value,keep_env)
+                                if type(value) ~= tp then error("Types are immutable with setters",2) end
+                                object[name] = value
+                                return keep_env and setters or __setters
+                            end})
+                        end
+                        local function build_getter(array,name)
+                            array[name] = setmetatable({},{__call=function()
+                                return object[name]
+                            end})
+                        end
+                        for key,current_value in pairs(object) do
+                            local inc_child = key ~= "canvas" and key ~= "parent"
+                            build_setter(setters,key,type(current_value))
+                            build_getter(getters,key)
+                            if type(current_value) == "table" and include_child then
+                                if not setters[key] then setters[key] = {} end
+                                if not getters[key] then getters[key] = {} end
+                                make_setters_and_getters(setters[key],getters[key],current_value,inc_child)
+                            end
+                        end
+                    end
+
+                    make_setters_and_getters(__setters,__getters,object,true)
+
                     --* attach custom manipulatos to the object
                     --* also attach the core functions
-                    local index = deepcopy(custom_manipulators) or {}
+                    local  build_canvas = deepcopy(custom_manipulators) or {}
+                    local index = {}
+
+                    local attached = false
+
+                    for k,v in pairs(build_canvas) do
+                        index[k] = function(...) return v(object,...) end
+                        attached = true
+                    end
+
+                    if attached then log("Finished attaching manipulators to creator.",log.info) end
+
                     index.logic=adat
                     index.graphic=bdat
+
+                    index.set = __setters
+                    index.get = __getters
 
                     --* we attach default manipulators to the object
                     index.kill=function()
@@ -158,7 +211,7 @@ return {main=function(i_self,guis,log)
                             log("tried to manipulate dead object.",log.error)
                             return false,"object no longer exist"
                         end
-                    end
+                    end 
                     index.get_position=function()
 
                         --* if the object exists we return its position

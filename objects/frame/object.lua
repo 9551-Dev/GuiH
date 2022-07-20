@@ -56,5 +56,6 @@ return function(object,data)
     end
     btn.child = main(window,object.term_object,object.log)
     btn.window = window
+    btn.child.inherit(object,btn)
     return btn
 end
