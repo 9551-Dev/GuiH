@@ -147,6 +147,7 @@ return {main=function(i_self,guis,log)
                     --* insert the new object into  the gui
                     guis[v][object.name] = object
 
+                    local __object = object
                     local __setters = {}
                     local __getters = {}
 
@@ -154,12 +155,14 @@ return {main=function(i_self,guis,log)
                         local function build_setter(array,name,tp)
                             array[name] = setmetatable({},{__call=function(_,value,keep_env)
                                 if type(value) ~= tp then error("Types are immutable with setters",2) end
+                                if i_self.debug then log("Modified \""..name.."\" of ".. __object.name)end
                                 object[name] = value
                                 return keep_env and setters or __setters
                             end})
                         end
                         local function build_getter(array,name)
                             array[name] = setmetatable({},{__call=function()
+                                if i_self.debug then log("Read \"" .. name .. "\" of ".. __object.name) end
                                 return object[name]
                             end})
                         end
