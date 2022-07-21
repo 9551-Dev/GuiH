@@ -136,12 +136,8 @@ return {main=function(i_self,guis,log)
                     if not (type(object.reactive) == "boolean") then object.reactive = true end
 
                     if type(object.positioning) == "table" then
-                        if not object.positioning.width and object.positioning.w then
-                            object.positioning.width = object.positioning.w
-                        end
-                        if not object.positioning.height and object.positioning.h then
-                            object.positioning.height = object.positioning.h
-                        end
+                        if data.w and not data.width  then object.positioning.width  = data.w end
+                        if data.h and not data.height then object.positioning.height = data.h end
                     end
 
                     --* insert the new object into  the gui
