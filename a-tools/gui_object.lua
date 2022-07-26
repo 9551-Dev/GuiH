@@ -314,7 +314,7 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
         gui.new = creators
     end
 
-    --* used for checking if any keys are currently held
+    --* used for checking if any keys are currently being held
     --* by reading gui.held_keys
     gui.isHeld = function(...)
         local k_list = {...}
