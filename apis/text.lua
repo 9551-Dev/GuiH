@@ -33,15 +33,9 @@ local function cut_parts(str,part_size)
     expect(1,str,"string")
     expect(2,part_size,"number")
     local parts = {}
-    local part = ""
-    for c in str:gmatch(".") do
-        if #part + #c <= part_size then part = part .. c
-        else
-            table.insert(parts,part)
-            part = c
-        end
+    for i = 1, #str, part_size do
+        parts[#parts+1] = str:sub(i, i+part_size-1)
     end
-    table.insert(parts,part)
     return parts
 end
 
@@ -63,5 +57,6 @@ end
 return {
     wrap = wrap_text,
     cut_parts = cut_parts,
-    ensure_size = ensure_size
+    ensure_size = ensure_size,
+    newline = newline
 }
