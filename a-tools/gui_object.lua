@@ -393,6 +393,10 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
 
                 --* freeeze the Gui and update its graphics side
                 execution_window.setVisible(false)
+                
+                execution_window.setBackgroundColor(gui.background or sbg)
+                execution_window.clear();
+                 
                 gui.update(0,true,nil,{type="mouse_click",x=-math.huge,y=-math.huge,button=-math.huge});
                 (after_draw or function() end)(execution_window)
                 
