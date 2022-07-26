@@ -204,10 +204,10 @@ return {main=function(i_self,guis,log)
 
                             --* we remove it from the GUI
                             guis[v][object.name] = nil
-                            log("killed "..v.." > "..object.name,log.warn)
+                            if i_self.debug then log("killed "..v.." > "..object.name,log.warn) end
                             return true
                         else
-                            log("tried to manipulate dead object.",log.error)
+                            if i_self.debug then log("tried to manipulate dead object.",log.error) end
                             return false,"object no longer exist"
                         end
                     end 
@@ -221,7 +221,7 @@ return {main=function(i_self,guis,log)
                                 return false,"object doesnt have positioning information"
                             end
                         else
-                            log("tried to manipulate dead object.",log.error)
+                            if i_self.debug then log("tried to manipulate dead object.",log.error) end
                             return false,"object no longer exist"
                         end
                     end
@@ -236,14 +236,14 @@ return {main=function(i_self,guis,log)
 
                                 --* we make a deepcopy of this object and add it
                                 --* to the gui with the new name
-                                log("Replicated "..v.." > "..object.name.." as "..v.." > "..name,log.info)
+                                if i_self.debug then log("Replicated "..v.." > "..object.name.." as "..v.." > "..name,log.info) end
                                 local temp = deepcopy(guis[v][object.name])
                                 guis[v][name or ""] = temp
                                 temp.name = name
                                 return temp,true
                             end
                         else
-                            log("tried to manipulate dead object.",log.error)
+                            if i_self.debug then log("tried to manipulate dead object.",log.error) end
                             return false,"object no longer exist"
                         end
                     end
@@ -251,10 +251,10 @@ return {main=function(i_self,guis,log)
                         if guis[v][object.name] then
                             --* we save a deep copy of this object
                             local object = deepcopy(guis[v][object.name])
-                            log("isolated "..v.." > "..object.name,log.info)
+                            if i_self.debug then log("isolated "..v.." > "..object.name,log.info) end
                             return {
                                 parse=function(name)
-                                    log("parsed "..v.." > "..object.name,log.info)
+                                    if i_self.debug then log("parsed "..v.." > "..object.name,log.info) end
                                     --* if we still have the deepcopy we add it back to the gui
                                     if object then
                                         local name = name or object.name
@@ -267,19 +267,19 @@ return {main=function(i_self,guis,log)
                                 end,
                                 get=function()
                                     if object then
-                                        log("returned "..v.." > "..object.name,log.info)
+                                        if i_self.debug then log("returned "..v.." > "..object.name,log.info) end
                                         return object
                                     else
                                         return false,"object no longer exist"
                                     end
                                 end,
                                 clear=function()
-                                    log("Removed copied object "..v.." > "..object.name,log.info)
+                                    if i_self.debug then log("Removed copied object "..v.." > "..object.name,log.info) end
                                     object = nil
                                 end,
                             }
                         else
-                            log("tried to manipulate dead object.",log.error)
+                            if i_self.debug then log("tried to manipulate dead object.",log.error) end
                             return false,"object no longer exist"
                         end
                     end
@@ -289,13 +289,13 @@ return {main=function(i_self,guis,log)
                         if guis[v][object.name] then
                             local object = deepcopy(guis[v][object.name])
                             guis[v][object.name] = nil
-                            log("cut "..v.." > "..object.name,log.info)
+                            if i_self.debug then log("cut "..v.." > "..object.name,log.info) end
                             return {
                                 parse=function()
                                     --* if we still got the copy then
                                     --* we add it back to the GUI
                                     if object then
-                                        log("parsed "..v.." > "..object.name,log.info)
+                                        if i_self.debug then log("parsed "..v.." > "..object.name,log.info) end
                                         if guis[v][object.name] then guis[v][object.name] = nil end
                                         guis[v][object.name] = object
                                         return guis[v][object.name]
@@ -304,16 +304,16 @@ return {main=function(i_self,guis,log)
                                     end
                                 end,
                                 get=function()
-                                    log("returned "..v.." > "..object.name,log.info)
+                                    if i_self.debug then log("returned "..v.." > "..object.name,log.info) end
                                     return object
                                 end,
                                 clear=function()
-                                    log("Removed copied object "..v.." > "..object.name,log.info)
+                                    if i_self.debug then log("Removed copied object "..v.." > "..object.name,log.info) end
                                     object = nil
                                 end
                             }
                         else
-                            log("tried to manipulate dead object.",log.error)
+                            if i_self.debug then log("tried to manipulate dead object.",log.error) end
                             return false,"object no longer exist"
                         end
                     end
