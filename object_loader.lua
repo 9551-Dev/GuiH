@@ -49,6 +49,12 @@ end
 return {main=function(i_self,guis,log)
     local object = i_self
     local objects = {}
+    local animation_types = fs.list(fs.combine(path.."/animations/"))
+
+    for k,v in pairs(animation_types) do
+        log("Found animation " .. v:match("(.*)%."),log.info)
+    end
+    log("")
 
     --* we get all the object names and iterate over them
     local object_list = fs.list(fs.combine(path,"objects"))
@@ -74,8 +80,6 @@ return {main=function(i_self,guis,log)
                     --* if the files name isnt any of the default files
                     --* and it isnt a directorory then
                     if not (name == "logic" or name == "graphic" or name == "object") and (not fs.isDir(path.."/objects/"..v.."/"..name)) then
-                        log("objects."..v.."."..name)
-                        
                         --* we require that file and add the function it returns
                         --* into custom_flags saved under the files name
                         local ok,err = pcall(require,"objects."..v.."."..name)
@@ -108,6 +112,17 @@ return {main=function(i_self,guis,log)
                                 end
                             end
                         end
+                    end
+                end
+
+                local animation_formulas = {}
+                for _,p in pairs(animation_types) do
+                    local name = p:match("(.*)%.") or p
+                    local ok,err = pcall(require,"animations/"..name)
+                    if ok then
+                        animation_formulas[name] = err
+                    else
+                        log("Error loading animation: " .. name .. ". " .. err)
                     end
                 end
 
@@ -190,11 +205,37 @@ return {main=function(i_self,guis,log)
 
                     if attached then log("Finished attaching manipulators to creator.",log.info) end
 
-                    index.logic=adat
-                    index.graphic=bdat
+                    if object.positioning and object.positioning.x and object.positioning.y then
+                        local __animations = {}
+                        for name,formula in pairs(animation_formulas) do
+                            __animations[name] = function(duration,new_x,new_y,start_x,start_y,smoothness)
+                                start_x    = start_x or object.positioning.x
+                                start_y    = start_y or object.positioning.y
+                                new_x      = new_x or start_x
+                                new_y      = new_y or start_y
+                                smoothness = smoothness or 0.05
 
-                    index.set = __setters
-                    index.get = __getters
+                                return i_self.async(function()
+                                    for n=0.05*(smoothness/0.05),duration+smoothness,smoothness do
+                                        local step_x = math.floor(api.math.lerp(start_x,new_x,formula(api.math.lerp,n/duration))+0.5)
+                                        local step_y = math.floor(api.math.lerp(start_y,new_y,formula(api.math.lerp,n/duration))+0.5)
+
+                                        object.positioning.x  = step_x
+                                        object.positioning.y  = step_y
+
+                                        sleep(smoothness)
+                                    end
+                                end)
+                            end
+                        end
+                        index.animate = __animations
+                    end
+
+                    index.logic   = adat
+                    index.graphic = bdat
+
+                    index.set     = __setters
+                    index.get     = __getters
 
                     --* we attach default manipulators to the object
                     index.kill=function()

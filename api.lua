@@ -84,6 +84,10 @@ local function interpolateOnLine(x1, y1, w1, x2, y2, w2, x3, y3)
     return (y2-y3)/(y2-y1)*fxy1+(y3-y1)/(y2-y1)*fxy1
 end
 
+local function lerp(v1,v2,t)
+    return (1 - t) * v1 + t * v2
+end
+
 local function switchXYArray(array)
     local output = createSelfIndexArray()
     for x,yout in pairs(array) do
@@ -195,7 +199,8 @@ return {
     math={
         interpolateY=interpolateY,
         interpolateZ=interpolateZ,
-        interpolate_on_line=interpolateOnLine
+        interpolate_on_line=interpolateOnLine,
+        lerp=lerp
     },
     HSVToRGB=HSVToRGB,
     uuid4=uuid4,
