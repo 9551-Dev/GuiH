@@ -204,10 +204,16 @@ return {main=function(i_self,guis,log)
                     end
 
                     if attached then log("Finished attaching manipulators to creator.",log.info) end
-
-                    if object.positioning and object.positioning.x and object.positioning.y then
-                        local __animations = {}
-                        for name,formula in pairs(animation_formulas) do
+                    local __animations = {}
+                    local __resizers   = setmetatable({},{__call=function(this,w,h)
+                        if object.positioning and object.positioning.width and object.positioning.height then
+                            object.positioning.width,object.positioning.height = w,h
+                            return true
+                        else return false end
+                    end})
+                    local __text_animators  = {}
+                    for name,formula in pairs(animation_formulas) do
+                        if object.positioning and object.positioning.x and object.positioning.y then
                             __animations[name] = function(duration,new_x,new_y,start_x,start_y,smoothness)
                                 start_x    = start_x or object.positioning.x
                                 start_y    = start_y or object.positioning.y
@@ -228,8 +234,47 @@ return {main=function(i_self,guis,log)
                                 end)
                             end
                         end
-                        index.animate = __animations
+                        if object.positioning and object.positioning.width and object.positioning.height then
+                            __resizers[name] = function(duration,new_width,new_height,start_width,start_height,smoothness)
+                                start_width  = start_width  or object.positioning.width or 1
+                                start_height = start_height or object.positioning.width or 1
+                                new_width    = new_width    or start_width
+                                start_height = start_height or start_height
+                                smoothness = smoothness or 0.05
+
+                                return i_self.async(function()
+                                    for n=0.05*(smoothness/0.05),duration+smoothness,smoothness do
+                                        local step_width  = math.floor(api.math.lerp(start_width,new_width  ,formula(api.math.lerp,n/duration))+0.5)
+                                        local step_height = math.floor(api.math.lerp(start_height,new_height,formula(api.math.lerp,n/duration))+0.5)
+
+                                        object.positioning.width  = step_width
+                                        object.positioning.height = step_height
+
+                                        sleep(smoothness)
+                                    end
+                                end)
+                            end
+                        end
+                        __text_animators[name] = function(duration,text,update,smoothness)
+                            if object.text then
+                                smoothness = smoothness or 0.05
+
+                                return i_self.async(function()
+                                    for n=0.05*(smoothness/0.05),duration+smoothness,smoothness do
+                                        local text_index = math.floor(api.math.lerp(1,#text,formula(api.math.lerp,n/duration))+0.5)
+                                        object.text.text = text:sub(1,text_index)
+                                        if type(update) == "function" then update(object) end
+                                        sleep(smoothness)
+                                    end
+                                end)
+                            end
+                        end
+                        setmetatable(__animations, {__call=function(this,...)
+                            __animations.linear(...)
+                        end,__index = {text=__text_animators, reposition=__animations, move=__animations, resize=__resizers} })
                     end
+                    index.animate = __animations
+                    index.resize  = __resizers
 
                     index.logic   = adat
                     index.graphic = bdat
