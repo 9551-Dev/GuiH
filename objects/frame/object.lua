@@ -7,6 +7,8 @@ return function(object,data)
     if type(data.draggable) ~= "boolean" then data.draggable = true end
     if type(data.visible) ~= "boolean" then data.visible = true end
     if type(data.reactive) ~= "boolean" then data.reactive = true end
+    if type(data.blocking) ~= "boolean" then data.blocking = true end
+    if type(data.always_update) ~= "boolean" then data.always_update = false end
     local btn = {
         name=data.name or api.uuid4(),
         positioning = {
@@ -28,6 +30,12 @@ return function(object,data)
             x=1,
             y=1
         },
+        last_known_position={
+            x=data.x or 1,
+            y=data.y or 1,
+            width=data.width or 0,
+            height=data.height or 0
+        },
         order=data.order or 1,
         logic_order=data.logic_order,
         graphic_order=data.graphic_order,
@@ -37,7 +45,9 @@ return function(object,data)
         on_select=data.on_select or function() end,
         on_any=data.on_any or function() end,
         on_graphic=data.on_graphic or function() end,
-        on_deselect=data.on_deselect or function() end
+        on_deselect=data.on_deselect or function() end,
+        blocking = data.blocking,
+        always_update = data.always_update
     }
     local window = window.create(
         object.term_object,

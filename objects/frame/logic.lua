@@ -1,5 +1,5 @@
 local api = require("api")
-return function(object,event,self)
+return function(object,event)
     object.on_any(object,event)
     local x,y = object.window.getPosition()
     local dragger_x = object.dragger.x+x
@@ -22,12 +22,25 @@ return function(object,event,self)
         object.on_select(object,event)
     elseif event.name == "mouse_drag" and object.dragged and object.dragable then
         local wx,wy = object.window.getPosition()
-        local ww,wh = object.window.getSize()
         local change_x,change_y = event.x-object.last_click.x,event.y-object.last_click.y
         object.last_click = event
         local nx,ny = wx+change_x,wy+change_y
         if not object.on_move(object,{x=nx,y=ny}) then
             object.window.reposition(nx,ny)
         end
+        local cx,cy = object.window.getPosition()
+        local w,h = object.window.getSize()
+        object.last_known_position = {
+            x = cx,
+            y = cy,
+            width = w,
+            height = h
+        }
+        object.positioning = {
+            x = cx,
+            y = cy,
+            width = w,
+            height = h
+        }
     end
 end

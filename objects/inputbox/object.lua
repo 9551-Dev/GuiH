@@ -5,6 +5,8 @@ return function(object,data)
     if type(data.reactive) ~= "boolean" then data.reactive = true end
     if not data.autoc then data.autoc = {} end
     if type(data.autoc.put_space) ~= "boolean" then data.autoc.put_space = true end
+    if type(data.blocking) ~= "boolean" then data.blocking = true end
+    if type(data.always_update) ~= "boolean" then data.always_update = false end
     local btn = {
         name=data.name or api.uuid4(),
         visible=data.visible,
@@ -51,7 +53,9 @@ return function(object,data)
             current="",
             selected=1,
             put_space=data.autoc.put_space
-        }
+        },
+        blocking = data.blocking,
+        always_update = data.always_update
     }
     btn.cursor_x = btn.positioning.x
     return btn

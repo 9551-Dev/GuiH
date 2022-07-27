@@ -15,6 +15,8 @@ return function(object,data)
     if type(data.p1) ~= "table" then data.p1 = {} end
     if type(data.p2) ~= "table" then data.p2 = {} end
     if type(data.p3) ~= "table" then data.p3 = {} end
+    if type(data.blocking) ~= "boolean" then data.blocking = false end
+    if type(data.always_update) ~= "boolean" then data.always_update = false end
     local btn = {
         name=data.name or api.uuid4(),
         positioning = {
@@ -39,6 +41,8 @@ return function(object,data)
         order=data.order or 1,
         logic_order=data.logic_order,
         graphic_order=data.graphic_order,
+        blocking = data.blocking,
+        always_update = data.always_update
     }
     return btn
 end

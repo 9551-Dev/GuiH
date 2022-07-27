@@ -11,6 +11,8 @@ return function(object,data)
     data = data or {}
     if type(data.visible) ~= "boolean" then data.visible = true end
     if type(data.drag_texture) ~= "boolean" then data.drag_texture = false end
+    if type(data.blocking) ~= "boolean" then data.blocking = false end
+    if type(data.always_update) ~= "boolean" then data.always_update = false end
     local btn = {
         name=data.name or api.uuid4(),
         positioning = {
@@ -31,6 +33,8 @@ return function(object,data)
         drag_texture=data.drag_texture,
         tex_offset_x=data.tex_offset_x or 0,
         tex_offset_y=data.tex_offset_y or 0,
+        blocking = data.blocking,
+        always_update = data.always_update
     }
     return btn
 end

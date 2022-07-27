@@ -87,16 +87,16 @@ return function(self,timeout,visible,is_child,data_in,block_logic,block_graphic)
             --* created here. to prevent infinte event loops
             --* if we catch an event that was also made here then set updatedD
             --* to false so we dont update the gui with replica event
-            if e2 ~= self.id and ev_name ~= "guih_data_event" then
-                os.queueEvent("guih_data_event",ev_data,self.id)
-            else
+            if not (e2 ~= self.id and ev_name ~= "guih_data_event") then
                 updateD = false
             end
         end
 
         local update_layers = {}
+        local update_functions = {}
 
         --* if the monitor that we clicked matches the one the gui is set to respond to then we continue
+        local touchpixelmap = api.tables.createNDarray(1)
         if updateD and ((ev_data.monitor == self.monitor) or keyboard_events[ev_data.name]) and not block_graphic then
 
             --* iterate over all the elements in the gui
@@ -110,24 +110,46 @@ return function(self,timeout,visible,is_child,data_in,block_logic,block_graphic)
                     if not update_layers[v.logic_order or v.order] then update_layers[v.logic_order or v.order] = {} end
                     table.insert(update_layers[v.logic_order or v.order],function()
 
+                        if api.events_with_cords[ev_data.name] and v.blocking then
+                            local p = v.positioning
+                            if p and p.x and p.y then
+                                local w = p.width or 1
+                                local h = p.height or 1
+
+                                local was_object_clicked = api.is_within_field(ev_data.x,ev_data.y,p.x,p.y,w,h)
+
+                                if was_object_clicked then
+                                    if touchpixelmap[ev_data.x][ev_data.y] and not v.always_update then return end
+                                    for xy=1,w*h do
+                                        touchpixelmap[(xy-1)%w+p.x][math.ceil(xy/w)+p.y-1] = true
+                                    end
+                                end
+                            end
+                        end
+
                         --* if the event is a keyboard based event then straight up
                         --* update the object, but if its nota keyboard based object then
                         --* check if the button clicked matches with v.btn
                         --* which is a LUT of the buttons the object should respond to
                         --* also check if the monitor that this event happened on matches
-                        if keyboard_events[ev_data.name] then
-                            if v.logic then v.logic(v,ev_data,self) end
-                        else
-                            if ((v.btn or valid_mouse_buttons)[ev_data.button]) or ev_data.monitor == self.monitor then
+                        table.insert(update_functions,function()
+                            if keyboard_events[ev_data.name] then
                                 if v.logic then v.logic(v,ev_data,self) end
+                            else
+                                if ((v.btn or valid_mouse_buttons)[ev_data.button]) or ev_data.monitor == self.monitor then
+                                    if v.logic then v.logic(v,ev_data,self) end
+                                end
                             end
-                        end
+                        end)
                     end)
                 end
             end end
         end
         --* execute all of the objects functions in the right order using the iterate_order function
-        for k,v in api.tables.iterate_order(update_layers) do parallel.waitForAll(unpack(v)) end
+        for k,v in api.tables.iterate_order(update_layers,true) do for _k,_v in pairs(v) do _v() end end
+        for i=#update_functions,1,-1 do
+            update_functions[i]()
+        end
     end
     local cx,cy = self.term_object.getCursorPos()
 
@@ -158,7 +180,7 @@ return function(self,timeout,visible,is_child,data_in,block_logic,block_graphic)
     end
 
     --* execute all of the objects functions in the right order using the iterate_order function
-    for k,v in api.tables.iterate_order(layers) do parallel.waitForAll(table.unpack(v)) end
+    for k,v in api.tables.iterate_order(layers) do for _k,_v in pairs(v) do _v() end end
 
     local child_layers = {}
     for _k,_v in pairs(gui) do for k,v in pairs(_v) do
@@ -215,13 +237,12 @@ return function(self,timeout,visible,is_child,data_in,block_logic,block_graphic)
                 dat.y = -math.huge;
                 (v.child or v.gui).update(math.huge,v.visible,true,dat,not v.reactive,not v.visible)
             end
-            if (v.gui or v.child) and (v.gui or v.child).cls then 
+            if (v.gui or v.child) and (v.gui or v.child).cls then
                 (v.gui or v.child).term_object.redraw()
             end
         end
     end
 
     --* restore the cursor position
-    self.term_object.setCursorPos(cx,cy)
     return ev_data,table.pack(ev_name,e1,e2,e3,id)
 end

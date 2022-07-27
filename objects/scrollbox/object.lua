@@ -3,6 +3,8 @@ return function(object,data)
     data = data or {}
     if type(data.visible) ~= "boolean" then data.visible = true end
     if type(data.reactive) ~= "boolean" then data.reactive = true end
+    if type(data.blocking) ~= "boolean" then data.blocking = false end
+    if type(data.always_update) ~= "boolean" then data.always_update = true end
     local base = {
         name=data.name or api.uuid4(),
         positioning = {
@@ -22,7 +24,9 @@ return function(object,data)
         limit_max=data.limit_max or math.huge,
         on_change_value=data.on_change_value or function() end,
         on_up=data.on_up or function() end,
-        on_down=data.on_down or function() end
+        on_down=data.on_down or function() end,
+        blocking = data.blocking,
+        always_update = data.always_update
     }
     return base
 end

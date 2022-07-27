@@ -354,8 +354,6 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
                 execution_window.redraw()
 
                 while true do
-                    --* stop window updates
-                    execution_window.setVisible(false)
 
                     --* clean the window
                     execution_window.setBackgroundColor(gui.background or sbg)
@@ -366,9 +364,6 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
                     local event = update(gui,nil,true,false,nil);
                     (on_event or function() end)(execution_window,event);
                     (after_draw or function() end)(execution_window)
-
-                    --* unfreeze
-                    execution_window.setVisible(true);
                 end
             end)
             if not ok then err = erro log:dump() end
@@ -396,7 +391,7 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
                 
                 execution_window.setBackgroundColor(gui.background or sbg)
                 execution_window.clear();
-                 
+                
                 gui.update(0,true,nil,{type="mouse_click",x=-math.huge,y=-math.huge,button=-math.huge});
                 (after_draw or function() end)(execution_window)
                 
@@ -404,10 +399,7 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
                 execution_window.setVisible(true)
                 execution_window.setVisible(false)
 
-                if gui.update_delay < 0.05 then
-                    os.queueEvent("waiting")
-                    os.pullEvent()
-                else sleep(gui.update_delay) end
+                sleep(math.max(gui.update_delay,0.05))
             end
         end)
 

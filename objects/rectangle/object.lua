@@ -11,6 +11,8 @@ return function(object,data)
     data = data or {}
     if type(data.visible) ~= "boolean" then data.visible = true end
     if type(data.symbols) ~= "table" then data.symbols = {} end
+    if type(data.blocking) ~= "boolean" then data.blocking = true end
+    if type(data.always_update) ~= "boolean" then data.always_update = false end
     local btn = {
         name=data.name or api.uuid4(),
         positioning = {
@@ -34,8 +36,10 @@ return function(object,data)
             ["inside"]=data.symbols.inside or {sym=" ",bg=data.color or colors.white,fg=colors.black}
         },
         order=data.order or 1,
-        logic_order=data.logic_order,
+        logic_order=data.logic_order or -1,
         graphic_order=data.graphic_order,
+        blocking = data.blocking,
+        always_update = data.always_update
     }
     return btn
 end
