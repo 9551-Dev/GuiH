@@ -237,14 +237,14 @@ return {main=function(i_self,guis,log)
                         if object.positioning and object.positioning.width and object.positioning.height then
                             __resizers[name] = function(duration,new_width,new_height,start_width,start_height,smoothness)
                                 start_width  = start_width  or object.positioning.width or 1
-                                start_height = start_height or object.positioning.width or 1
+                                start_height = start_height or object.positioning.height or 1
                                 new_width    = new_width    or start_width
-                                start_height = start_height or start_height
-                                smoothness = smoothness or 0.05
+                                new_height   = new_height or start_height
+                                smoothness   = smoothness or 0.05
 
                                 return i_self.async(function()
                                     for n=0.05*(smoothness/0.05),duration+smoothness,smoothness do
-                                        local step_width  = math.floor(api.math.lerp(start_width,new_width  ,formula(api.math.lerp,n/duration))+0.5)
+                                        local step_width  = math.floor(api.math.lerp(start_width, new_width ,formula(api.math.lerp,n/duration))+0.5)
                                         local step_height = math.floor(api.math.lerp(start_height,new_height,formula(api.math.lerp,n/duration))+0.5)
 
                                         object.positioning.width  = step_width
@@ -261,8 +261,8 @@ return {main=function(i_self,guis,log)
 
                                 return i_self.async(function()
                                     for n=0.05*(smoothness/0.05),duration+smoothness,smoothness do
-                                        local text_index = math.floor(api.math.lerp(1,#text,formula(api.math.lerp,n/duration))+0.5)
-                                        object.text.text = text:sub(1,text_index)
+                                        local text_index = math.floor(api.math.lerp(0,#text,formula(api.math.lerp,n/duration))+0.5)
+                                        object.text.text = text:sub(0,text_index)
                                         if type(update) == "function" then update(object) end
                                         sleep(smoothness)
                                     end
