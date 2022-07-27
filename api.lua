@@ -126,10 +126,13 @@ local function keys(tbl)
     return keys
 end
 
-local function iterate_order(tbl)
+local function iterate_order(tbl,reversed)
     local indice = 0
     local keys = keys(tbl)
-    table.sort(keys, function(a, b) return a<b end)
+    table.sort(keys, function(a, b)
+        if reversed then return b<a
+        else return a<b end
+    end)
     return function()
         indice = indice + 1
         if tbl[keys[indice]] then return keys[indice],tbl[keys[indice]]
