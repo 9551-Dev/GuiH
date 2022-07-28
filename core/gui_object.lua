@@ -446,6 +446,7 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
         coroutine.resume(gui_coro,"mouse_click",math.huge,-math.huge,-math.huge)
         coroutine.resume(gui_coro,"mouse_click",math.huge,-math.huge,-math.huge)
         coroutine.resume(gui_coro,"mouse_click",math.huge,-math.huge,-math.huge)
+        coroutine.resume(graphics_updater)
         log("")
         log("Started execution..",log.success)
         log("")
