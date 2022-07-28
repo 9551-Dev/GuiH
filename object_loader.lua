@@ -149,6 +149,7 @@ return {main=function(i_self,guis,log)
                     if not (type(object.btn) == "table") then object.btn = {} end
                     if not (type(object.visible) == "boolean") then object.visible = true end
                     if not (type(object.reactive) == "boolean") then object.reactive = true end
+                    if _G.type(data.on_focus) == "function" then object.on_focus = data.on_focus end
 
                     if type(object.positioning) == "table" then
                         if data.w and not data.width  then object.positioning.width  = data.w end
