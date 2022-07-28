@@ -1,3 +1,5 @@
+## IMPORTANT: the single file version is not always up to date ! this one is.
+
 GuiH is an powerful graphics/gui library
 
 image format support: .nimg .bbf .ppm .cimg .limg
