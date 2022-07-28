@@ -317,8 +317,8 @@ local function load_ppm_texture(terminal,file,mode,log)
                 char_arrays[rel_x][rel_y] = set_symbols_xy(char_arrays[rel_x][rel_y] or {},sym_x,sym_y,c)
 
                 --* pullEvent to prevent too long wihnout yielding error
-                os.queueEvent("")
-                os.pullEvent("")
+                os.queueEvent("waiting")
+                os.pullEvent("waiting")
             end
         end
         log("transformation finished. "..tostring((img.width/2)*(img.height/3)).." characters",log.success)

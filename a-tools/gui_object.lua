@@ -98,8 +98,8 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
 
     --* attaches a-tools/update.lua to the gui object
     --* that function is used for low level updating
-    local function updater(timeout,visible,is_child,data,block_logic,block_graphic)
-        return update(gui,timeout,visible,is_child,data,block_logic,block_graphic)
+    local function updater(timeout,visible,is_child,data,block_logic,block_graphic,pixemap,screen_x,screen_y,logic_updaters,graphic_updaters)
+        return update(gui,timeout,visible,is_child,data,block_logic,block_graphic,pixemap,screen_x,screen_y,logic_updaters,graphic_updaters)
     end
 
     local err

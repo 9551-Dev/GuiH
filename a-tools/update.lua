@@ -37,7 +37,7 @@ local valid_mouse_event = {
 }
 --* end of event definitions
 
-return function(self,timeout,visible,is_child,data_in,block_logic,block_graphic)
+return function(self,timeout,visible,is_child,data_in,block_logic,block_graphic,pixemap,screen_x,screen_y,logic_updaters,graphic_updaters)
 
     --* set up some variables for use later and for placeholders
     if visible == nil then visible = true end
@@ -53,15 +53,8 @@ return function(self,timeout,visible,is_child,data_in,block_logic,block_graphic)
     if ((timeout or math.huge) > 0) and not block_logic then
         if not data or not is_child then
 
-            --* startinga timer that will stop the event waiting once done
-            local tid = os.startTimer(timeout or 0)
-
-            --* if there is supposed to be no timeout setup an fake event to instantly trigger
-            if timeout == 0 then os.queueEvent("mouse_click",math.huge,-math.huge,-math.huge) end
-
-            --* pull event until eighter one of events useful for GUIs happens
-            --* or the timer goes off
-            while not events[ev_name] or (ev_name == "timer" and e1 == tid) do
+            --* pull event until one of events useful for GUIs happens
+            while not events[ev_name] do
                 ev_name,e1,e2,e3,id = os.pullEvent()
             end
 
@@ -96,7 +89,7 @@ return function(self,timeout,visible,is_child,data_in,block_logic,block_graphic)
         local update_functions = {}
 
         --* if the monitor that we clicked matches the one the gui is set to respond to then we continue
-        local touchpixelmap = api.tables.createNDarray(1)
+        local touchpixelmap = pixemap or api.tables.createNDarray(1)
         if updateD and ((ev_data.monitor == self.monitor) or keyboard_events[ev_data.name]) and not block_graphic then
 
             --* iterate over all the elements in the gui
@@ -133,7 +126,7 @@ return function(self,timeout,visible,is_child,data_in,block_logic,block_graphic)
                         --* check if the button clicked matches with v.btn
                         --* which is a LUT of the buttons the object should respond to
                         --* also check if the monitor that this event happened on matches
-                        table.insert(update_functions,function()
+                        table.insert(logic_updaters or update_functions,function()
                             if keyboard_events[ev_data.name] then
                                 if v.logic then v.logic(v,ev_data,self) end
                             else
@@ -148,8 +141,10 @@ return function(self,timeout,visible,is_child,data_in,block_logic,block_graphic)
         end
         --* execute all of the objects functions in the right order using the iterate_order function
         for k,v in api.tables.iterate_order(update_layers,true) do for _k,_v in pairs(v) do _v() end end
-        for i=#update_functions,1,-1 do
-            update_functions[i]()
+        if not logic_updaters then
+            for i=#update_functions,1,-1 do
+                update_functions[i]()
+            end
         end
     end
     local cx,cy = self.term_object.getCursorPos()
@@ -181,7 +176,13 @@ return function(self,timeout,visible,is_child,data_in,block_logic,block_graphic)
     end
 
     --* execute all of the objects functions in the right order using the iterate_order function
-    for k,v in api.tables.iterate_order(layers) do for _k,_v in pairs(v) do _v() end end
+    for k,v in api.tables.iterate_order(layers,graphic_updaters) do
+        for _k,_v in pairs(v) do
+            if graphic_updaters then
+                table.insert(graphic_updaters,_v)
+            else _v() end
+        end
+    end
 
     local child_layers = {}
     for _k,_v in pairs(gui) do for k,v in pairs(_v) do
@@ -193,12 +194,15 @@ return function(self,timeout,visible,is_child,data_in,block_logic,block_graphic)
         end)
     end end
 
-    for k,v in api.tables.iterate_order(child_layers) do for _k,_v in pairs(v) do _v() end end
+    for k,v in api.tables.iterate_order(child_layers,true) do for _k,_v in pairs(v) do _v() end end
 
     --* if we had caught an replica event then end the update here. else continue
     if not updateD then return ev_data,table.pack(ev_name,e1,e2,e3,id) end
 
     --* iterate over all the frames so their child guis can be updated
+    local child_pixemap = api.tables.createNDarray(1)
+    local logupdates,graphupdates = {},{}
+    local drawers = {}
     for k,v in ipairs(frames) do
 
         --* get the childs size and position info
@@ -232,17 +236,19 @@ return function(self,timeout,visible,is_child,data_in,block_logic,block_graphic)
             --* if the event has happened within the gui object that update it like normal
             --* else update it with infinite event cordinates so nothing will most likely get triggered
             if api.is_within_field(data.x,data.y,x,y,x+w,y+h) then
-                (v.child or v.gui).update(math.huge,v.visible,true,dat,not v.reactive,not v.visible)
+                (v.child or v.gui).update(math.huge,v.visible,true,dat,not v.reactive,not v.visible,child_pixemap,screen_x or data.x,screen_y or data.y,logupdates,graphupdates)
             else
                 dat.x = -math.huge
                 dat.y = -math.huge;
-                (v.child or v.gui).update(math.huge,v.visible,true,dat,not v.reactive,not v.visible)
+                (v.child or v.gui).update(math.huge,v.visible,true,dat,not v.reactive,not v.visible,child_pixemap,screen_x or data.x,screen_y or data.y,logupdates,logupdates)
             end
             if (v.gui or v.child) and (v.gui or v.child).cls then
                 (v.gui or v.child).term_object.redraw()
             end
         end
     end
+    for i=#logupdates,1,-1          do logupdates[i]() end
+    for k,v in ipairs(graphupdates) do v() end
 
     --* restore the cursor position
     return ev_data,table.pack(ev_name,e1,e2,e3,id)

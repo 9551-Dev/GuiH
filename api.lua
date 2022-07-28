@@ -156,7 +156,7 @@ local function precise_sleep(t)
     local ftime = os.epoch("utc")+t*1000
     while os.epoch("utc") < ftime do
         os.queueEvent("waiting")
-        os.pullEvent()
+        os.pullEvent("waiting")
     end
 end
 
