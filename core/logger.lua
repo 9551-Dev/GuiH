@@ -61,7 +61,7 @@ function index:dump()
     for k,v in ipairs(outputInternal) do
         str = str .. v .. "\n"
     end
-    local file = fs.open(path.."/log.log","w")
+    local file = fs.open(path.."/GuiH.log","w")
     file.write(str)
     file.close()
     return str

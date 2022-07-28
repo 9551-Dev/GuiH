@@ -1,4 +1,4 @@
-local api = require("api")
+local api = require("util")
 
 local types = {
     ["left-right"]=true,

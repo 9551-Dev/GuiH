@@ -1,4 +1,4 @@
-local api = require("api")
+local api = require("util")
 
 return function(object,data)
     data = data or {}

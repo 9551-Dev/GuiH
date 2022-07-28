@@ -4,7 +4,7 @@
     * for your own custom elements
 ]]
 
-local api = require("api")
+local api = require("util")
 return function(object,data)
     data = data or {}
     if type(data.visible) ~= "boolean" then data.visible = true end

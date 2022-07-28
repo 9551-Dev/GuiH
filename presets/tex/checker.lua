@@ -1,6 +1,6 @@
 --* builds a checkerboard texture with any amount of colors
 
-local api = require("api")
+local api = require("util")
 local graphic = require("graphic_handle")
 
 return function(...)

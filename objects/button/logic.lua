@@ -1,4 +1,4 @@
-local api = require("api")
+local api = require("util")
 return function(object,event)
     --* if a click happens on the buttons area
     --* run on_click function

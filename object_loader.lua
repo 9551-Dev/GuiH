@@ -4,7 +4,7 @@
     * gui.create table
 ]]
 
-local api = require("api")
+local api = require("util")
 local path = fs.getDir(select(2,...))
 
 --* function used to dereference

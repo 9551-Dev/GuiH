@@ -1,6 +1,6 @@
-local algo = require("a-tools.algo")
+local algo = require("core.algo")
 local graphic = require("graphic_handle").code
-local api = require("api")
+local api = require("util")
 
 return function(object)
     local term = object.canvas.term_object

@@ -6,7 +6,7 @@
     ! sorry for that
 ]]
 
-local api = require("api")
+local api = require("util")
 
 local function get_elipse_points(radius_x,radius_y,xc,yc,filled)
     local rx,ry = math.ceil(math.floor(radius_x-0.5)/2),math.ceil(math.floor(radius_y-0.5)/2)

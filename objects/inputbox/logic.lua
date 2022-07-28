@@ -1,4 +1,4 @@
-local api = require("api")
+local api = require("util")
 
 local function depattern(str)
     return str:gsub("[%[%]%(%)%.%+%-%%%$%^%*%?]", "%%%1")

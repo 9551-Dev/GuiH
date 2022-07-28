@@ -3,9 +3,9 @@
 ]]
 
 local graphic = require("graphic_handle")
-local api = require("api")
+local api = require("util")
 local EXPECT = require("cc.expect").expect
-local ALGO = require("a-tools.algo")
+local ALGO = require("core.algo")
 
 local PIXELBOX = {}
 local OBJECT = {}

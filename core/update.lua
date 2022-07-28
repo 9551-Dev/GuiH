@@ -4,7 +4,7 @@
     * also used for event proccessing
 ]]
 
-local api = require("api")
+local api = require("util")
 
 --* definitions for events and what they are
 local events = {

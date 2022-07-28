@@ -1,4 +1,4 @@
-local api = require("api")
+local api = require("util")
 
 return function(object,data)
     if type(data.visible) ~= "boolean" then data.visible = true end

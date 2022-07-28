@@ -4,9 +4,9 @@
     * and draws them
 ]]
 
-local decode_ppm = require "a-tools.luappm"
-local decode_blbfor =  require "a-tools.blbfor".open
-local api = require "api"
+local decode_ppm = require "core.luappm"
+local decode_blbfor =  require "core.blbfor".open
+local api = require "util"
 local expect = require "cc.expect"
 
 local chars = "0123456789abcdef"

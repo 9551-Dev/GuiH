@@ -1,4 +1,4 @@
-local algo = require("a-tools.algo")
+local algo = require("core.algo")
 local graphic = require("graphic_handle").code
 
 return function(object)

@@ -8,8 +8,8 @@
 --* loads the required modules
 local objects = require("object_loader")
 local graphic = require("graphic_handle")
-local update = require("a-tools.update")
-local api = require("api")
+local update = require("core.update")
+local api = require("util")
 
 local function create_gui_object(term_object,orig,log,event_offset_x,event_offset_y)
     local gui_objects = {}
@@ -510,7 +510,7 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
         if err then gui.last_err = err end
         --* makes sure the window is visible when execution ends
         execution_window.setVisible(true)
-        if err then log("a Fatal error occured: "..err..debug.traceback(),log.fatal)
+        if err then log("a Fatal error occured: "..err.." "..debug.traceback(),log.fatal)
         else log("finished execution",log.success) end
         log:dump()
         err = nil

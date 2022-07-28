@@ -3,7 +3,7 @@
     * and load all the nessesary presets and modules, also sets up log
 ]]
 
-local logger = require("a-tools.logger")
+local logger = require("core.logger")
 
 --* gets this files path so it can be later used in package.path
 local path = fs.getDir(select(2,...))
@@ -12,11 +12,11 @@ local log = logger.create_log()
 
 --* puts the internal apis into the apis table cause they may be useful
 local apis = {
-    algo=require("a-tools.algo"),
-    luappm=require("a-tools.luappm"),
-    blbfor=require("a-tools.blbfor"),
+    algo=require("core.algo"),
+    luappm=require("core.luappm"),
+    blbfor=require("core.blbfor"),
     graphic=require("graphic_handle").code,
-    general=require("api")
+    general=require("util")
 }
 local presets={}
 
@@ -53,7 +53,7 @@ local function generate_ui(m,event_offset_x,event_offset_y)
         "%s;/%s/?.lua;/%s/?/init.lua",
         package.path, path,path
     )
-    local create = require("a-tools.gui_object")
+    local create = require("core.gui_object")
     local win = window.create(m,1,1,m.getSize())
     log("creating gui object..",log.update)
     local gui = create(win,m,log,event_offset_x,event_offset_y)
