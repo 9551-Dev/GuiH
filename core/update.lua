@@ -96,7 +96,7 @@ return function(self,timeout,visible,is_child,data_in,block_logic,block_graphic,
             for _k,_v in pairs(gui) do for k,v in pairs(_v) do
 
                 --* if the element is reactive and is set to respond to the current event then continue
-                if (v.reactive and v.react_to_events[ev_data.name]) or not next(v.react_to_events) then
+                if v.react_to_events[ev_data.name] or not next(v.react_to_events) then
 
                     --* build a function that updates this element and add it into update_layers
                     --* with its update logic_order or order as a key
@@ -126,15 +126,17 @@ return function(self,timeout,visible,is_child,data_in,block_logic,block_graphic,
                         --* check if the button clicked matches with v.btn
                         --* which is a LUT of the buttons the object should respond to
                         --* also check if the monitor that this event happened on matches
-                        table.insert(logic_updaters or update_functions,function()
-                            if keyboard_events[ev_data.name] then
-                                if v.logic then v.logic(v,ev_data,self) end
-                            else
-                                if ((v.btn or valid_mouse_buttons)[ev_data.button]) or ev_data.monitor == self.monitor then
-                                    if v.logic then v.logic(v,ev_data,self) end
-                                end
-                            end
-                        end)
+                        if v.reactive then
+                           table.insert(logic_updaters or update_functions,function()
+                               if keyboard_events[ev_data.name] then
+                                   if v.logic then v.logic(v,ev_data,self) end
+                               else
+                                   if ((v.btn or valid_mouse_buttons)[ev_data.button]) or ev_data.monitor == self.monitor then
+                                       if v.logic then v.logic(v,ev_data,self) end
+                                   end
+                               end
+                           end)
+                        end
                     end)
                 end
             end end
