@@ -1,12 +1,4 @@
 fs.makeDir("GuiH")
-fs.makeDir("GuiH/a-tools")
-fs.makeDir("GuiH/objects")
-fs.makeDir("GuiH/apis/")
-fs.makeDir("GuiH/apis/fonts.7sh")
-fs.makeDir("GuiH/presets")
-fs.makeDir("GuiH/presets/rect")
-fs.makeDir("GuiH/presets/tex")
-
 local github_api = http.get(
 	"https://api.github.com/repos/9551-Dev/GuiH/git/trees/main?recursive=1",
 	_G._GIT_API_KEY and {Authorization = 'token ' .. _G._GIT_API_KEY}
