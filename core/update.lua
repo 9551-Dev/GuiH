@@ -113,7 +113,7 @@ return function(self,timeout,visible,is_child,data_in,block_logic,block_graphic,
 
                                 if was_object_clicked then
                                     if touchpixelmap[ev_data.x][ev_data.y] and not v.always_update then return end
-                                    if _G.type(v.on_focus) == "function" then v.on_focus(v) end
+                                    if _G.type(v.on_focus) == "function" and ev_data.name ~= "mouse_drag" then v.on_focus(v) end
                                     for xy=1,w*h do
                                         touchpixelmap[(xy-1)%w+p.x][math.ceil(xy/w)+p.y-1] = true
                                     end
