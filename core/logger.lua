@@ -55,7 +55,7 @@ function index:dump()
         else
             nstr = 1
         end
-        outputInternal[#outputInternal+1] = v.str.."("..tostring(nstr)..")"
+        outputInternal[#outputInternal+1] = v.str
         lastLog = remove_time(v.str)..v.type
     end
     for k,v in ipairs(outputInternal) do
