@@ -163,12 +163,16 @@ return function(object,event)
         elseif event.key == keys.insert and not event.held then
             object.insert = not object.insert
         elseif event.key == keys.down then
-            if object.autoc.selected+1 <= #object.autoc.sorted then
-                object.autoc.selected = object.autoc.selected + 1
+            if object.autoc.sorted then
+                if object.autoc.selected+1 <= #object.autoc.sorted then
+                    object.autoc.selected = object.autoc.selected + 1
+                end
             end
         elseif event.key == keys.up then
-            if object.autoc.selected > 1 then
-                object.autoc.selected = object.autoc.selected - 1
+            if object.autoc.sorted then
+                if object.autoc.selected > 1 then
+                    object.autoc.selected = object.autoc.selected - 1
+                end
             end
         elseif event.key == keys.enter and object.selected then
             local arguments = {}
