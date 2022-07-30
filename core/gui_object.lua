@@ -150,13 +150,15 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
     end
     gui.position = gui.create_position
 
-    gui.relative_to = function(object,offset_x,offset_y,w,h,start_anchor,end_anchor)
+    gui.relative_to = function(object,offset_x,offset_y,w,h,width_offset,height_offset,start_anchor,end_anchor)
         local id = api.uuid4()
         w,h = tostring(w),tostring(h)
-        offset_x     = offset_x or 0
-        offset_y     = offset_y or 0
-        start_anchor = anchors[start_anchor] and start_anchor or "centered"
-        end_anchor   = anchors[end_anchor]   and end_anchor   or "centered"
+        offset_x      = offset_x or 0
+        offset_y      = offset_y or 0
+        start_anchor  = anchors[start_anchor] and start_anchor or "centered"
+        end_anchor    = anchors[end_anchor]   and end_anchor   or "centered"
+        width_offset  = width_offset  or 0
+        height_offset = height_offset or 0
         local valuew,iswpercent = w:gsub("%%","")
         local valueh,ishpercent = h:gsub("%%","")
         local positioning = {}
@@ -208,8 +210,8 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
 
             positioning.x      = math.floor(anchored_x-0.5) + offset_x
             positioning.y      = math.floor(anchored_y-0.5) + offset_y
-            positioning.width  = sized_width
-            positioning.height = sized_height
+            positioning.width  = sized_width                + width_offset
+            positioning.height = sized_height               + height_offset
         end
         update_position()
         if gui.debug then log("Made new relative position "..id) end
