@@ -73,6 +73,8 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
         debug=false,
         event_offset_x=event_offset_x,
         event_offset_y=event_offset_y,
+        dynamic_positions={},
+        paused_dynamic_positions={}
     }
 
     gui.inherit = function(from, group)
@@ -92,6 +94,125 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
     end
     gui.getSize = function()
         return gui.w,gui.h
+    end
+
+    local anchors = {
+        ["center"]=true,
+        ["top_left"]=true,
+        ["top_right"]=true,
+        ["bottom_left"]=true,
+        ["bottom_right"]=true
+    }
+
+    gui.create_position = function(x,y,w,h,anchor,offset_x,offset_y)
+        local id = api.uuid4()
+        x,y = tostring(x),tostring(y)
+        w,h = tostring(w),tostring(h)
+        anchor = anchors[anchor] and anchor or "center"
+        local valuex,isxpercent = x:gsub("%%","")
+        local valuey,isypercent = y:gsub("%%","")
+        local valuew,iswpercent = w:gsub("%%","")
+        local valueh,ishpercent = h:gsub("%%","")
+        local positioning = {}
+        local function update_position()
+            local centered_x   = tonumber(valuex)
+            local centered_y   = tonumber(valuey)
+            local sized_width  = tonumber(valuew)
+            local sized_height = tonumber(valueh)
+            log(gui.h)
+            if isxpercent > 0 then centered_x   = gui.w*(centered_x/100)   end
+            if isypercent > 0 then centered_y   = gui.h*(centered_y/100)   end
+            if iswpercent > 0 then sized_width  = gui.w*(sized_width/100)  end
+            if ishpercent > 0 then sized_height = gui.h*(sized_height/100) end
+            if anchor == "center" then
+                if isxpercent > 0 then centered_x = centered_x - sized_width /2 + 1 end
+                if isypercent > 0 then centered_y = centered_y - sized_height/2 + 1 end
+            elseif anchor == "top_right" then
+                if isxpercent > 0 then centered_x = centered_x - sized_width  + 1 end
+            elseif anchor == "bottom_left" then
+                if isypercent > 0 then centered_y = centered_y - sized_height + 1 end
+            elseif anchor == "bottom_right" then
+                if isxpercent > 0 then centered_x = centered_x - sized_width  + 1 end
+                if isypercent > 0 then centered_y = centered_y - sized_height + 1 end
+            end
+            positioning.x      = math.floor(centered_x+0.5)
+            positioning.y      = math.floor(centered_y+0.5)
+            positioning.width  = sized_width
+            positioning.height = sized_height
+        end
+        update_position()
+        if gui.debug then log("Made new dynamic position "..id) end
+        gui.dynamic_positions[id] = update_position
+        return positioning
+    end
+    gui.position = gui.create_position
+
+    gui.relative_to = function(object,offset_x,offset_y,w,h,start_anchor,end_anchor)
+        local id = api.uuid4()
+        w,h = tostring(w),tostring(h)
+        offset_x     = offset_x or 0
+        offset_y     = offset_y or 0
+        start_anchor = anchors[start_anchor] and start_anchor or "centered"
+        end_anchor   = anchors[end_anchor]   and end_anchor   or "centered"
+        local valuew,iswpercent = w:gsub("%%","")
+        local valueh,ishpercent = h:gsub("%%","")
+        local positioning = {}
+        local function update_position()
+            local anchored_x = object.positioning.x      or 1
+            local anchored_y = object.positioning.y      or 1
+            local anchored_w = object.positioning.width  or 1
+            local anchored_h = object.positioning.height or 1
+            local sized_width  = tonumber(valuew)
+            local sized_height = tonumber(valueh)
+            if not next(positioning) then positioning = {
+                width  = sized_width,
+                height = sized_height
+            } end
+            if iswpercent > 0 then sized_width  = gui.w*(sized_width/100)  end
+            if ishpercent > 0 then sized_height = gui.h*(sized_height/100) end
+            if start_anchor == "centered" then
+                anchored_x = anchored_x + (anchored_w/2) + 0.5
+                anchored_y = anchored_y + (anchored_h/2) + 0.5
+            elseif start_anchor == "top_right" then
+                anchored_x = anchored_x + anchored_w
+                anchored_y = anchored_y + 1
+            elseif start_anchor == "bottom_left" then
+                anchored_x = anchored_x + 1
+                anchored_y = anchored_y + anchored_h
+            elseif start_anchor == "bottom_right" then
+                anchored_x = anchored_x + anchored_w
+                anchored_y = anchored_y + anchored_h
+            elseif start_anchor == "top_left" then
+                anchored_x = anchored_x + 1
+                anchored_y = anchored_y + 1
+            end
+            if end_anchor == "centered" then
+                anchored_x = anchored_x - positioning.width/2
+                anchored_y = anchored_y - positioning.height/2
+            elseif end_anchor == "top_right" then
+                anchored_x = anchored_x - positioning.width+0.5
+                anchored_y = anchored_y - 0.5
+            elseif end_anchor == "bottom_left" then
+                anchored_x = anchored_x - 0.5
+                anchored_y = anchored_y - positioning.height+0.5
+            elseif end_anchor == "bottom_right" then
+                anchored_x = anchored_x - positioning.width+0.5
+                anchored_y = anchored_y - positioning.height+0.5
+            elseif end_anchor == "top_left" then
+                anchored_x = anchored_x - 0.5
+                anchored_y = anchored_y - 0.5
+            end
+
+            positioning.x      = math.floor(anchored_x-0.5) + offset_x
+            positioning.y      = math.floor(anchored_y-0.5) + offset_y
+            positioning.width  = sized_width
+            positioning.height = sized_height
+        end
+        update_position()
+        if gui.debug then log("Made new relative position "..id) end
+        gui.dynamic_positions[id] = update_position
+
+        return positioning
     end
 
     log("set up updater",log.update)
@@ -426,6 +547,16 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
         end)
         log("created graphic routine 2",log.update)
 
+        local position_updater = coroutine.create(function()
+            while true do
+                for k,v in pairs(gui.dynamic_positions) do
+                    v()
+                end
+                sleep(math.max(gui.update_delay,0.05))
+            end
+        end)
+        log("Created position updater",log.update)
+
         --* this coroutine is used for handling key presses
         --* and adding/removing keys from gui.held_keys
         --* used by the isHeld function
@@ -447,6 +578,7 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
         coroutine.resume(gui_coro,"mouse_click",math.huge,-math.huge,-math.huge)
         coroutine.resume(gui_coro,"mouse_click",math.huge,-math.huge,-math.huge)
         coroutine.resume(graphics_updater)
+        coroutine.resume(position_updater)
         log("")
         log("Started execution..",log.success)
         log("")
@@ -494,6 +626,7 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
             end
 
             --* updates the GUI
+            coroutine.resume(position_updater,table.unpack(event,1,event.n))
             coroutine.resume(gui_coro,table.unpack(event,1,event.n))
             coroutine.resume(graphics_updater,table.unpack(event,1,event.n))
 
@@ -502,9 +635,9 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
             if w ~= gui.w or h ~= gui.h then
                 if (event[1] == "monitor_resize" and gui.monitor == event[2]) or gui.monitor == "term_object" then
                     gui.term_object.reposition(1,1,w,h)
-                    coroutine.resume(gui_coro,"mouse_click",math.huge,-math.huge,-math.huge)
                     gui.w,gui.h = w,h
                     gui.width,gui.height = w,h
+                    coroutine.resume(gui_coro,"mouse_click",math.huge,-math.huge,-math.huge)
                 end
             end
         end

@@ -387,7 +387,7 @@ local function get_pixel(x,y,tex,fill_empty)
     return pixel
 end
 
-local function draw_box_tex(term,tex,x,y,width,height,bg,tg,offsetx,offsety,cache)
+local function draw_box_internal(term,tex,x,y,width,height,bg,tg,offsetx,offsety,cache,block_draw)
     local bg_layers,fg_layers,text_layers = {},{},{}
     offsetx,offsety = offsetx or 0,offsety or 0
 
@@ -435,10 +435,20 @@ local function draw_box_tex(term,tex,x,y,width,height,bg,tg,offsetx,offsety,cach
         end
     end
     --* then we draw the blit data to the screen
-    for k,v in pairs(bg_layers) do
-        term.setCursorPos(x,y+k-1)
-        term.blit(text_layers[k],fg_layers[k],bg_layers[k])
+    if not block_draw then
+        for k,v in pairs(bg_layers) do
+            term.setCursorPos(x,y+k-1)
+            term.blit(text_layers[k],fg_layers[k],bg_layers[k])
+        end
     end
+end
+
+local function draw_box_tex(term,tex,x,y,width,height,bg,tg,offsetx,offsety,cache)
+    draw_box_internal(term,tex,x,y,width,height,bg,tg,offsetx,offsety,cache)
+end
+
+local function cache_image(term,tex,x,y,width,height,bg,tg,offsetx,offsety,cache)
+    draw_box_internal(term,tex,x,y,width,height,bg,tg,offsetx,offsety,cache,true)
 end
 
 return {
@@ -452,6 +462,7 @@ return {
     code={
         get_pixel=get_pixel,
         draw_box_tex=draw_box_tex,
+        cache_image=cache_image,
         to_blit=saveCols,
         to_color=loadCols,
         build_drawing_char=build_drawing_char
