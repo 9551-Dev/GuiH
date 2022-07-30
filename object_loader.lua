@@ -49,7 +49,7 @@ end
 return {main=function(i_self,guis,log)
     local object = i_self
     local objects = {}
-    local animation_types = fs.list(fs.combine(path.."/animations/"))
+    local animation_types = fs.list(fs.combine(path,"/animations/"))
 
     for k,v in pairs(animation_types) do
         log("Found animation " .. v:match("(.*)%."),log.info)
