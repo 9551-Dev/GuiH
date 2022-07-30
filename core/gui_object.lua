@@ -123,7 +123,6 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
             local centered_y   = tonumber(valuey)
             local sized_width  = tonumber(valuew)
             local sized_height = tonumber(valueh)
-            log(gui.h)
             if isxpercent > 0 then centered_x   = gui.w*(centered_x/100)   end
             if isypercent > 0 then centered_y   = gui.h*(centered_y/100)   end
             if iswpercent > 0 then sized_width  = gui.w*(sized_width/100)  end
