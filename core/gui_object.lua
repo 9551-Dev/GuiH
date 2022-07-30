@@ -139,7 +139,7 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
                 if isypercent > 0 then centered_y = centered_y - sized_height + 1 end
             end
             positioning.x      = math.floor(centered_x+0.5) + offset_x
-            positioning.y      = math.floor(centered_y+0.5) + offset_x
+            positioning.y      = math.floor(centered_y+0.5) + offset_y
             positioning.width  = sized_width                + width_offset
             positioning.height = sized_height               + height_offset
         end
