@@ -104,10 +104,14 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
         ["bottom_right"]=true
     }
 
-    gui.create_position = function(x,y,w,h,anchor,offset_x,offset_y)
+    gui.create_position = function(x,y,w,h,anchor,offset_x,offset_y,width_offset,height_offset)
         local id = api.uuid4()
         x,y = tostring(x),tostring(y)
         w,h = tostring(w),tostring(h)
+        offset_x      = offset_x or 0
+        offset_y      = offset_y or 0
+        width_offset  = width_offset or 0
+        height_offset = height_offset or 0
         anchor = anchors[anchor] and anchor or "center"
         local valuex,isxpercent = x:gsub("%%","")
         local valuey,isypercent = y:gsub("%%","")
@@ -135,10 +139,10 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
                 if isxpercent > 0 then centered_x = centered_x - sized_width  + 1 end
                 if isypercent > 0 then centered_y = centered_y - sized_height + 1 end
             end
-            positioning.x      = math.floor(centered_x+0.5)
-            positioning.y      = math.floor(centered_y+0.5)
-            positioning.width  = sized_width
-            positioning.height = sized_height
+            positioning.x      = math.floor(centered_x+0.5) + offset_x
+            positioning.y      = math.floor(centered_y+0.5) + offset_x
+            positioning.width  = sized_width                + width_offset
+            positioning.height = sized_height               + height_offset
         end
         update_position()
         if gui.debug then log("Made new dynamic position "..id) end
