@@ -4,8 +4,8 @@ local selfDir = fs.getDir(select(2,...) or "")
 local old_path = package.path
 
 package.path = string.format(
-    "%s;/%s/?.lua;/%s/?/init.lua",
-    package.path, selfDir,selfDir
+    "/%s/?.lua;/rom/modules/main/?.lua",
+    selfDir
 )
 
 local GuiH = require "main"
