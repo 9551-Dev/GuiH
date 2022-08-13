@@ -759,7 +759,7 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
         data.blit[1] = (data.blit[1] or fg):lower()
         data.blit[2] = (data.blit[2] or bg):lower()
 
-        log("created new text object",log.info)
+        if gui.debug then log("created new text object",log.info) end
         return setmetatable({
             text = data.text or "<TEXT OBJECT>",
             centered = data.centered,
