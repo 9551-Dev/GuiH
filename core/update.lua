@@ -90,7 +90,7 @@ return function(self,timeout,visible,is_child,data_in,block_logic,block_graphic,
 
         --* if the monitor that we clicked matches the one the gui is set to respond to then we continue
         local touchpixelmap = pixemap or api.tables.createNDarray(1)
-        if updateD and ((ev_data.monitor == self.monitor) or keyboard_events[ev_data.name]) and not block_graphic then
+        if updateD and ((ev_data.monitor == self.monitor) or keyboard_events[ev_data.name]) then
 
             --* iterate over all the elements in the gui
             for _k,_v in pairs(gui) do for k,v in pairs(_v) do
@@ -127,15 +127,15 @@ return function(self,timeout,visible,is_child,data_in,block_logic,block_graphic,
                         --* which is a LUT of the buttons the object should respond to
                         --* also check if the monitor that this event happened on matches
                         if v.reactive then
-                           table.insert(logic_updaters or update_functions,function()
-                               if keyboard_events[ev_data.name] then
-                                   if v.logic then v.logic(v,ev_data,self) end
-                               else
-                                   if ((v.btn or valid_mouse_buttons)[ev_data.button]) or ev_data.monitor == self.monitor then
-                                       if v.logic then v.logic(v,ev_data,self) end
-                                   end
-                               end
-                           end)
+                            table.insert(logic_updaters or update_functions,function()
+                                if keyboard_events[ev_data.name] then
+                                    if v.logic then v.logic(v,ev_data,self) end
+                                else
+                                    if ((v.btn or valid_mouse_buttons)[ev_data.button]) or ev_data.monitor == self.monitor then
+                                        if v.logic then v.logic(v,ev_data,self) end
+                                    end
+                                end
+                            end)
                         end
                     end)
                 end
@@ -166,9 +166,9 @@ return function(self,timeout,visible,is_child,data_in,block_logic,block_graphic,
                 --* if it has a child object and is visible then update it and add that child
                 --* element to the frames list to be updated reccursively later
                 if not (v.gui or v.child) then
-                    if v.visible and v.graphic then v.graphic(v,self) end
+                    if v.visible and v.graphic and not block_graphic then v.graphic(v,self) end
                 else
-                    if v.visible and v.graphic then
+                    if v.visible and v.graphic and not block_graphic then
                         v.graphic(v,self);
                         (v.gui or v.child).term_object.redraw()
                     end
@@ -190,7 +190,7 @@ return function(self,timeout,visible,is_child,data_in,block_logic,block_graphic,
     for _k,_v in pairs(gui) do for k,v in pairs(_v) do
         if not child_layers[v.graphic_order or v.order] then child_layers[v.graphic_order or v.order] = {} end
         table.insert(child_layers[v.graphic_order or v.order],function()
-            if v.gui or v.child then
+            if (v.gui or v.child) then
                 table.insert(frames,v)
             end
         end)
@@ -237,12 +237,16 @@ return function(self,timeout,visible,is_child,data_in,block_logic,block_graphic,
 
             --* if the event has happened within the gui object that update it like normal
             --* else update it with infinite event cordinates so nothing will most likely get triggered
+            local reactivity = not v.reactive
+            local visibility = not v.visible
+            if type(block_logic) == "boolean" then reactivity = block_logic end
+            if type(block_graphic) == "boolean" then visibility = block_graphic end
             if api.is_within_field(data.x,data.y,x,y,x+w,y+h) then
-                (v.child or v.gui).update(math.huge,v.visible,true,dat,not v.reactive,not v.visible,child_pixemap,screen_x or data.x,screen_y or data.y,logupdates,graphupdates)
+                (v.child or v.gui).update(math.huge,v.visible,true,dat,reactivity,visibility,child_pixemap,screen_x or data.x,screen_y or data.y,logupdates,graphupdates)
             else
                 dat.x = -math.huge
                 dat.y = -math.huge;
-                (v.child or v.gui).update(math.huge,v.visible,true,dat,not v.reactive,not v.visible,child_pixemap,screen_x or data.x,screen_y or data.y,logupdates,logupdates)
+                (v.child or v.gui).update(math.huge,v.visible,true,dat,reactivity,visibility,child_pixemap,screen_x or data.x,screen_y or data.y,logupdates,logupdates)
             end
             if (v.gui or v.child) and (v.gui or v.child).cls then
                 (v.gui or v.child).term_object.redraw()
