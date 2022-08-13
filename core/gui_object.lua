@@ -86,7 +86,7 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
         gui.debug        = from.debug
         gui.parent       = group
     end
-   
+
     gui.disable_logging = function()
         gui.log = setmetatable({dump=function() end},{__call=function() end})
     end
@@ -367,13 +367,13 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
     gui.async = gui.schedule
 
     --* used for creation of new event listeners
-    gui.add_listener = function(_filter,f,name,debug)
+    gui.add_listener = function(_filter,f,name,debug,on_finish)
         if not _G.type(f) == "function" then return end
 
         --* if no event filter is present use an empty one
         if not (_G.type(_filter) == "table" or _G.type(_filter) == "string") then _filter = {} end
         local id = name or api.uuid4()
-        local listener = {filter=_filter,code=f}
+        local listener = {filter=_filter,code=f,finish=on_finish}
         gui.event_listeners[id] = listener
         if debug or gui.debug then
             log("created event listener: "..id,log.success)
@@ -543,13 +543,16 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
                     --* iterates ever listeners with said event
                     --* and if the event matches the filter or there is no filter
                     --* runs the code asigned to the listener
+                    local listeners = {}
                     for k,v in pairs(gui.event_listeners) do
                         local filter = v.filter
                         if _G.type(filter) == "string" then filter = {[v.filter]=true} end
                         if filter[eData[1]] or filter == eData[1] or (not next(filter)) then
                             v.code(table.unpack(eData,_G.type(v.filter) ~= "table" and 2 or 1,eData.n))
+                            table.insert(listeners,v.finish)
                         end
                     end
+                    for k,v in pairs(listeners) do v() end
                 end
             end)
             if not ok then err = erro log:dump() end
