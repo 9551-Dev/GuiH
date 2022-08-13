@@ -86,6 +86,10 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
         gui.debug        = from.debug
         gui.parent       = group
     end
+   
+    gui.disable_logging = function()
+        gui.log = setmetatable({dump=function() end},{__call=function() end})
+    end
 
     gui.elements = gui.gui
 
