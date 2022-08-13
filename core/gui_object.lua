@@ -85,6 +85,8 @@ local function create_gui_object(term_object,orig,log,event_offset_x,event_offse
         gui.add_listener = from.add_listener
         gui.debug        = from.debug
         gui.parent       = group
+        gui.dynamic_positions        = from.dynamic_positions
+        gui.paused_dynamic_positions = from.paused_dynamic_positions
     end
 
     gui.disable_logging = function()
