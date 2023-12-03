@@ -8,42 +8,32 @@ local api = require("util")
 local path = fs.getDir(select(2,...))
 
 --* function used to dereference
---* the an table/gui element
-local function deepcopy(orig)
-
-    --* if the input is not an table
-    --* it doesnt have an reference
-    --* so we just return it
-    local orig_type = type(orig)
-    local copy
-    if orig_type == "table" then
-
-        --* if it is an table we iterate over it
-        copy = {}
-        for orig_key, orig_value in next, orig, nil do
-
-            --* if the table happens to be canvas
-            --* we just copy it. since canvas is recursive
-            --* and would cause an infinite loop
-            if orig_key == "canvas" then
-                copy.canvas = orig_value
+local function deepcopy(tbl,keep,seen)
+    local instance_seen = seen or {}
+    local out = {}
+    instance_seen[tbl] = out
+    for copied_key,copied_value in pairs(tbl) do
+        local is_table = type(copied_value) == "table" and not (keep and keep[copied_key])
+        if type(copied_key) == "table" then
+            if instance_seen[copied_key] then
+                copied_key = instance_seen[copied_key]
             else
-                --* if its not canvas then we dereference
-                --* the key and value inside+
-                --* and save that to our copy
-                copy[deepcopy(orig_key)] = deepcopy(orig_value)
+                local new_instance = deepcopy(copied_key,keep,instance_seen)
+                instance_seen[copied_key] = new_instance
+                copied_key = new_instance
             end
         end
-
-        --* we also create a dereferenced copy
-        --* of the metatable on this table and we put it back
-        setmetatable(copy, deepcopy(getmetatable(orig)))
-    else
-        copy = orig
+        if is_table and not instance_seen[copied_value] then
+            local new_instance = deepcopy(copied_value,keep,instance_seen)
+            instance_seen[copied_value] = new_instance
+            out[copied_key] = new_instance
+        elseif is_table and instance_seen[copied_value] then
+            out[copied_key] = instance_seen[copied_value]
+        else
+            out[copied_key] = copied_value
+        end
     end
-
-    --* return the dereferenced copy
-    return copy
+    return setmetatable(out,getmetatable(tbl))
 end
 
 return {main=function(i_self,guis,log)
